@@ -9,16 +9,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: cd client
       - name: Restore node_modules from cache
         uses: actions/cache@v2
         with:
           path: |
-            node_modules
+            client/node_modules
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
-      - uses: actions/checkout@v3
       - uses: actions/checkout@v4
+      - run: cd client
       - uses: actions/setup-node@v4
         with:
           node-version: 20
