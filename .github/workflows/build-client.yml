@@ -17,7 +17,6 @@ jobs:
             */*/node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
       - uses: actions/checkout@v4
-      - run: cd client
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -25,8 +24,11 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - name: Install dependencies
         run: npm install --force
+        working-directory: client
       - name: Lint
         run: npm run lint
+        working-directory: client
       - name: Build
         run: npm run build
+        working-directory: client
       # - run: npm run test
