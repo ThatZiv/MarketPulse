@@ -1,7 +1,13 @@
-from flask import Flask
+from flask import Flask, session, redirect, url_for, request
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
+
+    app.secret_key = os.getenv('TEST_KEY')
+    
 
     from routes.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
