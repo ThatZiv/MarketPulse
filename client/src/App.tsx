@@ -1,13 +1,22 @@
+import { Route, Routes } from "react-router";
 import "./App.css";
-import { Button } from "@/components/ui/button";
-
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import Stocks from "./pages/Stocks";
+import Stock from "./pages/Stock";
 function App() {
   return (
-    <>
-      <div>
-        <Button>hello </Button>
-      </div>
-    </>
+    <div>
+      <Routes>
+        <Route path="/" element={<Dashboard />}>
+          <Route path="/stocks" element={<Stocks />} />
+          <Route path="/stocks/:ticker" element={<Stock />} />
+        </Route>
+        {/* TODO: force login to render if the user is not logged in */}
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<h1>Not Found</h1>} />
+      </Routes>
+    </div>
   );
 }
 
