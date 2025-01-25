@@ -7,6 +7,8 @@ from flask_cors import CORS\
 
 from sqlalchemy import create_engine
 
+from flask_jwt_extended import JWTManager
+
 
 load_dotenv()
 
@@ -20,12 +22,17 @@ def create_app():
     app = Flask(__name__)
   
     from routes.auth import auth_bp
+
+    app.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
+    jwt = JWTManager(app)
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
     return app
 
 
 if __name__ == '__main__':  
+
+
     app = create_app()
     CORS(app)
     jwt = jw.JWTManager()
