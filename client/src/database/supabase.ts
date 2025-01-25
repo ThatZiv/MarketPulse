@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
 
 // This may crash without valid keys,
 export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
-
+console.log("supabase client instance created");
 //From supabase docs removed the redirect added variables
 export async function signUpNewUser(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({

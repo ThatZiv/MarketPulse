@@ -14,6 +14,7 @@ export default defineConfig({
         VITE_API_URL: z.string().url(),
         VITE_SUPABASE_URL: z.string().url(),
         VITE_SUPABASE_KEY: z.string().nonempty(),
+        VITE_GOOGLE_CLIENT_ID: z.string().nonempty(),
       },
     }),
   ],

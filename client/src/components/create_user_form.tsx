@@ -21,12 +21,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useNavigate } from "react-router-dom";
-import { signUpNewUser } from "@/database/supabase";
+import { useContext } from "react";
+import { SupabaseContext } from "@/database/SupabaseProvider";
 
 export function CreateForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const { supabase } = useContext(SupabaseContext);
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
@@ -57,12 +59,15 @@ export function CreateForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     //Not sure on what to do with errors will add once decided
     try {
-      const response = await signUpNewUser(values.email, values.password);
+      const response = await supabase?.auth.signUp({
+        email: values.email,
+        password: values.password,
+      });
       // Will remove after deciding what to do with responses
 
       console.log(response);
       // need to add condition for when user is rejected.
-      if (response.data) {
+      if (response?.data) {
         navigate("/login", { replace: true });
       }
     } catch (error) {
