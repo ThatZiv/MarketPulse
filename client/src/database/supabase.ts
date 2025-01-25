@@ -1,12 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-require("dotenv").config();
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
 
 // This may crash without valid keys,
-const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
 
 //From supabase docs removed the redirect added variables
 export async function signUpNewUser(email: string, password: string) {

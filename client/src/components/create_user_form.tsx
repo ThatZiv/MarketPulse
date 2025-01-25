@@ -20,65 +20,58 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useNavigate } from "react-router-dom";
+import { signUpNewUser } from "@/database/supabase";
 
-import { signInWithEmail, supabase } from "@/database/supabase";
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
-
-export function LoginForm({
+export function CreateForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const formSchema = z.object({
-    email: z.string().min(2).max(50),
-    password: z.string().min(2).max(50),
-  });
+  const formSchema = z
+    .object({
+      email: z.string().min(2).max(50),
+      password: z.string().min(8).max(50),
+      password2: z.string(),
+    })
+    .refine(
+      (data) => {
+        return data.password === data.password2;
+      },
+      {
+        message: "Passwords do not match",
+        path: ["password2"],
+      }
+    );
+
+  let navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
+      password2: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Not sure how to handle bad responses will add once decided
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    //Not sure on what to do with errors will add once decided
     try {
-      const response = signInWithEmail(values.email, values.password);
+      const response = await signUpNewUser(values.email, values.password);
       // Will remove after deciding what to do with responses
       console.log(response);
+      // need to add condition for when user is rejected.
+      navigate("/login", { replace: true });
     } catch {}
   }
-
-  // This appears to work though throws errors in the browser?
-  // It is in test mode so emails need to be pre-approved
-  window.handleSignInWithGoogle = async (response: any) => {
-    console.log("Callback fired! Response:", response);
-    const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: response.credential,
-    });
-    console.log("Supabase Login", data);
-    console.log("Supabase Error", error);
-  };
-
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-    console.log("load");
-  }, []);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Create Account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter email and password for your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -116,32 +109,26 @@ export function LoginForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <FormField
+                control={form.control}
+                name="password2"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Password"
+                        type="password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription></FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Create</Button>
             </form>
-            <div
-              id="g_id_onload"
-              data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"
-              data-context="signin"
-              data-ux_mode="popup"
-              data-callback="handleSignInWithGoogle"
-              data-auto_prompt="false"
-            ></div>
-
-            <div
-              className="g_id_signin"
-              data-type="standard"
-              data-shape="rectangular"
-              data-theme="outline"
-              data-text="signin_with"
-              data-size="large"
-              data-logo_alignment="left"
-            ></div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <span className="underline underline-offset-4">
-                <Link to="/create">Sign up</Link>
-              </span>
-            </div>
           </Form>
         </CardContent>
       </Card>
