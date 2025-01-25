@@ -43,7 +43,7 @@ export function CreateForm({
       }
     );
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,7 +62,9 @@ export function CreateForm({
       console.log(response);
       // need to add condition for when user is rejected.
       navigate("/login", { replace: true });
-    } catch {}
+    } catch (error) {
+      console.log("Error Creating User", error);
+    }
   }
 
   return (

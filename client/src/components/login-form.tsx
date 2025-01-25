@@ -25,6 +25,13 @@ import { signInWithEmail, supabase } from "@/database/supabase";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
+type googleResponse = {
+  clientId: string;
+  client_id: string;
+  credential: string;
+  select_by: string;
+};
+
 export function LoginForm({
   className,
   ...props
@@ -48,12 +55,14 @@ export function LoginForm({
       const response = signInWithEmail(values.email, values.password);
       // Will remove after deciding what to do with responses
       console.log(response);
-    } catch {}
+    } catch (error) {
+      console.log("Error on login", error);
+    }
   }
 
   // This appears to work though throws errors in the browser?
   // It is in test mode so emails need to be pre-approved
-  window.handleSignInWithGoogle = async (response: any) => {
+  window.handleSignInWithGoogle = async (response: googleResponse) => {
     console.log("Callback fired! Response:", response);
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: "google",
