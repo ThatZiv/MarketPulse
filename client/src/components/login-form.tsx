@@ -38,7 +38,7 @@ export function LoginForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const formSchema = z.object({
     email: z.string().min(2).max(50),
-    password: z.string().min(2).max(50),
+    password: z.string().min(8).max(50),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,7 +76,6 @@ export function LoginForm({
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
-    script.defer = true;
     document.body.appendChild(script);
     console.log("load");
   }, []);

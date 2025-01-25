@@ -59,9 +59,12 @@ export function CreateForm({
     try {
       const response = await signUpNewUser(values.email, values.password);
       // Will remove after deciding what to do with responses
+
       console.log(response);
       // need to add condition for when user is rejected.
-      navigate("/login", { replace: true });
+      if (response.data) {
+        navigate("/login", { replace: true });
+      }
     } catch (error) {
       console.log("Error Creating User", error);
     }
