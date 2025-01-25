@@ -1,7 +1,13 @@
 export {};
+type googleResponse = {
+  clientId: string;
+  client_id: string;
+  credential: string;
+  select_by: string;
+};
 
 declare global {
   interface Window {
-    handleSignInWithGoogle: any;
+    handleSignInWithGoogle: (response: googleResponse) => void;
   }
 }
