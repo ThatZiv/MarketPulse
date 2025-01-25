@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom";
-
-const { TextEncoder, TextDecoder } = require("text-encoding");
+import { TextEncoder, TextDecoder } from "text-encoding";
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
