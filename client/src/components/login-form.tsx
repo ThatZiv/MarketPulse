@@ -53,7 +53,8 @@ export function LoginForm({
     },
   });
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
+    event?.preventDefault();
     try {
       await signInWithEmail(values.email, values.password);
       navigate("/");
@@ -93,7 +94,10 @@ export function LoginForm({
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form
+              onSubmit={form.handleSubmit((values) => onSubmit(values, event))}
+              className="space-y-8"
+            >
               <FormField
                 control={form.control}
                 name="email"

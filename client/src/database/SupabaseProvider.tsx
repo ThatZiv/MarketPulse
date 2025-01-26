@@ -10,9 +10,11 @@ import {
   createClient,
 } from "@supabase/supabase-js";
 import React from "react";
+import { useNavigate } from "react-router";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 interface ISupabaseContext {
   supabase: SupabaseClient;
@@ -28,7 +30,7 @@ interface ISupabaseContext {
 }
 
 export const SupabaseContext = createContext<ISupabaseContext>({
-  supabase: createClient(supabaseUrl, supabaseAnonKey),
+  supabase: supabaseClient,
   signUpNewUser: async () => {
     throw new Error("Supabase not initialized");
   },
@@ -38,7 +40,7 @@ export const SupabaseContext = createContext<ISupabaseContext>({
   signOut: async () => {
     throw new Error("Supabase not initialized");
   },
-  isLoading: false,
+  isLoading: true,
   user: null,
   session: null,
 });
@@ -48,11 +50,9 @@ interface SupabaseProviderProps {
 }
 
 export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
-  const supabase = React.useMemo(
-    () => createClient(supabaseUrl, supabaseAnonKey),
-    []
-  );
+  const supabase = React.useMemo(() => supabaseClient, []);
 
+  const navigate = useNavigate();
   const [isLoading, setLoading] = React.useState(true);
   const [user, setUser] = React.useState<null | User>(null);
   const [session, setSession] = React.useState<null | Session>(null);
@@ -74,7 +74,6 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     getData();
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        console.log("Auth event:", _event);
         setUser(session?.user ?? null);
       }
     );
@@ -84,28 +83,46 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     };
   }, [supabase]);
 
+  React.useEffect(() => {
+    // TODO: there prob is a better way to do this (middleware/auth comps)
+    if (!isLoading && !session) {
+      navigate("/login");
+    }
+    if (session?.expires_at && session.expires_at < Date.now()) {
+      navigate("/login");
+    }
+  }, []);
+
   const signUpNewUser = React.useCallback(
-    async (email: string, password: string) =>
-      supabase.auth.signUp({
+    async (email: string, password: string) => {
+      const res = await supabase.auth.signUp({
         email: email,
         password: password,
-      }),
-    [supabase]
+      });
+      // TODO: toast saying email sent to verify
+      navigate("/login");
+      return res;
+    },
+    [navigate, supabase.auth]
   );
 
   const signInWithEmail = React.useCallback(
-    async (email: string, password: string) =>
-      supabase.auth.signInWithPassword({
+    async (email: string, password: string) => {
+      const res = supabase.auth.signInWithPassword({
         email: email,
         password: password,
-      }),
-    [supabase]
+      });
+      navigate("/");
+      return res;
+    },
+    [navigate, supabase.auth]
   );
 
-  const signOut = React.useCallback(
-    async () => supabase.auth.signOut(),
-    [supabase]
-  );
+  const signOut = React.useCallback(async () => {
+    const res = await supabase.auth.signOut();
+    navigate("/login");
+    return res;
+  }, [navigate, supabase.auth]);
 
   return (
     <SupabaseContext.Provider

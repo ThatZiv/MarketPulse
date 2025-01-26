@@ -7,10 +7,10 @@ import { SupabaseProvider } from "./database/SupabaseProvider.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <SupabaseProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <SupabaseProvider>
         <App />
-      </BrowserRouter>
-    </SupabaseProvider>
+      </SupabaseProvider>
+    </BrowserRouter>
   </StrictMode>
 );
