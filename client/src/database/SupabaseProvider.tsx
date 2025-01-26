@@ -89,10 +89,10 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     if (!isLoading && !session) {
       navigate("/login");
     }
-    if (session?.expires_at && session.expires_at < Date.now()) {
+    if (session?.expires_at && session.expires_at > Date.now()) {
       navigate("/login");
     }
-  }, []);
+  }, [session, isLoading, navigate]);
 
   const signUpNewUser = React.useCallback(
     async (email: string, password: string) => {
