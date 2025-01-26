@@ -20,14 +20,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useNavigate } from "react-router-dom";
 import { useSupabase } from "@/database/SupabaseProvider";
 
 export function CreateForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const { supabase } = useSupabase();
+  const { signUpNewUser } = useSupabase();
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
@@ -44,8 +43,6 @@ export function CreateForm({
       }
     );
 
-  const navigate = useNavigate();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,22 +53,7 @@ export function CreateForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    //Not sure on what to do with errors will add once decided
-    try {
-      const response = await supabase?.auth.signUp({
-        email: values.email,
-        password: values.password,
-      });
-      // Will remove after deciding what to do with responses
-
-      console.log(response);
-      // need to add condition for when user is rejected.
-      if (response?.data) {
-        navigate("/login", { replace: true });
-      }
-    } catch (error) {
-      console.log("Error Creating User", error);
-    }
+    await signUpNewUser(values.email, values.password);
   }
 
   return (

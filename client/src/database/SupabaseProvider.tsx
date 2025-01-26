@@ -11,6 +11,7 @@ import {
 } from "@supabase/supabase-js";
 import React from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
@@ -95,31 +96,78 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 
   const signUpNewUser = React.useCallback(
     async (email: string, password: string) => {
-      const res = await supabase.auth.signUp({
-        email: email,
-        password: password,
+      const signUp = new Promise<AuthResponse>((resolve, reject) => {
+        supabase.auth
+          .signUp({
+            email: email,
+            password: password,
+          })
+          .then(({ data, error }) => {
+            return error ? reject(error) : resolve({ data, error });
+          })
+          .catch((error) => {
+            return reject(error);
+          });
       });
-      // TODO: toast saying email sent to verify
-      navigate("/login");
-      return res;
+      toast.promise(signUp, {
+        loading: "Signing up...",
+        success: (data) => {
+          setUser(data.data.user);
+          setSession(data.data.session);
+          navigate("/login");
+          return "Signed up! Please check your email to verify your account.";
+        },
+        error: (error) => {
+          console.error("Error signing up: ", error);
+          return "Error signing up: " + error.message;
+        },
+      });
+      return signUp;
     },
     [navigate, supabase.auth]
   );
 
   const signInWithEmail = React.useCallback(
     async (email: string, password: string) => {
-      const res = supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
+      const signIn = new Promise<AuthTokenResponsePassword>(
+        (resolve, reject) => {
+          supabase.auth
+            .signInWithPassword({
+              email: email,
+              password: password,
+            })
+            .then(({ data, error }) => {
+              return error ? reject(error) : resolve({ data, error });
+            })
+            .catch((error) => {
+              return reject(error);
+            });
+        }
+      );
+
+      toast.promise(signIn, {
+        loading: "Logging in...",
+        success: (data) => {
+          setUser(data.data.user);
+          setSession(data.data.session);
+          navigate("/");
+          return "Logged in!";
+        },
+        error: (error) => {
+          console.error("Error logging in: ", error);
+          return "Error logging in: " + error.message;
+        },
       });
-      navigate("/");
-      return res;
+
+      return signIn;
     },
     [navigate, supabase.auth]
   );
 
   const signOut = React.useCallback(async () => {
     const res = await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
     navigate("/login");
     return res;
   }, [navigate, supabase.auth]);

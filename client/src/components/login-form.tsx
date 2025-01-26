@@ -24,7 +24,6 @@ import {
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { useNavigate } from "react-router";
 
 type googleResponse = {
   clientId: string;
@@ -38,7 +37,6 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
   const { supabase, signInWithEmail } = useSupabase();
-  const navigate = useNavigate();
 
   const formSchema = z.object({
     email: z.string().max(50).email(),
@@ -55,12 +53,7 @@ export function LoginForm({
 
   async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
     event?.preventDefault();
-    try {
-      await signInWithEmail(values.email, values.password);
-      navigate("/");
-    } catch (error) {
-      console.log("Error on login", error);
-    }
+    await signInWithEmail(values.email, values.password);
   }
 
   // This appears to work though throws errors in the browser?
@@ -96,7 +89,7 @@ export function LoginForm({
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) => onSubmit(values, event))}
-              className="space-y-8"
+              className="space-y-8 mb-5"
             >
               <FormField
                 control={form.control}
