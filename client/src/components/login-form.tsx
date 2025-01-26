@@ -36,7 +36,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const { supabase, signInWithEmail } = useSupabase();
+  const { supabase, signInWithEmail, signInWithGoogle } = useSupabase();
 
   const formSchema = z.object({
     email: z.string().max(50).email(),
@@ -60,12 +60,7 @@ export function LoginForm({
   // It is in test mode so emails need to be pre-approved
   window.handleSignInWithGoogle = async (response: googleResponse) => {
     console.log("Callback fired! Response:", response);
-    const { data, error } = await supabase!.auth.signInWithIdToken({
-      provider: "google",
-      token: response.credential,
-    });
-    console.log("Supabase Login", data);
-    console.log("Supabase Error", error);
+    await signInWithGoogle(response);
   };
 
   useEffect(() => {

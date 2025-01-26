@@ -17,12 +17,22 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
 const supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
+type googleResponse = {
+  clientId: string;
+  client_id: string;
+  credential: string;
+  select_by: string;
+};
+
 interface ISupabaseContext {
   supabase: SupabaseClient;
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;
   signInWithEmail: (
     email: string,
     password: string
+  ) => Promise<AuthTokenResponsePassword>;
+  signInWithGoogle: (
+    data: googleResponse
   ) => Promise<AuthTokenResponsePassword>;
   signOut: () => Promise<{ error: AuthError | null }>;
   isLoading: boolean;
@@ -36,6 +46,9 @@ export const SupabaseContext = createContext<ISupabaseContext>({
     throw new Error("Supabase not initialized");
   },
   signInWithEmail: async () => {
+    throw new Error("Supabase not initialized");
+  },
+  signInWithGoogle: async () => {
     throw new Error("Supabase not initialized");
   },
   signOut: async () => {
@@ -164,6 +177,43 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     [navigate, supabase.auth]
   );
 
+  const signInWithGoogle = React.useCallback(
+    async (data: googleResponse) => {
+      const signIn = new Promise<AuthTokenResponsePassword>(
+        (resolve, reject) => {
+          supabase.auth
+            .signInWithIdToken({
+              provider: "google",
+              token: data.credential,
+            })
+            .then(({ data, error }) => {
+              return error ? reject(error) : resolve({ data, error });
+            })
+            .catch((error) => {
+              return reject(error);
+            });
+        }
+      );
+
+      toast.promise(signIn, {
+        loading: "Logging in...",
+        success: (data) => {
+          setUser(data.data.user);
+          setSession(data.data.session);
+          navigate("/");
+          return "Logged in!";
+        },
+        error: (error) => {
+          console.error("Error logging in: ", error);
+          return "Error logging in: " + error.message;
+        },
+      });
+
+      return signIn;
+    },
+    [navigate, supabase.auth]
+  );
+
   const signOut = React.useCallback(async () => {
     const res = await supabase.auth.signOut();
     setUser(null);
@@ -178,6 +228,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         supabase,
         signUpNewUser,
         signInWithEmail,
+        signInWithGoogle,
         signOut,
         isLoading,
         user,
