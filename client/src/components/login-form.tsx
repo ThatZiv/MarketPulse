@@ -21,10 +21,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-// import { signInWithEmail, supabase } from "@/database/supabase";
 import { Link } from "react-router-dom";
-import { useContext, useEffect } from "react";
-import { SupabaseContext } from "@/database/SupabaseProvider";
+import { useEffect } from "react";
+import { useSupabase } from "@/database/SupabaseProvider";
+import { useNavigate } from "react-router";
 
 type googleResponse = {
   clientId: string;
@@ -37,7 +37,8 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const { supabase } = useContext(SupabaseContext);
+  const { supabase, signInWithEmail } = useSupabase();
+  const navigate = useNavigate();
 
   const formSchema = z.object({
     email: z.string().max(50).email(),
@@ -52,12 +53,10 @@ export function LoginForm({
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Not sure how to handle bad responses will add once decided
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = supabase?.auth.signInWithPassword(values);
-      // Will remove after deciding what to do with responses
-      console.log(response);
+      await signInWithEmail(values.email, values.password);
+      navigate("/");
     } catch (error) {
       console.log("Error on login", error);
     }

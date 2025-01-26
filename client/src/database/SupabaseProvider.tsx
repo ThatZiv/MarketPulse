@@ -22,6 +22,9 @@ interface ISupabaseContext {
     password: string
   ) => Promise<AuthTokenResponsePassword>;
   signOut: () => Promise<{ error: AuthError | null }>;
+  isLoading: boolean;
+  user: User | null;
+  session: Session | null;
 }
 
 export const SupabaseContext = createContext<ISupabaseContext>({
@@ -35,6 +38,9 @@ export const SupabaseContext = createContext<ISupabaseContext>({
   signOut: async () => {
     throw new Error("Supabase not initialized");
   },
+  isLoading: false,
+  user: null,
+  session: null,
 });
 
 interface SupabaseProviderProps {
@@ -47,21 +53,28 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     []
   );
 
-  const [isLoading, setLoading] = React.useState(false);
+  const [isLoading, setLoading] = React.useState(true);
   const [user, setUser] = React.useState<null | User>(null);
   const [session, setSession] = React.useState<null | Session>(null);
   React.useEffect(() => {
     async function getData() {
       setLoading(true);
-      const session = await supabase.auth.getSession();
-      const user = await supabase.auth.getUser();
-      setUser(user.data.user ?? null);
-      setSession(session.data.session ?? null);
-      setLoading(false);
+      try {
+        // need to figure out if I need both
+        const session = await supabase.auth.getSession(); // this is stored locally
+        const user = await supabase.auth.getUser(); // this is a request to auth server
+        setUser(user.data.user ?? null);
+        setSession(session.data.session ?? null);
+      } catch (error) {
+        console.error("Error getting user data: ", error);
+      } finally {
+        setLoading(false);
+      }
     }
     getData();
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        console.log("Auth event:", _event);
         setUser(session?.user ?? null);
       }
     );
@@ -96,9 +109,17 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 
   return (
     <SupabaseContext.Provider
-      value={{ supabase, signUpNewUser, signInWithEmail, signOut }}
+      value={{
+        supabase,
+        signUpNewUser,
+        signInWithEmail,
+        signOut,
+        isLoading,
+        user,
+        session,
+      }}
     >
-      {isLoading ? "Loading..." : children}
+      {children}
     </SupabaseContext.Provider>
   );
 };
