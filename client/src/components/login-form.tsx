@@ -21,9 +21,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { signInWithEmail, supabase } from "@/database/supabase";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useSupabase } from "@/database/SupabaseProvider";
 
 type googleResponse = {
   clientId: string;
@@ -36,8 +36,10 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const { supabase, signInWithEmail } = useSupabase();
+
   const formSchema = z.object({
-    email: z.string().min(2).max(50),
+    email: z.string().max(50).email(),
     password: z.string().min(8).max(50),
   });
 
@@ -49,22 +51,16 @@ export function LoginForm({
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Not sure how to handle bad responses will add once decided
-    try {
-      const response = signInWithEmail(values.email, values.password);
-      // Will remove after deciding what to do with responses
-      console.log(response);
-    } catch (error) {
-      console.log("Error on login", error);
-    }
+  async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
+    event?.preventDefault();
+    await signInWithEmail(values.email, values.password);
   }
 
   // This appears to work though throws errors in the browser?
   // It is in test mode so emails need to be pre-approved
   window.handleSignInWithGoogle = async (response: googleResponse) => {
     console.log("Callback fired! Response:", response);
-    const { data, error } = await supabase.auth.signInWithIdToken({
+    const { data, error } = await supabase!.auth.signInWithIdToken({
       provider: "google",
       token: response.credential,
     });
@@ -91,7 +87,10 @@ export function LoginForm({
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form
+              onSubmit={form.handleSubmit((values) => onSubmit(values, event))}
+              className="space-y-8 mb-5"
+            >
               <FormField
                 control={form.control}
                 name="email"

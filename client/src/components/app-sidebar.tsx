@@ -21,6 +21,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useSupabase } from "@/database/SupabaseProvider";
+import { Skeleton } from "./ui/skeleton";
+import { Button } from "./ui/button";
+import { Link } from "react-router";
 
 const data = {
   // TODO: this will come from supabase when we set up that context
@@ -99,6 +103,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, isLoading } = useSupabase();
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -124,7 +129,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        {isLoading && (
+          <Skeleton className="flex items-center justify-center h-16">
+            <div className="flex items-center space-x-4">
+              <Skeleton className="rounded-full h-10 w-10" />
+              <div className="flex flex-col">
+                <Skeleton className="w-24 h-4" />
+                <Skeleton className="w-16 h-3" />
+              </div>
+            </div>
+          </Skeleton>
+        )}
+        {user ? (
+          <NavUser
+            user={{
+              email: user.email || user.phone || user.id,
+              avatar: "",
+            }}
+          />
+        ) : (
+          <Link to="/login">
+            <Button className="w-full" size="lg">
+              Login
+            </Button>
+          </Link>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
