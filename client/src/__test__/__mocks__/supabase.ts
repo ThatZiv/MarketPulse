@@ -1,3 +1,5 @@
+// @deprecated
+
 export const supabase = 0;
 
 //From supabase docs removed the redirect added variables
