@@ -36,7 +36,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const { supabase, signInWithEmail, signInWithGoogle } = useSupabase();
+  const { signInWithEmail, signInWithGoogle } = useSupabase();
 
   const formSchema = z.object({
     email: z.string().max(50).email(),
