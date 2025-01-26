@@ -21,14 +21,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import { SupabaseContext } from "@/database/SupabaseProvider";
+import { useSupabase } from "@/database/SupabaseProvider";
 
 export function CreateForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
-  const { supabase } = useContext(SupabaseContext);
+  const { supabase } = useSupabase();
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
