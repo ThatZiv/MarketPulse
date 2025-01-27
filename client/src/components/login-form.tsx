@@ -122,6 +122,17 @@ export function LoginForm({
                 )}
               />
               <Button type="submit">Submit</Button>
+              <div className="mt-4 text-center text-sm">
+              Forgot your{" "}
+              <span className="underline underline-offset-4">
+                <Link to="/">Username</Link>
+              </span>
+              {" "}or{" "} 
+              <span className="underline underline-offset-4">
+                <Link to="/">Password</Link>
+              </span>
+              {" "}?
+            </div>
               <div className="flex items-center my-4">
                 <div className="w-full h-px bg-gray-300"></div>
                 <span className="px-4 text-gray-500 text-sm">OR</span>
