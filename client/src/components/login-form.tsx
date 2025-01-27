@@ -40,7 +40,9 @@ export function LoginForm({
 
   const formSchema = z.object({
     email: z.string().max(50).email(),
-    password: z.string().min(8).max(50),
+    password: z.string().min(8).max(50).regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+      .regex(/[0-9]/, { message: "Password must contain at least one number" })
+      .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -91,9 +93,9 @@ export function LoginForm({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-left">Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Email" {...field} />
+                      <Input placeholder="Email Address" required {...field} />
                     </FormControl>
                     <FormDescription></FormDescription>
                     <FormMessage />
@@ -110,6 +112,7 @@ export function LoginForm({
                       <Input
                         placeholder="Password"
                         type="password"
+                        required
                         {...field}
                       />
                     </FormControl>
@@ -119,7 +122,13 @@ export function LoginForm({
                 )}
               />
               <Button type="submit">Submit</Button>
+              <div className="flex items-center my-4">
+                <div className="w-full h-px bg-gray-300"></div>
+                <span className="px-4 text-gray-500 text-sm">OR</span>
+                <div className="w-full h-px bg-gray-300"></div>
+              </div>
             </form>
+
             <div
               id="g_id_onload"
               data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"

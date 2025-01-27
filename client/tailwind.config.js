@@ -4,6 +4,10 @@ export default {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+		fontFamily: {
+			caveat: ['Caveat', 'sans-serif'],
+			Abril_Fatface: ['Abril Fatface', 'cursive'],
+		  },
 		backgroundImage: {
 			'stocks-image': "url('/public/stocks-pic.jpg')",
 		  },
