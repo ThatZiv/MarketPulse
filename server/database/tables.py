@@ -1,32 +1,34 @@
-from sqlalchemy import create_engine, Table, Column, Integer, MetaData, JSON
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import create_engine, Table, Column, MetaData, JSON, ForeignKey, Mapped
+from sqlalchemy.dialects.postgresql import JSONB, INTEGER
+from sqlalchemy.orm import mapped_column, relationship, DeclarativeBase
 
 
-def table(engine): 
+class Base(DeclarativeBase):
+    pass
 
-    metadata=MetaData()
-    metadata.reflect(bind=engine)
-    users_data = Table('Account', metadata, 
-        Column('user_id', Integer, primary_key=True),
-        Column('user_name', String), 
-        extend_existing = True
-        )
-    
-    user_stocks = Table('User_Stocks', metadata,
-        Column('user_id', Integer, primary_key=True),
-        Column('stock_id', Integer, primary_key=True),
-        Column('amount_owned', Integer),
-        extend_existing = True
-        )
+class Account(Base):
+    __tablename__ = "Account"
 
-    stocks = Table('Stocks', metadata,
-        Column('stock_id', Integer, primary_key=True),
-        extend_existing = True
-        )
+    user_id = Column(INTEGER, primary_key=True)
+    user_name = Column(String)
 
-    stock_info = Table('Stocks', metadata,
-        Column('stock_id', Integer, primary_key=True),
-        Column('price_data', JSONB),
-        Column('sentiment_data', JSONB),
-        extend_existing = True
-        )
+class User_Stocks(Base):
+    __tablename__ = "User_Stocks"
+
+    user_id = Column(ForeignKey("Account.user_id", primary_key=True))
+    stock_id = Column(ForeignKey("Stocks.stock_id") primary_key=True)
+    amount_owned = Column(INTEGER),
+
+class Stocks(Base):
+    __tablename__ = "Stocks"
+
+    stock_id = Column(INTEGER, primary_key=True),
+    stock_ticker = Column(String)
+
+class Stock_Info(Base):
+    __tablename__ = "Stock_Info"
+
+    stock_id = Column(ForeignKey("Stocks.stock_id"), primary_key=True),
+    price_data = Column(, JSONB),
+    sentiment_data = Column(JSONB),
+    time_stamp = Column(, INTEGER)
