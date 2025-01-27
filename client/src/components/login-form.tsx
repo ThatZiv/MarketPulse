@@ -121,7 +121,7 @@ export function LoginForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <Button type="submit" className="dark:text-white">Submit</Button>
               <div className="mt-4 text-center text-sm">
               Forgot your{" "}
               <span className="underline underline-offset-4">

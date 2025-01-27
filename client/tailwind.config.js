@@ -4,6 +4,7 @@ export default {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+		darkMode: 'class',
 		fontFamily: {
 			caveat: ['Caveat', 'sans-serif'],
 			Abril_Fatface: ['Abril Fatface', 'cursive'],
@@ -32,7 +33,7 @@ export default {
   				foreground: 'hsl(var(--primary-foreground))'
   			},
   			secondary: {
-  				DEFAULT: '#fcf7ff',
+  				DEFAULT: '#CBC5EA',
   				foreground: 'hsl(var(--secondary-foreground))'
   			},
 			tertiary:{
