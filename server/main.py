@@ -8,6 +8,8 @@ from flask_cors import CORS\
 from sqlalchemy import create_engine
 
 from flask_jwt_extended import JWTManager
+from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
+from sqlalchemy.orm import sessionmaker
 
 
 load_dotenv()
@@ -47,13 +49,16 @@ if __name__ == '__main__':
     DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
 
     engine = create_engine(DATABASE_URL)
-
     try:
         with engine.connect() as connection:
             print("Connection successful!")
     except Exception as e:
         print(f"Failed to connect: {e}")
-
+    
+    # This only needs to run once but running on start will make sure all tables are in the database.
+    # It appears that editing existing tables requires dropping the table or useing altertable sql.
+    Base.metadata.create_all(engine)
+    
     #@app.route('/')
     #def route():
     #    return 'hello'
