@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request
+from flask import Flask, session, redirect, url_for, request, jsonify
 from dotenv import load_dotenv
 import os
 from supabase import create_client, Client
@@ -7,7 +7,7 @@ from flask_cors import CORS\
 
 from sqlalchemy import create_engine
 
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager,jwt_required
 from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 from sqlalchemy.orm import sessionmaker
 
@@ -59,8 +59,9 @@ if __name__ == '__main__':
     # It appears that editing existing tables requires dropping the table or useing altertable sql.
     Base.metadata.create_all(engine)
     
-    #@app.route('/')
-    #def route():
-    #    return 'hello'
+    @app.route('/test', methods=['GET', 'POST'])
+    @jwt_required()
+    def route():
+        return jsonify('hello')
     
     app.run(debug=True, host='0.0.0.0')
