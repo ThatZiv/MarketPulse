@@ -4,7 +4,7 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 import { useState } from "react";
 import { CreateForm } from "@/components/create_user_form";
 
-export default function Login() {
+export default function UserAuth() {
   const [pageState , setPageState] = useState("login"); // "login" or "signup"
 
   const togglePageState = () => {

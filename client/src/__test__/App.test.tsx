@@ -2,8 +2,7 @@
 
 import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
-import Login from "@/pages/Login";
-import Create from "@/pages/Create";
+import UserAuth from "@/pages/UserAuth";
 import { BrowserRouter } from "react-router-dom";
 
 test("demo", () => {
@@ -13,7 +12,7 @@ test("demo", () => {
 test("Renders the login page", async () => {
   render(
     <BrowserRouter>
-      <Login />
+      <UserAuth />
     </BrowserRouter>
   );
 
@@ -24,7 +23,7 @@ test("Renders the login page", async () => {
 test("Renders the create user page", async () => {
   render(
     <BrowserRouter>
-      <Create />
+      <UserAuth />
     </BrowserRouter>
   );
   const email = await screen.findByText("Email");
