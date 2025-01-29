@@ -21,12 +21,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabase } from "@/database/SupabaseProvider";
+import { useState } from "react";
+import { FcGoogle } from "react-icons/fc"; // Google Icon
 
+interface CreateFormProps extends React.ComponentPropsWithoutRef<"div"> {
+  pageState: string;
+  togglePageState: () => void;
+}
 export function CreateForm({
   className,
+  pageState,
+  togglePageState,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: CreateFormProps) {
   const { signUpNewUser } = useSupabase();
+  const [isFlipped, setIsFlipped] = useState(false);
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
@@ -57,7 +66,11 @@ export function CreateForm({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-6", className)} {...props} style={{
+      transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
+      transitionDuration: "250ms",
+      transformStyle: "preserve-3d",
+    }}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Create Account</CardTitle>
@@ -67,15 +80,15 @@ export function CreateForm({
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" >
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Email" {...field} />
+                      <Input placeholder="Email Address" {...field} />
                     </FormControl>
                     <FormDescription></FormDescription>
                     <FormMessage />
@@ -118,8 +131,28 @@ export function CreateForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit">Create</Button>
+              <Button className="dark:text-white" type="submit">Create</Button>
+              <div className="flex items-center my-4">
+                <div className="w-full h-px bg-gray-300"></div>
+                <span className="px-4 text-gray-500 text-sm">OR</span>
+                <div className="w-full h-px bg-gray-300"></div>
+              </div>
             </form>
+            <button className="flex items-center justify-between w-full py-2 my-3 px-4 bg-white border border-gray-300 rounded-lg shadow-md hover:bg-gray-100 transition duration-200">
+              <div className="mr-2"> <FcGoogle size={20} /></div>
+              
+              <span className="text-gray-700 flex-grow text-center">Sign up with Google</span> {/* Text centered */}
+            </button>
+            <div className="mt-4 text-center text-sm">
+              Already have an account?{" "}
+              <span className="underline underline-offset-4">
+                <button className="underline" onClick={() => {
+                  togglePageState();  // Toggle login/signin state
+                  setIsFlipped((prev) => !prev);  // Flip the UI element
+                }}
+                >Login</button>
+              </span>
+            </div>
           </Form>
         </CardContent>
       </Card>

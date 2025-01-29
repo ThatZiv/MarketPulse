@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 
 type googleResponse = {
@@ -32,12 +32,19 @@ type googleResponse = {
   select_by: string;
 };
 
+interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
+  pageState: string;
+  togglePageState: () => void;
+}
+
 export function LoginForm({
   className,
+  pageState,
+  togglePageState,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: LoginFormProps) {
   const { signInWithEmail, signInWithGoogle } = useSupabase();
-
+  const [isFlipped, setIsFlipped] = useState(false);
   const formSchema = z.object({
     email: z.string().max(50).email(),
     password: z.string().min(8).max(50).regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
@@ -51,7 +58,8 @@ export function LoginForm({
       email: "",
       password: "",
     },
-  });
+  }
+);
 
   async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
     event?.preventDefault();
@@ -74,7 +82,11 @@ export function LoginForm({
   }, []);
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-6", className)} {...props} style={{
+      transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
+      transitionDuration: "250ms",
+      transformStyle: "preserve-3d",
+    }}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
@@ -158,10 +170,14 @@ export function LoginForm({
               data-size="large"
               data-logo_alignment="left"
             ></div>
+            
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <span className="underline underline-offset-4">
-                <Link to="/create">Sign up</Link>
+                <button className="underline" onClick={() => {
+                  togglePageState();  // Toggle login/signup state
+                  setIsFlipped((prev) => !prev);  // Flip the UI element
+                }}>Create Account</button>
               </span>
             </div>
           </Form>
