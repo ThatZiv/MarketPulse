@@ -35,7 +35,7 @@ export function CreateForm({
   ...props
 }: CreateFormProps) {
   const { signUpNewUser } = useSupabase();
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(true);
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
@@ -138,10 +138,10 @@ export function CreateForm({
                 <div className="w-full h-px bg-gray-300"></div>
               </div>
             </form>
-            <button className="flex items-center justify-between w-full py-2 my-3 px-4 bg-white border border-gray-300 rounded-lg shadow-md hover:bg-gray-100 transition duration-200">
+            <button className="flex items-center justify-between w-full py-2 my-3 px-4 bg-white border border-gray-300 dark:bg-black rounded-sm shadow-md hover:bg-gray-100 transition duration-200">
               <div className="mr-2"> <FcGoogle size={20} /></div>
               
-              <span className="text-gray-700 flex-grow text-center">Sign up with Google</span> {/* Text centered */}
+              <span className="text-gray-700 flex-grow text-center dark:text-white">Sign up with Google</span> {/* Text centered */}
             </button>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}

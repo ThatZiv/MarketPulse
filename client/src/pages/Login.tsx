@@ -20,7 +20,11 @@ export default function Login() {
         <ModeToggle />
 
       </div>
-      <div className="md:max-w-lg max-w-xs mx-auto py-8 ">
+      <div className="md:max-w-lg max-w-xs mx-auto py-8 " style={{
+      transform: `rotateY(${pageState === "login" ? 0 : 180}deg)`,
+      transitionDuration: "750ms",
+      transformStyle: "preserve-3d",
+    }}>
       {pageState === "login" ? (
         <LoginForm togglePageState={togglePageState} pageState={pageState}/>
       
