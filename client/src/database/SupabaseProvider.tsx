@@ -10,7 +10,7 @@ import {
   createClient,
 } from "@supabase/supabase-js";
 import React from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { toast } from "sonner";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -23,6 +23,8 @@ type googleResponse = {
   credential: string;
   select_by: string;
 };
+
+const nonAuthenticatedRoutes = ["/create", "/login"]
 
 interface ISupabaseContext {
   supabase: SupabaseClient;
@@ -67,6 +69,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   const supabase = React.useMemo(() => supabaseClient, []);
 
   const navigate = useNavigate();
+  const location = useLocation()
   const [isLoading, setLoading] = React.useState(true);
   const [user, setUser] = React.useState<null | User>(null);
   const [session, setSession] = React.useState<null | Session>(null);
@@ -99,10 +102,10 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 
   React.useEffect(() => {
     // TODO: there prob is a better way to do this (middleware/auth comps)
-    if (!isLoading && !session) {
+    if (!isLoading && !session && !nonAuthenticatedRoutes.includes(location.pathname)) {
       navigate("/login");
     }
-  }, [session, isLoading, navigate]);
+  }, [session, isLoading, navigate, location]);
 
   const signUpNewUser = React.useCallback(
     async (email: string, password: string) => {
