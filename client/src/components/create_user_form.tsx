@@ -21,9 +21,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { useState } from "react";
-import { FcGoogle } from "react-icons/fc"; // Google Icon
+import { useEffect, useState } from "react";
 
+type googleResponse = {
+  clientId: string;
+  client_id: string;
+  credential: string;
+  select_by: string;
+};
 interface CreateFormProps extends React.ComponentPropsWithoutRef<"div"> {
   pageState: string;
   togglePageState: () => void;
@@ -36,10 +41,13 @@ export function CreateForm({
 }: CreateFormProps) {
   const { signUpNewUser } = useSupabase();
   const [isFlipped, setIsFlipped] = useState(true);
+  const { signInWithGoogle } = useSupabase();
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
-      password: z.string().min(8).max(50),
+      password: z.string().min(8).max(50).regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
+      .regex(/[0-9]/, { message: "Password must contain at least one number" })
+      .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
       password2: z.string(),
     })
     .refine(
@@ -64,6 +72,18 @@ export function CreateForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await signUpNewUser(values.email, values.password);
   }
+   window.handleSignInWithGoogle = async (response: googleResponse) => {
+       console.log("Callback fired! Response:", response);
+       await signInWithGoogle(response);
+     };
+   
+     useEffect(() => {
+       const script = document.createElement("script");
+       script.src = "https://accounts.google.com/gsi/client";
+       script.async = true;
+       document.body.appendChild(script);
+       console.log("load");
+     }, []);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props} style={{
@@ -138,11 +158,24 @@ export function CreateForm({
                 <div className="w-full h-px bg-gray-300"></div>
               </div>
             </form>
-            <button className="flex items-center justify-between w-full py-2 my-3 px-4 bg-white border border-gray-300 dark:bg-black rounded-sm shadow-md hover:bg-gray-100 transition duration-200">
-              <div className="mr-2"> <FcGoogle size={20} /></div>
-              
-              <span className="text-gray-700 flex-grow text-center dark:text-white">Sign up with Google</span> {/* Text centered */}
-            </button>
+            <div
+              id="g_id_onload"
+              data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"
+              data-context="signin"
+              data-ux_mode="popup"
+              data-callback="handleSignInWithGoogle"
+              data-auto_prompt="false"
+            ></div>
+
+            <div
+              className="g_id_signin"
+              data-type="standard"
+              data-shape="rectangular"
+              data-theme="outline"
+              data-text="signin_with"
+              data-size="large"
+              data-logo_alignment="left"
+            ></div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <span className="underline underline-offset-4">

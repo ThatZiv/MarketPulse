@@ -47,9 +47,7 @@ export function LoginForm({
   const [isFlipped, setIsFlipped] = useState(false);
   const formSchema = z.object({
     email: z.string().max(50).email(),
-    password: z.string().min(8).max(50).regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-      .regex(/[0-9]/, { message: "Password must contain at least one number" })
-      .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
+    password: z.string().min(8).max(50),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -133,7 +131,7 @@ export function LoginForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="dark:text-white">Submit</Button>
+              <Button type="submit" className="dark:text-white">Login</Button>
               <div className="mt-4 text-center text-sm">
               Forgot your{" "}
               <span className="underline underline-offset-4">
