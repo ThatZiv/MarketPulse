@@ -8,6 +8,11 @@ import { BrowserRouter } from "react-router-dom";
 test("demo", () => {
   expect(true).toBe(true);
 });
+jest.mock("lucide-react", () => ({
+  Moon: () => "MoonIcon",
+  Sun: () => "SunIcon",
+}));
+
 // Needed to wrap in Router since it gets router App.tsx
 test("Renders the login page", async () => {
   render(
