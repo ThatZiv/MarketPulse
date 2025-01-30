@@ -30,12 +30,10 @@ type googleResponse = {
   select_by: string;
 };
 interface CreateFormProps extends React.ComponentPropsWithoutRef<"div"> {
-  pageState: string;
   togglePageState: () => void;
 }
 export function CreateForm({
   className,
-  pageState,
   togglePageState,
   ...props
 }: CreateFormProps) {

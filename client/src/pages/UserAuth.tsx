@@ -26,10 +26,10 @@ export default function UserAuth() {
       transformStyle: "preserve-3d",
     }}>
       {pageState === "login" ? (
-        <LoginForm togglePageState={togglePageState} pageState={pageState}/>
+        <LoginForm togglePageState={togglePageState}/>
       
       ):(
-        <CreateForm togglePageState={togglePageState} pageState={pageState}/>
+        <CreateForm togglePageState={togglePageState}/>
       )}
       </div>
       

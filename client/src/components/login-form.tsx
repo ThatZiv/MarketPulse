@@ -33,13 +33,11 @@ type googleResponse = {
 };
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
-  pageState: string;
   togglePageState: () => void;
 }
 
 export function LoginForm({
   className,
-  pageState,
   togglePageState,
   ...props
 }: LoginFormProps) {
