@@ -24,7 +24,7 @@ type googleResponse = {
   select_by: string;
 };
 
-const nonAuthenticatedRoutes = ["/userAuth", "/"]
+const nonAuthenticatedRoutes = ["/userAuth"]
 
 interface ISupabaseContext {
   supabase: SupabaseClient;
