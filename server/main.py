@@ -1,8 +1,11 @@
 from flask import Flask, session, redirect, url_for, request, jsonify
 from dotenv import load_dotenv
 import os
+import json
+import numpy as np
 from supabase import create_client, Client
 import flask_jwt_extended as jw
+from stockdataload import loadData
 from flask_cors import CORS\
 
 from sqlalchemy import create_engine, select
@@ -10,14 +13,16 @@ from sqlalchemy import create_engine, select
 from flask_jwt_extended import JWTManager,jwt_required
 from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 from sqlalchemy.orm import sessionmaker
-
-
 load_dotenv()
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 #supabase: Client = create_client(url, key)
 
+def dump_datetime(value):
+    if value is None:
+        return None
+    return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
 
 def create_app():
@@ -29,6 +34,17 @@ def create_app():
     jwt = JWTManager(app)
     app.register_blueprint(auth_bp, url_prefix='/auth')
     
+    return app
+
+
+if __name__ == '__main__':  
+
+    app = create_app()
+    CORS(app)
+    jwt = jw.JWTManager()
+    jwt.init_app(app) 
+
+
     USER = os.getenv("user")
     PASSWORD = os.getenv("password")
     HOST = os.getenv("host")
@@ -48,77 +64,39 @@ def create_app():
     # It appears that editing existing tables requires dropping the table or useing altertable sql.
     Base.metadata.create_all(engine)
     
-    # Code to insert the five stocks on server start into the stocks table
-    # Update the five stocks in the table if they are changed
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    
-    newStock = Stocks(stock_id = 1, stock_ticker = "NVDA")
-    q1 = select(Stocks).filter_by(stock_id = newStock.stock_id)
-    s1 = session.scalars(q1).all()
-
-    if s1 is None:
-        session.add(newStock)
-    else:
-        session.delete(s1[0])
-        session.add(newStock)
-
-    newStock = Stocks(stock_id = 2, stock_ticker = "SHOP")
-    q1 = select(Stocks).filter_by(stock_id = newStock.stock_id)
-    s1 = session.scalars(q1).all()
-
-    if s1 is None:
-        session.add(newStock)
-    else:
-        session.delete(s1[0])
-        session.add(newStock)
-    
-    newStock = Stocks(stock_id = 3, stock_ticker = "GTLB")
-    q1 = select(Stocks).filter_by(stock_id = newStock.stock_id)
-    s1 = session.scalars(q1).all()
-
-    if s1 is None:
-        session.add(newStock)
-    else:
-        session.delete(s1[0])
-        session.add(newStock)
-    
-    newStock = Stocks(stock_id = 4, stock_ticker = "NET")
-    q1 = select(Stocks).filter_by(stock_id = newStock.stock_id)
-    s1 = session.scalars(q1).all()
-
-    if s1 is None:
-        session.add(newStock)
-    else:
-        session.delete(s1[0])
-        session.add(newStock)
-    
-    newStock = Stocks(stock_id = 5, stock_ticker = "RDDT")
-    q1 = select(Stocks).filter_by(stock_id = newStock.stock_id)
-    s1 = session.scalars(q1).all()
-
-    if s1 is None:
-        session.add(newStock)
-    else:
-        session.delete(s1[0])
-        session.add(newStock)
-    
-    session.commit()
-    
-    return app
-
-
-if __name__ == '__main__':  
-
-
-    app = create_app()
-    CORS(app)
-    jwt = jw.JWTManager()
-    jwt.init_app(app) 
+    # Load 2 years of of historic stock data into the database due to running twice in dev this will crash the server after successful upload
+    #loadData(engine)
 
     @app.route('/test', methods=['GET', 'POST'])
     @jwt_required()
     def route():
         return jsonify('hello')
+    
+    @app.route('/stockchart/', methods=['GET'])
+    @jwt_required()
+    def chart():
+        if request.method == 'GET':
+            Session = sessionmaker(bind=engine)
+            session = Session()
+
+            ticker = request.args['ticker']
+            sId = select(Stocks).where(Stocks.stock_ticker == ticker)
+            print(sId)
+            output = session.connection().execute(sId).first()
+            if(output):
+                print(output.stock_id)
+                stock_data = select(Stock_Info).where(Stock_Info.stock_id == output.stock_id)
+                print(stock_data)
+                output = session.connection().execute(stock_data).all()
+            
+                json_output = []
+                for i in output:
+                    json_output.append({'stock_id' : i.stock_id, 'stock_close' : i.stock_close, 'stock_volume' : i.stock_volume, 'stock_open' : i.stock_open, 'stock_high' : i.stock_high, 'stock_low' : i.stock_low, 'sentiment_data'  : i.sentiment_data, 'time_stamp'      : dump_datetime(i.time_stamp) })
+                return jsonify(json_output)
+            else:
+                return jsonify("Invalid ticker")
+        else:
+            return jsonify('Failed')
+    
     
     app.run(debug=True, host='0.0.0.0')

@@ -75,8 +75,8 @@ export default function Dashboard() {
           );
           if (authToken) {
             const token = JSON.parse(authToken);
-            await fetch("http://127.0.0.1:5000/test", {
-              method: "post",
+            await fetch("http://127.0.0.1:5000/stockchart/?ticker=" + "TLA", {
+              method: "get",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token.access_token}`,
