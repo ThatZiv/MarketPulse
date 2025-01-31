@@ -15,13 +15,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Outlet, useLocation } from "react-router";
 import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
 export default function Dashboard() {
   const location = useLocation();
   const paths = useMemo(
     () => location.pathname.split("/"),
     [location.pathname]
   );
+
   return (
     <div>
       <SidebarProvider>
@@ -68,31 +68,6 @@ export default function Dashboard() {
           </div>
         </SidebarInset>
       </SidebarProvider>
-      <Button
-        onClick={async () => {
-          const authToken = localStorage.getItem(
-            "sb-xskipmrkpwewdbttinhd-auth-token"
-          );
-          if (authToken) {
-            const token = JSON.parse(authToken);
-            await fetch("http://127.0.0.1:5000/stockchart/?ticker=" + "TLA", {
-              method: "get",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token.access_token}`,
-              },
-            })
-              .then((response) => response.json())
-              .then((data) => console.log(data))
-              .catch((error) => console.error("Error:", error));
-          } else {
-            console.log("Failed to find");
-          }
-        }}
-        type="button"
-      >
-        Fetch Test
-      </Button>
     </div>
   );
 }
