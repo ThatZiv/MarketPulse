@@ -44,8 +44,8 @@ export function CreateForm({
     .object({
       email: z.string().min(2).max(50),
       password: z.string().min(8).max(50).regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-      .regex(/[0-9]/, { message: "Password must contain at least one number" })
-      .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
+        .regex(/[0-9]/, { message: "Password must contain at least one number" })
+        .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
       password2: z.string(),
     })
     .refine(
@@ -70,18 +70,18 @@ export function CreateForm({
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await signUpNewUser(values.email, values.password);
   }
-   window.handleSignInWithGoogle = async (response: googleResponse) => {
-       console.log("Callback fired! Response:", response);
-       await signInWithGoogle(response);
-     };
-   
-     useEffect(() => {
-       const script = document.createElement("script");
-       script.src = "https://accounts.google.com/gsi/client";
-       script.async = true;
-       document.body.appendChild(script);
-       console.log("load");
-     }, []);
+  window.handleSignInWithGoogle = async (response: googleResponse) => {
+    console.log("Callback fired! Response:", response);
+    await signInWithGoogle(response);
+  };
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    document.body.appendChild(script);
+    console.log("load");
+  }, []);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props} style={{
@@ -91,7 +91,7 @@ export function CreateForm({
     }}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
+          <CardTitle className="text-2xl">Create an Account</CardTitle>
           <CardDescription>
             Enter email and password for your account
           </CardDescription>

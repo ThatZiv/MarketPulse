@@ -55,7 +55,7 @@ export function LoginForm({
       password: "",
     },
   }
-);
+  );
 
   async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
     event?.preventDefault();
@@ -85,7 +85,7 @@ export function LoginForm({
     }}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Log in</CardTitle>
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
@@ -129,18 +129,18 @@ export function LoginForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="dark:text-white">Login</Button>
-              <div className="mt-4 text-center text-sm">
-              Forgot your{" "}
-              <span className="underline underline-offset-4">
-                <Link to="/">Username</Link>
-              </span>
-              {" "}or{" "} 
-              <span className="underline underline-offset-4">
-                <Link to="/">Password</Link>
-              </span>
-              {" "}?
-            </div>
+              <Button type="submit" className="dark:text-white mt-3">Login</Button>
+              <div className="text-center text-sm">
+                Forgot your{" "}
+                <span className="underline underline-offset-4">
+                  <Link to="/">Username</Link>
+                </span>
+                {" "}or{" "}
+                <span className="underline underline-offset-4">
+                  <Link to="/">Password</Link>
+                </span>
+                {" "}?
+              </div>
               <div className="flex items-center my-4">
                 <div className="w-full h-px bg-gray-300"></div>
                 <span className="px-4 text-gray-500 text-sm">OR</span>
@@ -166,7 +166,7 @@ export function LoginForm({
               data-size="large"
               data-logo_alignment="left"
             ></div>
-            
+
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <span className="underline underline-offset-4">

@@ -20,14 +20,14 @@ function App() {
     <div>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
 
-      <Routes>
-        <Route path="/" element={<Dashboard />}>
-          <Route path="/stocks" element={<StockSelection />} />
-          <Route path="/stocks/:ticker" element={<StockEstimation />} />
-        </Route>
-        <Route path="/userAuth" element={<UserAuth />} />
-        <Route path="*" element={<h1>Not Found</h1>} />
-      </Routes>
+        <Routes>
+          <Route path="/" element={<Dashboard />}>
+            <Route path="/stocks" element={<StockSelection />} />
+            <Route path="/stocks/:ticker" element={<StockEstimation />} />
+          </Route>
+          <Route path="/userauth" element={<UserAuth />} />
+          <Route path="*" element={<h1>Not Found</h1>} />
+        </Routes>
       </ThemeProvider>
 
     </div>
