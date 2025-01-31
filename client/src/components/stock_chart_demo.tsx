@@ -114,6 +114,14 @@ export default function Stock_Chart(props: props) {
     return (
       <div>
         <Line data={data} options={options} />
+        <a href="https://www.yahoo.com/?ilc=401" target="_blank">
+          {" "}
+          <img
+            src="https://poweredby.yahoo.com/poweredby_yahoo_h_purple.png"
+            width="134"
+            height="20"
+          />{" "}
+        </a>
       </div>
     );
   } else {
