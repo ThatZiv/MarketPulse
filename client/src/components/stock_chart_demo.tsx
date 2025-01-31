@@ -28,7 +28,7 @@ type props = { ticker: string };
 export default function Stock_Chart(props: props) {
   const [stockData, setStockData] = useState<stock_Data>([]);
 
-  let length = stockData.length;
+  const length = stockData.length;
 
   useEffect(() => {
     const authToken = localStorage.getItem(
