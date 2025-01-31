@@ -24,7 +24,7 @@ type googleResponse = {
   select_by: string;
 };
 
-const nonAuthenticatedRoutes = ["/create", "/login"]
+const nonAuthenticatedRoutes = ["/userAuth"]
 
 interface ISupabaseContext {
   supabase: SupabaseClient;
@@ -103,7 +103,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   React.useEffect(() => {
     // TODO: there prob is a better way to do this (middleware/auth comps)
     if (!isLoading && !session && !nonAuthenticatedRoutes.includes(location.pathname)) {
-      navigate("/login");
+      navigate("/userAuth");
     }
   }, [session, isLoading, navigate, location]);
 
