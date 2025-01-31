@@ -34,11 +34,11 @@ export default {
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#FCFCFC",
+          DEFAULT: "#F2F3F6",
           foreground: "hsl(var(--secondary-foreground))",
         },
         tertiary: {
-          DEFAULT: "#00A8A8",
+          DEFAULT: "#302ADB",
         },
         dark: {
           DEFAULT: "#000000",

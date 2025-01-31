@@ -62,7 +62,7 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex items-center justify-center h-full">
+        <div className="flex justify-center w-full h-full bg-secondary">
           <Outlet />
         </div>
       </SidebarInset>
