@@ -1,4 +1,3 @@
-import React from 'react'
 
 const items = ['Docs', 'Contact Us', 'About Us', 'FAQs'];
 export function Footer() {
