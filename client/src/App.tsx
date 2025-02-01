@@ -1,13 +1,13 @@
 import { Route, Routes } from "react-router";
 import "./App.css";
-import Login from "@/pages/Login";
+import UserAuth from "@/pages/UserAuth";
 import Dashboard from "@/pages/Dashboard";
-import Stocks from "@/pages/Stocks";
-import Stock from "@/pages/Stock";
-import Create from "@/pages/Create";
+import StockSelection from "@/pages/StockSelection";
+import StockEstimation from "@/pages/StockEstimation";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { Spinner } from "@/components/ui/spinner";
 import Account from "@/pages/Account";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 function App() {
   const { status } = useSupabase();
@@ -29,16 +29,17 @@ function App() {
     );
   return (
     <div>
-      <Routes>
-        <Route path="/" element={<Dashboard />}>
-          <Route path="/stocks" element={<Stocks />} />
-          <Route path="/stocks/:ticker" element={<Stock />} />
-          <Route path="/account" element={<Account />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="/create" element={<Create />} />
-        <Route path="*" element={<h1>Not Found</h1>} />
-      </Routes>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <Routes>
+          <Route path="/" element={<Dashboard />}>
+            <Route path="/stocks" element={<StockSelection />} />
+            <Route path="/stocks/:ticker" element={<StockEstimation />} />
+            <Route path="/account" element={<Account />} />
+          </Route>
+          <Route path="/userauth" element={<UserAuth />} />
+          <Route path="*" element={<h1>Not Found</h1>} />
+        </Routes>
+      </ThemeProvider>
     </div>
   );
 }
