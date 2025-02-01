@@ -15,13 +15,13 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Outlet, useLocation } from "react-router";
 import { useMemo } from "react";
-
 export default function Dashboard() {
   const location = useLocation();
   const paths = useMemo(
     () => location.pathname.split("/"),
     [location.pathname]
   );
+
   return (
     <SidebarProvider>
       <AppSidebar />

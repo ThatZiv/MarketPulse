@@ -25,8 +25,7 @@ type googleResponse = {
 };
 
 type Status = "loading" | "error" | "success";
-
-const nonAuthenticatedRoutes = ["/create", "/login"];
+const nonAuthenticatedRoutes = ["/userauth"];
 
 interface IAccount {
   first_name?: string;
