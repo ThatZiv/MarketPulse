@@ -36,7 +36,7 @@ function App() {
             <Route path="/stocks/:ticker" element={<StockEstimation />} />
             <Route path="/account" element={<Account />} />
           </Route>
-          <Route path="/userauth" element={<UserAuth />} />
+          <Route path="/auth" element={<UserAuth />} />
           <Route path="*" element={<h1>Not Found</h1>} />
         </Routes>
       </ThemeProvider>

@@ -139,7 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {user ? (
           <NavUser />
         ) : (
-          <Link to="/login">
+          <Link to="/auth">
             <Button className="w-full" size="lg">
               Login
             </Button>
