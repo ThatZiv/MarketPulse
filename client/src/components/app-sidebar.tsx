@@ -78,12 +78,8 @@ const data = {
       icon: Settings2,
       items: [
         {
-          title: "General",
-          url: "#",
-        },
-        {
           title: "Profile",
-          url: "#",
+          url: "/profile",
         },
       ],
     },
@@ -141,12 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </Skeleton>
         )}
         {user ? (
-          <NavUser
-            user={{
-              email: user.email || user.phone || user.id,
-              avatar: "",
-            }}
-          />
+          <NavUser />
         ) : (
           <Link to="/login">
             <Button className="w-full" size="lg">

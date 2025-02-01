@@ -28,7 +28,7 @@ type Status = "loading" | "error" | "success";
 
 const nonAuthenticatedRoutes = ["/create", "/login"];
 
-interface ISupabaseContext {
+export interface ISupabaseContext {
   supabase: SupabaseClient;
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;
   signInWithEmail: (
