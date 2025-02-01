@@ -6,8 +6,7 @@ import StockSelection from "@/pages/StockSelection";
 import StockEstimation from "@/pages/StockEstimation";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { Spinner } from "@/components/ui/spinner";
-import Account from "@/pages/Account";
-import { ThemeProvider } from "@/components/ui/theme-provider";
+import Settings from "@/pages/Settings";
 
 function App() {
   const { status } = useSupabase();
@@ -29,17 +28,18 @@ function App() {
     );
   return (
     <div>
-      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-        <Routes>
-          <Route path="/" element={<Dashboard />}>
-            <Route path="/stocks" element={<StockSelection />} />
-            <Route path="/stocks/:ticker" element={<StockEstimation />} />
-            <Route path="/account" element={<Account />} />
+      <Routes>
+        <Route path="/" element={<Dashboard />}>
+          <Route path="/stocks" element={<StockSelection />} />
+          <Route path="/stocks/:ticker" element={<StockEstimation />} />
+          <Route path="/settings">
+            <Route path=":tab" element={<Settings />} />
+            <Route index element={<Settings />} />
           </Route>
-          <Route path="/auth" element={<UserAuth />} />
-          <Route path="*" element={<h1>Not Found</h1>} />
-        </Routes>
-      </ThemeProvider>
+        </Route>
+        <Route path="/auth" element={<UserAuth />} />
+        <Route path="*" element={<h1>Not Found</h1>} />
+      </Routes>
     </div>
   );
 }

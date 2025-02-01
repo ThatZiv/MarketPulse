@@ -27,13 +27,27 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useTheme } from "@/components/ui/theme-provider";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useNavigate, useParams } from "react-router";
 
-export default function AccountPage() {
+export default function SettingsPage() {
   const { supabase, user, signOut } = useSupabase();
   const [state, setState] = React.useState<"loading" | "error" | "done">(
     "loading"
   );
-
+  const { tab: tabParam } = useParams();
+  const { setTheme } = useTheme();
+  const navigate = useNavigate();
+  const [tab, setTab] = React.useState(tabParam ?? "account");
   const accountFormSchema = z.object({
     first_name: z.string().min(2).max(50),
     last_name: z.string().min(2).max(50),
@@ -150,14 +164,22 @@ export default function AccountPage() {
 
   return (
     <div className="h-screen text-left">
-      <h1 className="text-3xl">Edit your account</h1>
+      <h1 className="text-3xl">Settings</h1>
       <Separator className="my-4" />
       {state === "done" ? (
         <>
-          <Tabs defaultValue="account" className="w-[400px]">
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs
+            value={tab}
+            onValueChange={(_tab) => {
+              setTab(_tab);
+              navigate(`/settings/${_tab}`, { replace: true });
+            }}
+            className="w-[400px]"
+          >
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="password">Password</TabsTrigger>
+              <TabsTrigger value="preferences">Preferences</TabsTrigger>
             </TabsList>
             <TabsContent value="account">
               <Card>
@@ -281,6 +303,41 @@ export default function AccountPage() {
                     </CardFooter>
                   </form>
                 </Form>
+              </Card>
+            </TabsContent>
+            <TabsContent value="preferences">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Preferences</CardTitle>
+                  <CardDescription>
+                    Change your system preferences here.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-left">Theme</p>
+                      <div>
+                        <Select
+                          onValueChange={setTheme}
+                          defaultValue={localStorage.theme}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select a theme" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Theme</SelectLabel>
+                              <SelectItem value="system">System</SelectItem>
+                              <SelectItem value="dark">Dark</SelectItem>
+                              <SelectItem value="light">Light</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             </TabsContent>
           </Tabs>

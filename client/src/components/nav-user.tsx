@@ -18,6 +18,7 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import { Link } from "react-router";
 import Avatar from "@/components/Avatar";
+import { ModeToggle } from "./ui/mode-toggle";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
@@ -57,7 +58,7 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <Link to="/account">
+              <Link to="/settings">
                 <DropdownMenuItem>
                   <BadgeCheck />
                   My Account
@@ -68,6 +69,7 @@ export function NavUser() {
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <ModeToggle className="w-full" />
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()}>
               <LogOut />
