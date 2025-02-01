@@ -25,7 +25,7 @@ type googleResponse = {
 };
 
 type Status = "loading" | "error" | "success";
-const nonAuthenticatedRoutes = ["/userauth"];
+const nonAuthenticatedRoutes = ["auth"];
 
 interface IAccount {
   first_name?: string;
@@ -125,7 +125,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
       !session &&
       !nonAuthenticatedRoutes.includes(location.pathname)
     ) {
-      navigate("/login");
+      navigate("/auth");
     }
   }, [session, status, navigate, location]);
 
@@ -149,7 +149,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         success: (data) => {
           setUser(data.data.user);
           setSession(data.data.session);
-          navigate("/login");
+          navigate("/auth");
           return "Signed up! Please check your email to verify your account.";
         },
         error: (error) => {
@@ -240,7 +240,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     const res = await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    navigate("/login");
+    navigate("/auth");
     return res;
   }, [navigate, supabase.auth]);
 

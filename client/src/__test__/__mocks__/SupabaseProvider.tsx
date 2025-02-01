@@ -15,6 +15,7 @@ const mockSupabaseContext = {
   signOut: jest.fn(),
   status: "success",
   user: null,
+  accoubt: null,
   session: null,
 };
 
