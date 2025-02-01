@@ -78,8 +78,8 @@ const data = {
       icon: Settings2,
       items: [
         {
-          title: "Profile",
-          url: "/profile",
+          title: "Account",
+          url: "/account",
         },
       ],
     },

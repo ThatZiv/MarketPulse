@@ -28,6 +28,10 @@ type Status = "loading" | "error" | "success";
 
 const nonAuthenticatedRoutes = ["/create", "/login"];
 
+interface IAccount {
+  first_name?: string;
+  last_name?: string;
+}
 export interface ISupabaseContext {
   supabase: SupabaseClient;
   signUpNewUser: (email: string, password: string) => Promise<AuthResponse>;
@@ -41,6 +45,7 @@ export interface ISupabaseContext {
   signOut: () => Promise<{ error: AuthError | null }>;
   status: Status;
   user: User | null;
+  account: IAccount | null;
   session: Session | null;
 }
 
@@ -59,6 +64,7 @@ export const SupabaseContext = createContext<ISupabaseContext>({
     throw new Error("Supabase not initialized");
   },
   status: "loading",
+  account: null,
   user: null,
   session: null,
 });
@@ -73,6 +79,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [status, setStatus] = React.useState<Status>("loading");
+  const [account, setAccount] = React.useState<null | IAccount>(null);
   const [user, setUser] = React.useState<null | User>(null);
   const [session, setSession] = React.useState<null | Session>(null);
   React.useEffect(() => {
@@ -82,8 +89,18 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         // need to figure out if I need both
         const session = await supabase.auth.getSession(); // this is stored locally
         const user = await supabase.auth.getUser(); // this is a request to auth server
-        setUser(user.data.user ?? null);
+        const thisUser = user.data.user ?? null;
+        setUser(thisUser ?? null);
         setSession(session.data.session ?? null);
+        if (thisUser) {
+          // preload account "profile" data
+          const { data: accountData } = await supabase
+            .from("Account")
+            .select(`first_name, last_name`)
+            .eq("user_id", thisUser.id)
+            .maybeSingle();
+          setAccount(accountData ?? null);
+        }
         setStatus("success");
       } catch (error) {
         console.error("Error getting user data: ", error);
@@ -237,6 +254,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         signInWithGoogle,
         signOut,
         status,
+        account,
         user,
         session,
       }}

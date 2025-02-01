@@ -7,6 +7,7 @@ import Stock from "@/pages/Stock";
 import Create from "@/pages/Create";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { Spinner } from "@/components/ui/spinner";
+import Account from "@/pages/Account";
 
 function App() {
   const { status } = useSupabase();
@@ -32,6 +33,7 @@ function App() {
         <Route path="/" element={<Dashboard />}>
           <Route path="/stocks" element={<Stocks />} />
           <Route path="/stocks/:ticker" element={<Stock />} />
+          <Route path="/account" element={<Account />} />
         </Route>
         <Route path="/login" element={<Login />} />
         <Route path="/create" element={<Create />} />
