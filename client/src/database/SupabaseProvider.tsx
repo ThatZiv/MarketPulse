@@ -44,6 +44,7 @@ export interface ISupabaseContext {
   signOut: () => Promise<{ error: AuthError | null }>;
   status: Status;
   user: User | null;
+  displayName: string;
   account: IAccount | null;
   session: Session | null;
 }
@@ -64,6 +65,7 @@ export const SupabaseContext = createContext<ISupabaseContext>({
   },
   status: "loading",
   account: null,
+  displayName: "User",
   user: null,
   session: null,
 });
@@ -117,6 +119,14 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
       authListener?.subscription.unsubscribe();
     };
   }, [supabase]);
+
+  const displayName = React.useMemo(() => {
+    if (!account) return user?.email ?? "User";
+    return [account.first_name, account.last_name]
+      .filter((x) => x)
+      .join(" ")
+      .trim();
+  }, [account, user]);
 
   React.useEffect(() => {
     // TODO: there prob is a better way to do this (middleware/auth comps)
@@ -254,6 +264,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         signOut,
         status,
         account,
+        displayName,
         user,
         session,
       }}

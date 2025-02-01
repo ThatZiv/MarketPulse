@@ -1,5 +1,5 @@
 import React from "react";
-import { SupabaseContext } from "@/database/SupabaseProvider";
+import { SupabaseProvider } from "@/database/SupabaseProvider";
 
 const mockSupabaseContext = {
   supabase: {
@@ -15,18 +15,17 @@ const mockSupabaseContext = {
   signOut: jest.fn(),
   status: "success",
   user: null,
-  accoubt: null,
+  displayName: null,
+  account: null,
   session: null,
 };
+
+export const MockSupabaseContext = React.createContext(mockSupabaseContext);
 
 export const MockSupabaseProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}) => (
-  <SupabaseContext.Provider value={mockSupabaseContext as never}>
-    {children}
-  </SupabaseContext.Provider>
-);
+}) => <SupabaseProvider>{children}</SupabaseProvider>;
 
 export const useSupabase = () => mockSupabaseContext;
