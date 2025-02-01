@@ -13,7 +13,7 @@ const mockSupabaseContext = {
   signUpNewUser: jest.fn(),
   signInWithEmail: jest.fn(),
   signOut: jest.fn(),
-  isLoading: false,
+  status: "success",
   user: null,
   session: null,
 };

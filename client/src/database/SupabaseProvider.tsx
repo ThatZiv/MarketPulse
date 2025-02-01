@@ -24,7 +24,9 @@ type googleResponse = {
   select_by: string;
 };
 
-const nonAuthenticatedRoutes = ["/create", "/login"]
+type Status = "loading" | "error" | "success";
+
+const nonAuthenticatedRoutes = ["/create", "/login"];
 
 interface ISupabaseContext {
   supabase: SupabaseClient;
@@ -37,7 +39,7 @@ interface ISupabaseContext {
     data: googleResponse
   ) => Promise<AuthTokenResponsePassword>;
   signOut: () => Promise<{ error: AuthError | null }>;
-  isLoading: boolean;
+  status: Status;
   user: User | null;
   session: Session | null;
 }
@@ -56,7 +58,7 @@ export const SupabaseContext = createContext<ISupabaseContext>({
   signOut: async () => {
     throw new Error("Supabase not initialized");
   },
-  isLoading: true,
+  status: "loading",
   user: null,
   session: null,
 });
@@ -69,23 +71,23 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   const supabase = React.useMemo(() => supabaseClient, []);
 
   const navigate = useNavigate();
-  const location = useLocation()
-  const [isLoading, setLoading] = React.useState(true);
+  const location = useLocation();
+  const [status, setStatus] = React.useState<Status>("loading");
   const [user, setUser] = React.useState<null | User>(null);
   const [session, setSession] = React.useState<null | Session>(null);
   React.useEffect(() => {
     async function getData() {
-      setLoading(true);
+      setStatus("loading");
       try {
         // need to figure out if I need both
         const session = await supabase.auth.getSession(); // this is stored locally
         const user = await supabase.auth.getUser(); // this is a request to auth server
         setUser(user.data.user ?? null);
         setSession(session.data.session ?? null);
+        setStatus("success");
       } catch (error) {
         console.error("Error getting user data: ", error);
-      } finally {
-        setLoading(false);
+        setStatus("error");
       }
     }
     getData();
@@ -102,10 +104,14 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 
   React.useEffect(() => {
     // TODO: there prob is a better way to do this (middleware/auth comps)
-    if (!isLoading && !session && !nonAuthenticatedRoutes.includes(location.pathname)) {
+    if (
+      status !== "loading" &&
+      !session &&
+      !nonAuthenticatedRoutes.includes(location.pathname)
+    ) {
       navigate("/login");
     }
-  }, [session, isLoading, navigate, location]);
+  }, [session, status, navigate, location]);
 
   const signUpNewUser = React.useCallback(
     async (email: string, password: string) => {
@@ -230,7 +236,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         signInWithEmail,
         signInWithGoogle,
         signOut,
-        isLoading,
+        status,
         user,
         session,
       }}
