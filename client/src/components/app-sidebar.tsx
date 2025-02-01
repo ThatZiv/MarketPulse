@@ -103,7 +103,7 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, isLoading } = useSupabase();
+  const { user, status } = useSupabase();
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -129,7 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        {isLoading && (
+        {status === "loading" && (
           <Skeleton className="flex items-center justify-center h-16">
             <div className="flex items-center space-x-4">
               <Skeleton className="rounded-full h-10 w-10" />
