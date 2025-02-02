@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Outlet, useLocation } from "react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 export default function Dashboard() {
   const location = useLocation();
   const paths = useMemo(
@@ -22,13 +22,19 @@ export default function Dashboard() {
     [location.pathname]
   );
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger className="-ml-1" onClick={toggleSidebar}/>
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
@@ -62,7 +68,8 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex justify-center w-full h-full">
+        <div className={`flex p-4 justify-center transition-all duration-300 w-full h-full "
+          }`}>
           <Outlet />
         </div>
       </SidebarInset>

@@ -10,16 +10,17 @@ import {
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 type Data = {
-  data: number[]; // ✅ Changed from `datasets` to `data`
+  data: number[]; 
   backgroundColor?: string[];
 };
 
 type ChartProps = {
   labels: string[];
-  datasets: Data[]; // ✅ Ensure it's an array of objects, each with `data`
+  datasets: Data[];
+  options?: object;
 };
 
-export default function Sentiment_Chart({ labels, datasets }: ChartProps) {
+export default function Pie_Chart({ labels, datasets,options }: ChartProps) {
   return (
     <div>
       <Doughnut
@@ -30,6 +31,9 @@ export default function Sentiment_Chart({ labels, datasets }: ChartProps) {
             backgroundColor: dataset.backgroundColor || ["#4CAF50", "#FFC107", "#F44336"],
           })),
         }}
+        options={options}
+        className="h-full w-full"
+        
       />
     </div>
   );
