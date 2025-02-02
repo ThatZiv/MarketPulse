@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useNavigate, useParams } from "react-router";
+import { Label } from "@/components/ui/label";
 
 export default function SettingsPage() {
   const { supabase, user, signOut } = useSupabase();
@@ -228,6 +229,10 @@ export default function SettingsPage() {
                             </FormItem>
                           )}
                         />
+                      </div>
+                      <div className="grid w-full max-w-sm items-center gap-1.5 space-y-1">
+                        <Label htmlFor="picture">Avatar</Label>
+                        <Input id="picture" type="file" accept="image/*" />
                       </div>
                     </CardContent>
                     <CardFooter>
