@@ -13,14 +13,22 @@ import { Separator } from "@/components/ui/separator";
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useSupabase();
+  const location = useLocation();
   
   // Extract the current path from the URL
-  const currentPath = useMemo(() => location.pathname.split("/"), [location.pathname]);
+  const currentPath = useMemo(
+    () => location.pathname.split("/"),
+    [location.pathname]
+  );
 
   // Handle navigation to the login page when settings button is clicked
   const handleSettingsClick = () => {
     navigate("/login");
   };
+
+import { Outlet, useLocation } from "react-router";
+import { useMemo } from "react";
+
 
   return (
     <SidebarProvider>
