@@ -10,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { Settings } from "lucide-react";
 
-// Define the structure for stock form data
 interface StockFormData {
   ticker: string;
   hasStocks: string;
@@ -22,7 +21,6 @@ export default function Stock() {
   const navigate = useNavigate();
   const { user, supabase } = useSupabase();
   
-  // Manage form state
   const [formData, setFormData] = useState<StockFormData>({
     ticker: '',
     hasStocks: '',
@@ -33,7 +31,6 @@ export default function Stock() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -66,7 +63,6 @@ export default function Stock() {
     }
   };
 
-  // Handle input field changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({
@@ -77,10 +73,8 @@ export default function Stock() {
 
   return (
     <SidebarProvider>
-      {/* Sidebar Navigation */}
       <AppSidebar />
       <SidebarInset>
-        {/* Header Section */}
         <header className="relative h-16 bg-[#F5F5F5] px-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <SidebarTrigger className="h-6 w-6 text-black" />
@@ -97,12 +91,11 @@ export default function Stock() {
           </button>
         </header>
 
-        {/* Main Content Section */}
         <main className="bg-[#F5F5F5] min-h-[calc(100vh-4rem)] p-8 flex flex-col items-center justify-center">
           <form onSubmit={handleSubmit} className="bg-white w-[600px] rounded-lg p-8 shadow-md">
             {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
 
-            {/* Stock Ticker Selection */}
+            {/* Stock - Selection dynamic*/}
             <div className="mb-6">
               <label htmlFor="ticker" className="block text-lg font-light mb-2">What is the ticker?</label>
               <select
@@ -121,7 +114,6 @@ export default function Stock() {
               </select>
             </div>
 
-            {/* Stock Ownership Selection */}
             <div className="mb-6">
               <label htmlFor="hasStocks" className="block text-lg font-light mb-2">Do you already have stocks for this ticker?</label>
               <select
@@ -137,7 +129,6 @@ export default function Stock() {
               </select>
             </div>
 
-            {/* Shares Owned Input (only if user has stocks) */}
             {formData.hasStocks === 'yes' && (
               <div className="mb-6">
                 <label htmlFor="sharesOwned" className="block text-lg font-light mb-2">How many stocks do you own?</label>
@@ -153,7 +144,6 @@ export default function Stock() {
               </div>
             )}
 
-            {/* Cash to Invest Input */}
             <div className="mb-6">
               <label htmlFor="cashToInvest" className="block text-lg font-light mb-2">How much cash do you want to invest in this stock? ($)</label>
               <input
@@ -168,7 +158,6 @@ export default function Stock() {
               />
             </div>
 
-            {/* Form Buttons */}
             <div className="flex justify-between mt-8">
               <button type="button" className="bg-[#DFF6D7] px-6 py-3 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 hover:bg-green-300 active:bg-green-400 transition-all duration-200" onClick={() => navigate("/")}>RETURN</button>
               <button type="submit" className="bg-[#DFF6D7] px-6 py-3 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 hover:bg-green-300 active:bg-green-400 transition-all duration-200 disabled:opacity-50" disabled={loading}>{loading ? 'Saving...' : 'SUBMIT'}</button>
