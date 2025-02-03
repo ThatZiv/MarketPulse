@@ -96,7 +96,7 @@ export default function Landing() {
 
 function StockCard({ stock }: StockCardProps) {
   return (
-    <div className="bg-tertiary/50 p-6 rounded-lg dark:text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
+    <div className="bg-tertiary/50 p-6 rounded-lg dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
       <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
         {stock.Stocks.stock_name}
       </h3>
