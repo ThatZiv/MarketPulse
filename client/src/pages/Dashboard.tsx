@@ -10,6 +10,9 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 
+import { Outlet, useLocation } from "react-router";
+import { useMemo } from "react";
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useSupabase();
@@ -18,9 +21,6 @@ export default function Dashboard() {
   const handleSettingsClick = () => {
     navigate("/login");
   };
-
-import { Outlet, useLocation } from "react-router";
-import { useMemo } from "react";
 
 
   return (
