@@ -74,10 +74,10 @@ export default function Stocks() {
 
   useEffect(() => {
     if (!ticker_name) {
-      console.log("Ticker name is missing");
-      navigate("/"); // Redirect
+      // Redirect
+      navigate("/")
     }
-  }, [ticker_name, navigate]);
+  });
   
   const hype_meter_labels = ["Positive", "Negative", "Neutral"];
   const hype_meter_dataset = [
