@@ -52,15 +52,15 @@ export default function Landing() {
     );
   }
   return (
-    <div>
+    <div className="min-h-screen">
       <h1 className="text-4xl font-[Poppins] font-bold text-center flex-1 tracking-tight">
-        Welcome {displayName || "User"}.
+        Welcome {displayName || "User"}
       </h1>
       <Separator className="my-2" />
 
       <div className="flex flex-col items-center gap-8 flex-grow">
         <Link
-          className="flex items-center justify-center h-16 w-16 dark:text-slate-800 rounded-full bg-[#DFF6D7] text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
+          className="flex items-center justify-center h-20 w-20 text-black dark:text-white rounded-full pb-2 bg-tertiary/50 text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
           to="/stocks"
         >
           +
@@ -96,7 +96,7 @@ export default function Landing() {
 
 function StockCard({ stock }: StockCardProps) {
   return (
-    <div className="bg-[#DFF6D7] p-6 rounded-lg dark:text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
+    <div className="bg-tertiary/50 p-6 rounded-lg dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
       <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
         {stock.Stocks.stock_name}
       </h3>
