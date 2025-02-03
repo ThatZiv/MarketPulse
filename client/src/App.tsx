@@ -7,6 +7,7 @@ import StockEstimation from "@/pages/StockEstimation";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { Spinner } from "@/components/ui/spinner";
 import Settings from "@/pages/Settings";
+import Landing from "@/pages/Landing";
 
 function App() {
   const { status } = useSupabase();
@@ -30,6 +31,7 @@ function App() {
     <div>
       <Routes>
         <Route path="/" element={<Dashboard />}>
+          <Route index element={<Landing />} />
           <Route path="/stocks" element={<StockSelection />} />
           <Route path="/stocks/:ticker" element={<StockEstimation />} />
           <Route path="/settings">
