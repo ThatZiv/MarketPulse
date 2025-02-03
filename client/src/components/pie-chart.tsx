@@ -18,11 +18,12 @@ type ChartProps = {
   labels: string[];
   datasets: Data[];
   options?: object;
+  className?: string;
 };
 
-export default function Pie_Chart({ labels, datasets,options }: ChartProps) {
+export default function Pie_Chart({ labels, datasets,options, className }: ChartProps) {
   return (
-    <div>
+    <div className="flex items-center justify-center">
       <Doughnut
         data={{
           labels,
@@ -32,7 +33,7 @@ export default function Pie_Chart({ labels, datasets,options }: ChartProps) {
           })),
         }}
         options={options}
-        className="h-full w-full"
+        className={className}
         
       />
     </div>

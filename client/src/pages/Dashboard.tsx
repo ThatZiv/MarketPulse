@@ -68,8 +68,7 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className={`flex p-4 justify-center transition-all duration-300 w-full h-full "
-          }`}>
+        <div className={`flex p-4 justify-center transition-all duration-300 w-full h-full`}>
           <Outlet />
         </div>
       </SidebarInset>

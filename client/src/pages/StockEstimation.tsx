@@ -11,6 +11,7 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { MdEdit } from "react-icons/md";
+import GaugeComponent from 'react-gauge-component';
 
 const hype_meter_labels = ["Positive", "Negative", "Neutral"];
 const hype_meter_dataset = [
@@ -19,10 +20,29 @@ const hype_meter_dataset = [
     backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
   },
 ];
-const hype_meter_options = {
-  responsive: true,
+// const hype_meter_options = {
+//   responsive: true,
+//   maintainAspectRatio: true,
+// };
+const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52"
+const impact_factor = 10;
+const disruption_score = 40;
+const defaultTickLineConfig = {
+  color: "#000000"
+}
+const labels = {
+  tickLabels: {
+    defaultTickLineConfig: defaultTickLineConfig,
+  },
+  valueLabel: {
+    style: { fontSize: 40 },
+  },
+}
+const styles: React.CSSProperties = {
+  color: 'darkslategray',
 };
-const options = {
+// const design = "h-full w-full"
+const hype_meter_options = {
   responsive: true,
   animation: {
     animateScale: true,
@@ -42,11 +62,11 @@ const buyScore = 44; // Future: can change this dynamically
 const sellScore = 100 - buyScore;
 
 const availableStocks = [
-  {"TSLA": "Tesla"},
-  {"F":"Ford"},
-  {"GM":"General Motors"},
-  {"TM":"Toyota Motor Corporation"},
-  {"RIVN": "Rivian Automotive"},
+  { "TSLA": "Tesla" },
+  { "F": "Ford" },
+  { "GM": "General Motors" },
+  { "TM": "Toyota Motor Corporation" },
+  { "RIVN": "Rivian Automotive" },
 ]
 
 export default function Stocks() {
@@ -61,18 +81,18 @@ export default function Stocks() {
     }
   });
   return (
-    <div className="lg:p-4 md:w-9/12 w-8/12">
+    <div className="lg:p-4 md:w-10/12 w-full">
       <h1 className="font-semibold text-3xl pb-6">{stock ? stock[ticker as keyof typeof stock] || "Undefined" : "Stock not found"}</h1>
-      <div className="border border-black p-4 bg-secondary rounded-lg">
+      <div className="border border-black p-4 bg-secondary rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
-          <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125"/>
+            <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
           </Link>
         </div>
-        
+
         <h2 className="font-semibold md:text-md text-xs">Hey {user?.email ?? "Guest"},</h2>
         <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
-        <div className="flex flex-row justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
+        <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
             <h3 className="lg:text-lg text-md">Number of Stocks Invested:</h3>
             <p className="lg:text-4xl md:text-3xl text-2xl">10</p>
@@ -83,14 +103,14 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-      <div className="border border-black p-6 bg-secondary rounded-lg mt-4">
+      <div className="border border-black p-6 bg-secondary rounded-md mt-4">
         <h2 className="font-semibold text-xl pb-2">Sell: {sellScore}% Buy: {buyScore}%</h2>
         <Progress value={sellScore} />
       </div>
-      <div className="flex flex-col gap-4 mt-4 max-w-screen h-2/3">
-        <div className="flex flex-col items-center justify-between border border-black">
-          <div className="flex flex-row gap-2 pt-2">
-            <h3 className="text-center font-semibold">Hype Meter</h3>
+      <div className="flex flex-col gap-4 mt-4">
+        <div className="border border-black bg-secondary rounded-md">
+          <div className="flex flex-row justify-center gap-2 pt-2">
+            <h3 className="text-center font-semibold text-xl">Hype Meter</h3>
             <HoverCard>
               <HoverCardTrigger>
                 <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
@@ -101,13 +121,25 @@ export default function Stocks() {
               </HoverCardContent>
             </HoverCard>
           </div>
-          <Pie_Chart labels={hype_meter_labels} datasets={hype_meter_dataset} options={hype_meter_options}/>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
+            <Pie_Chart labels={hype_meter_labels} datasets={hype_meter_dataset} options={hype_meter_options} className={hype_meter_design} />
+            <div className="flex flex-col gap-2">
+              <h3 className="text-center sm:text-md lg:text-lg font-semibold">Overall: {"  "}
+                <span className="sm:text-xl lg:text-3xl text-lg">50/100</span>
+              </h3>
+              <div className="sm:text-xl lg:text-2xl text-lg">
+                <h4><span role="img" aria-label="grinning face">😀</span> : 50</h4>
+                <h4> <span role="img" aria-label="grinning face">😣</span> : 20</h4>
+                <h4> <span role="img" aria-label="grinning face">😐</span> : 30</h4>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col lg:flex-row justify-between gap-4 mt-4 max-w-screen">
+        <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
 
-          <div className="flex flex-col items-center justify-between border border-black w-full h=6/5">
+          <div className="flex flex-col items-center justify-between border border-black md:w-1/2 bg-secondary rounded-md">
             <div className="flex flex-row gap-2 pt-2">
-              <h3 className="text-center font-semibold">Disruption Score</h3>
+              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">Disruption Score</h3>
               <HoverCard>
                 <HoverCardTrigger>
                   <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
@@ -119,11 +151,45 @@ export default function Stocks() {
                 </HoverCardContent>
               </HoverCard>
             </div>
-            <Pie_Chart labels={hype_meter_labels} datasets={hype_meter_dataset} options={options} />
+            <div className="w-full h-full">
+              <GaugeComponent style={{ width: '100%', height: '100%' }} value={disruption_score} type={"radial"} labels={{
+                valueLabel: {
+                  style: { fill: "#000000" },
+                },
+                tickLabels: {
+                  type: "inner",
+                  ticks: [
+                    { value: 20 },
+                    { value: 40 },
+                    { value: 60 },
+                    { value: 80 },
+                    { value: 100 }
+                  ],
+
+                  defaultTickValueConfig: {
+                    style: {
+                      fill: "#000000",
+                    },
+                  },
+                }
+              }}
+                arc={{
+                  colorArray: ['#5BE12C', '#EA4228'],
+                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
+                  padding: 0.02,
+                  width: 0.2
+                }}
+                pointer={{
+                  elastic: true,
+                  animationDelay: 0,
+                  color: '#000000',
+                }}
+              />
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-between border border-black w-full h-auto">
+          <div className="flex flex-col items-center justify-between border border-black md:w-1/2 bg-secondary rounded-md">
             <div className="flex flex-row gap-2 pt-2">
-              <h3 className="text-center font-semibold">Impact Factor</h3>
+              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">Impact Factor</h3>
               <HoverCard>
                 <HoverCardTrigger>
                   <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
@@ -135,7 +201,41 @@ export default function Stocks() {
                 </HoverCardContent>
               </HoverCard>
             </div>
-            <Pie_Chart labels={hype_meter_labels} datasets={hype_meter_dataset} options={options} />
+            <div className="w-full h-full">
+              <GaugeComponent style={{ width: '100%', height: '100%' }} value={impact_factor} type={"radial"} labels={{
+                valueLabel: {
+                  style: { fill: "#000000" },
+                },
+                tickLabels: {
+                  type: "inner",
+                  ticks: [
+                    { value: 20 },
+                    { value: 40 },
+                    { value: 60 },
+                    { value: 80 },
+                    { value: 100 }
+                  ],
+
+                  defaultTickValueConfig: {
+                    style: {
+                      fill: "#000000",
+                    },
+                  },
+                }
+              }}
+                arc={{
+                  colorArray: ['#5BE12C', '#EA4228'],
+                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
+                  padding: 0.02,
+                  width: 0.2
+                }}
+                pointer={{
+                  elastic: true,
+                  animationDelay: 0,
+                  color: '#000000',
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

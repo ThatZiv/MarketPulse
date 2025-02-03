@@ -12,6 +12,7 @@ export default {
       backgroundImage: {
         "stocks-graph": "url('/public/images/stock_graph.svg')",
         "dark-stocks-graph": "url('/public/images/stock_graph_dark.svg')",
+        "light-themed": "url('/public/images/light_theme_bg.svg')",
       },
       borderRadius: {
         lg: "var(--radius)",
