@@ -41,16 +41,15 @@ const labels = {
 const styles: React.CSSProperties = {
   color: 'darkslategray',
 };
-// const design = "h-full w-full"
 const hype_meter_options = {
   responsive: true,
   animation: {
     animateScale: true,
   },
   maintainAspectRatio: false,
-  cutout: "50%", // Adjust for thickness (50% for a classic doughnut)
-  rotation: -90, // Start from top
-  circumference: 180, // Only show half of the circle
+  cutout: "50%", 
+  rotation: -90, 
+  circumference: 180,
   plugins: {
     legend: {
       display: true,
@@ -83,7 +82,7 @@ export default function Stocks() {
   return (
     <div className="lg:p-4 md:w-10/12 w-full">
       <h1 className="font-semibold text-3xl pb-6">{stock ? stock[ticker as keyof typeof stock] || "Undefined" : "Stock not found"}</h1>
-      <div className="border border-black p-4 bg-secondary rounded-md w-full">
+      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-tertiary/20 rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
@@ -103,12 +102,12 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-      <div className="border border-black p-6 bg-secondary rounded-md mt-4">
+      <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-tertiary/20 rounded-md mt-4">
         <h2 className="font-semibold text-xl pb-2">Sell: {sellScore}% Buy: {buyScore}%</h2>
         <Progress value={sellScore} />
       </div>
-      <div className="flex flex-col gap-4 mt-4">
-        <div className="border border-black bg-secondary rounded-md">
+      <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
+        <div className="border border-black dark:border-white  bg-secondary rounded-md dark:bg-tertiary/20 md:p-4">
           <div className="flex flex-row justify-center gap-2 pt-2">
             <h3 className="text-center font-semibold text-xl">Hype Meter</h3>
             <HoverCard>
@@ -137,7 +136,7 @@ export default function Stocks() {
         </div>
         <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
 
-          <div className="flex flex-col items-center justify-between border border-black md:w-1/2 bg-secondary rounded-md">
+          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-tertiary/20 rounded-md">
             <div className="flex flex-row gap-2 pt-2">
               <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">Disruption Score</h3>
               <HoverCard>
@@ -154,7 +153,8 @@ export default function Stocks() {
             <div className="w-full h-full">
               <GaugeComponent style={{ width: '100%', height: '100%' }} value={disruption_score} type={"radial"} labels={{
                 valueLabel: {
-                  style: { fill: "#000000" },
+                  style: { fill: "var(--tick-label-color)" }
+
                 },
                 tickLabels: {
                   type: "inner",
@@ -167,9 +167,8 @@ export default function Stocks() {
                   ],
 
                   defaultTickValueConfig: {
-                    style: {
-                      fill: "#000000",
-                    },
+                    style: { fill: "var(--tick-label-color)" }
+
                   },
                 }
               }}
@@ -187,7 +186,7 @@ export default function Stocks() {
               />
             </div>
           </div>
-          <div className="flex flex-col items-center justify-between border border-black md:w-1/2 bg-secondary rounded-md">
+          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-tertiary/20 rounded-md">
             <div className="flex flex-row gap-2 pt-2">
               <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">Impact Factor</h3>
               <HoverCard>
@@ -204,7 +203,7 @@ export default function Stocks() {
             <div className="w-full h-full">
               <GaugeComponent style={{ width: '100%', height: '100%' }} value={impact_factor} type={"radial"} labels={{
                 valueLabel: {
-                  style: { fill: "#000000" },
+                  style: { fill: "var(--tick-label-color)" }
                 },
                 tickLabels: {
                   type: "inner",
@@ -217,9 +216,8 @@ export default function Stocks() {
                   ],
 
                   defaultTickValueConfig: {
-                    style: {
-                      fill: "#000000",
-                    },
+                    style: { fill: "var(--tick-label-color)" }
+
                   },
                 }
               }}
