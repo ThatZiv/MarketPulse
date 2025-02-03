@@ -74,11 +74,12 @@ export default function Stocks() {
   }
 
   useEffect(() => {
-    if (!ticker_name || !stocks?.find((stock) => stock?.Stocks?.stock_name === ticker_name?.[ticker as keyof typeof ticker_name])) {
-      // Redirect
-      navigate("/")
+    if (!ticker_name) {
+      console.log("Ticker name is missing");
+      navigate("/"); // Redirect if ticker_name is missing
+      return;
     }
-  });
+  },);
   const hype_meter_labels = ["Positive", "Negative", "Neutral"];
   const hype_meter_dataset = [
     {
