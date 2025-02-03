@@ -6,7 +6,7 @@ import numpy as np
 import calendar
 from supabase import create_client, Client
 import flask_jwt_extended as jw
-from datetime import date, timedelta
+from datetime import date
 from stockdataload import loadData
 from flask_cors import CORS
 from database.yfinanceapi import add_daily_data
@@ -97,22 +97,21 @@ if __name__ == '__main__':
                     diff = today - output[len(output)-1].time_stamp
                     try:
                         start = output[len(output)-1].time_stamp.weekday()
-
                         end = today.weekday()
                         if end == 6:
-                            diff = diff -timedelta(days=2)
+                            diff_days = diff.days -2
                         if end == 5:
-                            diff = diff - timedelta(days=1)
+                            diff_days = diff.days - 1
                     
-                        if start < end and start <=5:
-                            diff = diff -timedelta(days=2)
+                        if start > end and start <=5:
+                            diff_days = diff.days - 2
                         else:
-                            diff = diff -timedelta(days=1)
-                    
-                        print(start)
-                        print(end)
-                        if diff > timedelta(days=0):
-                            extra_data = add_daily_data(ticker, diff.days)
+                            if start > end :
+                                diff_days = diff.days - 1
+                            else:
+                                diff_days = diff.days
+                        if diff_days > 0:
+                            extra_data = add_daily_data(ticker, diff_days)
                             # Type casting to match types that can be added to the database
                             close_s =extra_data["Close"].astype(float).tolist()
                             open_s = extra_data["Open"].astype(float).tolist()
@@ -131,7 +130,8 @@ if __name__ == '__main__':
                             for i in range(len(extra_data['Close'])):
                                 json_output.append({'stock_id' : output_id.stock_id, 'stock_close' : close_s[i], 'stock_volume' : volume_s[i], 'stock_open' : open_s[i], 'stock_high' : high_s[i], 'stock_low' : low_s[i], 'sentiment_data'  : 0, 'time_stamp' : dump_datetime(extra_data["Date"][i])})
 
-                    except:
+                    except Exception as e: 
+                        print(e)
                         print("Error when adding elements to database")
                 
                 return jsonify(json_output)

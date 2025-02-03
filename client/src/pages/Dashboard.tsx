@@ -27,7 +27,6 @@ export default function Dashboard() {
     () => location.pathname.split("/"),
     [location.pathname]
   );
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -38,6 +37,13 @@ export default function Dashboard() {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                </BreadcrumbItem>
+
+                {paths.filter(Boolean).length > 0 && (
+                  <BreadcrumbSeparator className="hidden md:block" />
+                )}
                 {paths
                   .map((path, index) => {
                     if (path === "") {
@@ -68,7 +74,7 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className={`flex p-4 justify-center transition-all duration-300 w-full h-full bg-light-themed dark:bg-dark-themed bg-center bg-no-repeat bg-cover`}>
+        <div className={`flex p-4 justify-center transition-all duration-300 w-full bg-light-themed dark:bg-dark-themed bg-center bg-no-repeat bg-cover`}>
           <Outlet />
         </div>
       </SidebarInset>
