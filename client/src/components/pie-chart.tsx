@@ -4,7 +4,6 @@ import {
   ArcElement, // Required for Pie & Doughnut charts
   Tooltip,
   Legend,
-  ChartDataset,
 } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
