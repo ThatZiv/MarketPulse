@@ -36,7 +36,7 @@ const data = {
       isActive: true,
     },
     {
-      title: "Stocks",
+      title: "Add New Stock",
       url: "/stocks",
       icon: CirclePlus,
       isActive: true,
