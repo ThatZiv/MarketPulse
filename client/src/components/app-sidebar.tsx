@@ -1,13 +1,13 @@
 import * as React from "react";
 import {
   BookOpen,
-  Bot,
   Command,
   LifeBuoy,
   Send,
   Settings2,
   ChartCandlestick,
-  HomeIcon,
+  Gauge,
+  CirclePlus,  
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -30,24 +30,43 @@ import { Link } from "react-router";
 const data = {
   navMain: [
     {
-      title: "Home",
+      title: "Dashboard",
       url: "/",
-      icon: HomeIcon,
-    },
-    {
-      title: "Stocks",
-      url: "/stocks",
-      icon: ChartCandlestick,
+      icon: Gauge,
       isActive: true,
     },
     {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: new Array(5).fill(null).map((_, index) => ({
-        title: `Model ${index + 1}`,
-        url: "#",
-      })),
+      title: "Add New Stock",
+      url: "/stocks",
+      icon: CirclePlus,
+      isActive: true,
+    },
+    {
+      title: "Your Stocks",
+      url: "/",
+      icon: ChartCandlestick,
+      items: [
+        {
+          title: "Ford",
+          url: "/stocks/F",
+        },
+        {
+          title: "GM",
+          url: "/stocks/GM",
+        },
+        {
+          title: "Tesla",
+          url: "/stocks/TSLA",
+        },
+        {
+          title: "Toyota",
+          url: "/stocks/TM",
+        },
+        {
+          title: "Rivian",
+          url: "/stocks/RIVN",
+        },
+      ],
     },
     {
       title: "Documentation",

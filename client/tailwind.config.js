@@ -12,6 +12,8 @@ export default {
       backgroundImage: {
         "stocks-graph": "url('/public/images/stock_graph.svg')",
         "dark-stocks-graph": "url('/public/images/stock_graph_dark.svg')",
+        "light-themed": "url('/public/images/light_theme_bg.svg')",
+        "dark-themed": "url('/public/images/dark_theme_bg.svg')",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -30,15 +32,15 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "#020122",
+          DEFAULT: "#0c0963",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#FCFCFC",
+          DEFAULT: "#F2F3F6",
           foreground: "hsl(var(--secondary-foreground))",
         },
         tertiary: {
-          DEFAULT: "#00A8A8",
+          DEFAULT: "#302ADB",
         },
         dark: {
           DEFAULT: "#000000",
