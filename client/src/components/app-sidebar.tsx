@@ -7,6 +7,7 @@ import {
   Send,
   Settings2,
   ChartCandlestick,
+  HomeIcon,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -27,13 +28,12 @@ import { Button } from "./ui/button";
 import { Link } from "react-router";
 
 const data = {
-  // TODO: this will come from supabase when we set up that context
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
+    {
+      title: "Home",
+      url: "/",
+      icon: HomeIcon,
+    },
     {
       title: "Stocks",
       url: "/stocks",
