@@ -12,35 +12,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { MdEdit } from "react-icons/md";
 import GaugeComponent from 'react-gauge-component';
-
-const hype_meter_labels = ["Positive", "Negative", "Neutral"];
-const hype_meter_dataset = [
-  {
-    data: [50, 20, 30],
-    backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-  },
-];
-const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52"
-const impact_factor = 10;
-const disruption_score = 40;
-const hype_meter_options = {
-  responsive: true,
-  animation: {
-    animateScale: true,
-  },
-  maintainAspectRatio: false,
-  cutout: "50%", 
-  rotation: -90, 
-  circumference: 180,
-  plugins: {
-    legend: {
-      display: true,
-    },
-  },
-};
-
-const buyScore = 44; // Future: can change this dynamically
-const sellScore = 100 - buyScore;
+import React from "react";
 
 const availableStocks = [
   { "TSLA": "Tesla" },
@@ -49,9 +21,13 @@ const availableStocks = [
   { "TM": "Toyota Motor Corporation" },
   { "RIVN": "Rivian Automotive" },
 ]
-
+const meters = [
+  { "Hype Meter": "Hype Meter analyzes social media sentiment to forecast stock market trends." },
+  { "Disruption Score": "Disruption Score measures the potential impact on stock prices from supply chain delays or shifts." },
+  { "Impact Factor": "Impact Factor scores how major events like elections, natural disasters, and regulations influence stock performance." },
+]
 export default function Stocks() {
-  const { user, displayName } = useSupabase();
+  const { displayName } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
   const navigate = useNavigate();
   const stock = availableStocks.find(stock => stock[ticker as keyof typeof stock]);
@@ -61,6 +37,38 @@ export default function Stocks() {
       navigate("/")
     }
   });
+  const hype_meter_labels = ["Positive", "Negative", "Neutral"];
+  const hype_meter_dataset = [
+    {
+      data: [50, 20, 30],
+      backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+    },
+  ];
+  const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52"
+  const impact_factor = 10;
+  const disruption_score = 40;
+  const hype_meter_options = {
+    responsive: true,
+    animation: {
+      animateScale: true,
+    },
+    maintainAspectRatio: false,
+    cutout: "50%", 
+    rotation: -90, 
+    circumference: 180,
+    plugins: {
+      legend: {
+        display: true,
+        labels: {
+          color: '#7491b5',
+        },
+      },
+    },
+  };
+  
+  const buyScore = 35// Future: can change this dynamically
+  const sellScore = 100 - buyScore;
+  
   return (
     <div className="lg:p-4 md:w-10/12 w-full">
       <h1 className="font-semibold text-3xl pb-6">{stock ? stock[ticker as keyof typeof stock] || "Undefined" : "Stock not found"}</h1>
@@ -85,20 +93,20 @@ export default function Stocks() {
         </div>
       </div>
       <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-tertiary/20 rounded-md mt-4">
-        <h2 className="font-semibold text-xl pb-2">Sell: {sellScore}% Buy: {buyScore}%</h2>
-        <Progress value={sellScore} />
+        <h2 className="font-semibold text-xl pb-2">Buy: {buyScore}% Sell: {sellScore}%</h2>
+        <Progress value={buyScore} />
       </div>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <div className="border border-black dark:border-white  bg-secondary rounded-md dark:bg-tertiary/20 md:p-4">
           <div className="flex flex-row justify-center gap-2 pt-2">
-            <h3 className="text-center font-semibold text-xl">Hype Meter</h3>
+            <h3 className="text-center font-semibold text-xl">{Object.keys(meters[0])[0]}</h3>
             <HoverCard>
               <HoverCardTrigger>
                 <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
                 <IoMdInformationCircle className="mt-[0.25rem] invisible dark:visible dark:block" />
               </HoverCardTrigger>
               <HoverCardContent>
-                Hype meter is used for getting sentiment analysis from social media to predict the stock market.
+              {meters[0]["Hype Meter"]}
               </HoverCardContent>
             </HoverCard>
           </div>
@@ -120,15 +128,14 @@ export default function Stocks() {
 
           <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-tertiary/20 rounded-md">
             <div className="flex flex-row gap-2 pt-2">
-              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">Disruption Score</h3>
+              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">{Object.keys(meters[1])[0]}</h3>
               <HoverCard>
                 <HoverCardTrigger>
                   <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
                   <IoMdInformationCircle className="mt-[0.25rem] invisible dark:visible dark:block" />
                 </HoverCardTrigger>
                 <HoverCardContent>
-                  A "Disruption Score" that evaluates potential impacts on stock prices due to
-                  supply chain delays or shifts.
+                {meters[1]["Disruption Score"]}
                 </HoverCardContent>
               </HoverCard>
             </div>
@@ -170,15 +177,14 @@ export default function Stocks() {
           </div>
           <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-tertiary/20 rounded-md">
             <div className="flex flex-row gap-2 pt-2">
-              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">Impact Factor</h3>
+              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">{Object.keys(meters[2])[0]}</h3>
               <HoverCard>
                 <HoverCardTrigger>
                   <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
                   <IoMdInformationCircle className="mt-[0.25rem] invisible dark:visible dark:block" />
                 </HoverCardTrigger>
                 <HoverCardContent>
-                An "Impact Factor" that scores how major events (e.g., elections, natural
-                  disasters, regulations) may influence stock performance.
+                {meters[2]["Impact Factor"]}
                 </HoverCardContent>
               </HoverCard>
             </div>
@@ -218,6 +224,10 @@ export default function Stocks() {
             </div>
           </div>
         </div>
+      </div>
+      <div>
+      <Stock_Chart ticker={ticker ?? ""} />
+
       </div>
     </div>
   );

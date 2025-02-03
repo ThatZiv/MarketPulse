@@ -23,7 +23,7 @@ type ChartProps = {
 
 export default function Pie_Chart({ labels, datasets,options, className }: ChartProps) {
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center text-white">
       <Doughnut
         data={{
           labels,

@@ -13,6 +13,7 @@ export default {
         "stocks-graph": "url('/public/images/stock_graph.svg')",
         "dark-stocks-graph": "url('/public/images/stock_graph_dark.svg')",
         "light-themed": "url('/public/images/light_theme_bg.svg')",
+        "dark-themed": "url('/public/images/dark_theme_bg.svg')",
       },
       borderRadius: {
         lg: "var(--radius)",
