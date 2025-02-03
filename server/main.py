@@ -3,9 +3,10 @@ from dotenv import load_dotenv
 import os
 import json
 import numpy as np
+import calendar
 from supabase import create_client, Client
 import flask_jwt_extended as jw
-from datetime import date
+from datetime import date, timedelta
 from stockdataload import loadData
 from flask_cors import CORS
 from database.yfinanceapi import add_daily_data
@@ -94,23 +95,39 @@ if __name__ == '__main__':
                 # if last stock is not current 
                 if output[len(output)-1].time_stamp != today:
                     diff = today - output[len(output)-1].time_stamp
-                    extra_data = add_daily_data(ticker, diff.days)
 
-                    # Type casting to match types that can be added to the database
-                    close_s =extra_data["Close"].astype(float).tolist()
-                    open_s = extra_data["Open"].astype(float).tolist()
-                    low_s = extra_data["Low"].astype(float).tolist()
-                    high_s = extra_data["High"].astype(float).tolist()
-                    volume_s = extra_data["Volume"].astype(int).tolist()
-                    session.flush()
+                    start = output[len(output)-1].time_stamp.weekday()
 
-                    # ADD missing days to the end of the output
-                    for i in range(len(extra_data['Close'])):
-                        newRow = Stock_Info(stock_id = output_id.stock_id, stock_close = close_s[i], stock_volume = volume_s[i], stock_open=open_s[i], stock_high = high_s[i], stock_low=low_s[i], sentiment_data=0, time_stamp=extra_data["Date"][i])
-                        session.add(newRow)
-                        json_output.append({'stock_id' : output_id.stock_id, 'stock_close' : close_s[i], 'stock_volume' : volume_s[i], 'stock_open' : open_s[i], 'stock_high' : high_s[i], 'stock_low' : low_s[i], 'sentiment_data'  : 0, 'time_stamp' : dump_datetime(extra_data["Date"][i])})
+                    end = today.weekday()
+                    if end == 6:
+                        diff = diff -timedelta(days=2)
+                    if end == 5:
+                        diff = diff - timedelta(days=1)
+                    
+                    if start < end and start <=5:
+                        diff = diff -timedelta(days=2)
+                    else:
+                        diff = diff -timedelta(days=1)
+                    
+                    print(start)
+                    print(end)
+                    if diff > timedelta(days=0):
+                        extra_data = add_daily_data(ticker, diff.days)
+                        # Type casting to match types that can be added to the database
+                        close_s =extra_data["Close"].astype(float).tolist()
+                        open_s = extra_data["Open"].astype(float).tolist()
+                        low_s = extra_data["Low"].astype(float).tolist()
+                        high_s = extra_data["High"].astype(float).tolist()
+                        volume_s = extra_data["Volume"].astype(int).tolist()
+                        session.flush()
+                        # ADD missing days to the end of the output
+                        for i in range(len(extra_data['Close'])):
+                            newRow = Stock_Info(stock_id = output_id.stock_id, stock_close = close_s[i], stock_volume = volume_s[i], stock_open=open_s[i], stock_high = high_s[i], stock_low=low_s[i], sentiment_data=0, time_stamp=extra_data["Date"][i])
+                            session.add(newRow)
+                            json_output.append({'stock_id' : output_id.stock_id, 'stock_close' : close_s[i], 'stock_volume' : volume_s[i], 'stock_open' : open_s[i], 'stock_high' : high_s[i], 'stock_low' : low_s[i], 'sentiment_data'  : 0, 'time_stamp' : dump_datetime(extra_data["Date"][i])})
 
-                session.commit()
+                        session.commit()
+                
                 return jsonify(json_output)
             else:
                 return Response(status=400, mimetype='application/json')
