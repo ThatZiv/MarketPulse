@@ -42,7 +42,6 @@ export default function Stocks() {
   const {
     value: stocks,
     error: stocksError,
-    loading: loading,
   } = useAsync<StockResponse[]>(
     () =>
       new Promise((resolve, reject) => {
@@ -79,7 +78,7 @@ export default function Stocks() {
       navigate("/"); // Redirect if ticker_name is missing
       return;
     }
-  },);
+  });
   const hype_meter_labels = ["Positive", "Negative", "Neutral"];
   const hype_meter_dataset = [
     {
