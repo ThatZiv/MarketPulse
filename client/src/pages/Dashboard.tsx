@@ -10,6 +10,13 @@ import {
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 
+import React from "react";
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useSupabase();
@@ -32,6 +39,8 @@ export default function Dashboard() {
         />
         {/* Main Dashboard Content */}
         <MainContent />
+
+          
       </SidebarInset>
     </SidebarProvider>
   );
