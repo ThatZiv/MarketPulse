@@ -12,7 +12,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { MdEdit } from "react-icons/md";
 import GaugeComponent from 'react-gauge-component';
-import React from "react";
 
 const availableStocks = [
   { "TSLA": "Tesla" },
@@ -60,7 +59,8 @@ export default function Stocks() {
       legend: {
         display: true,
         labels: {
-          color: '#7491b5',
+          color: '#8894e3', //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
+                            //For now, chose a color that works with both light and dark mode.
         },
       },
     },
@@ -96,8 +96,8 @@ export default function Stocks() {
         <h2 className="font-semibold text-xl pb-2">Buy: {buyScore}% Sell: {sellScore}%</h2>
         <Progress value={buyScore} />
       </div>
-      <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
-        <div className="border border-black dark:border-white  bg-secondary rounded-md dark:bg-tertiary/20 md:p-4">
+      <div className="flex flex-col md:items-center gap-4 mt-4 w-full ">
+        <div className="border border-black dark:border-white bg-secondary rounded-md dark:bg-tertiary/20 md:p-4">
           <div className="flex flex-row justify-center gap-2 pt-2">
             <h3 className="text-center font-semibold text-xl">{Object.keys(meters[0])[0]}</h3>
             <HoverCard>
@@ -225,9 +225,8 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-      <div>
+      <div className="flex flex-col md:items-center pt-4">
       <Stock_Chart ticker={ticker ?? ""} />
-
       </div>
     </div>
   );
