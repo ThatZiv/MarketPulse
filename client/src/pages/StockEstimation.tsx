@@ -20,27 +20,9 @@ const hype_meter_dataset = [
     backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
   },
 ];
-// const hype_meter_options = {
-//   responsive: true,
-//   maintainAspectRatio: true,
-// };
 const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52"
 const impact_factor = 10;
 const disruption_score = 40;
-const defaultTickLineConfig = {
-  color: "#000000"
-}
-const labels = {
-  tickLabels: {
-    defaultTickLineConfig: defaultTickLineConfig,
-  },
-  valueLabel: {
-    style: { fontSize: 40 },
-  },
-}
-const styles: React.CSSProperties = {
-  color: 'darkslategray',
-};
 const hype_meter_options = {
   responsive: true,
   animation: {
@@ -69,7 +51,7 @@ const availableStocks = [
 ]
 
 export default function Stocks() {
-  const { user } = useSupabase();
+  const { user, displayName } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
   const navigate = useNavigate();
   const stock = availableStocks.find(stock => stock[ticker as keyof typeof stock]);
@@ -89,7 +71,7 @@ export default function Stocks() {
           </Link>
         </div>
 
-        <h2 className="font-semibold md:text-md text-xs">Hey {user?.email ?? "Guest"},</h2>
+        <h2 className="font-semibold md:text-lg text-xs">Hey {displayName},</h2>
         <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
