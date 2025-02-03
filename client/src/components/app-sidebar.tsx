@@ -28,12 +28,6 @@ import { Button } from "./ui/button";
 import { Link } from "react-router";
 
 const data = {
-  // TODO: this will come from supabase when we set up that context
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -42,7 +36,7 @@ const data = {
       isActive: true,
     },
     {
-      title: "Add New Stock",
+      title: "Stocks",
       url: "/stocks",
       icon: CirclePlus,
       isActive: true,
