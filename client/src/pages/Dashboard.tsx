@@ -16,7 +16,6 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useSupabase();
   
-  // Handle navigation to the login page when settings button is clicked
   const handleSettingsClick = () => {
     navigate("/login");
   };
@@ -24,15 +23,12 @@ export default function Dashboard() {
 
   return (
     <SidebarProvider>
-      {/* Sidebar Navigation */}
       <AppSidebar />
       <SidebarInset>
-        {/* Header Component */}
         <Header 
           userName={user?.email ?? "Guest"}
           onSettingsClick={handleSettingsClick}
         />
-        {/* Main Dashboard Content */}
         <MainContent />
 
           
@@ -41,7 +37,6 @@ export default function Dashboard() {
   );
 }
 
-// Header component displaying user information and settings button
 const Header: React.FC<HeaderProps> = ({ userName, onSettingsClick }) =>  {
   return (
     <header className="relative h-16 bg-[#F5F5F5] px-4 border-b border-gray-200 flex items-center">
@@ -67,14 +62,12 @@ const Header: React.FC<HeaderProps> = ({ userName, onSettingsClick }) =>  {
   );
 }
 
-// Main dashboard content, fetching and displaying user stocks
 const MainContent: React.FC = () => {
   const { user, supabase } = useSupabase();
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user's stock investments from the database
     const fetchUserStocks = async () => {
       try {
         const { data, error } = await supabase
@@ -99,7 +92,6 @@ const MainContent: React.FC = () => {
   return (
     <main className="bg-[#F5F5F5] min-h-[calc(100vh-4rem)] p-8 flex flex-col">
       <div className="flex flex-col items-center gap-8 flex-grow">
-        {/* Button to add new stocks */}
         <Link
           className="flex items-center justify-center h-16 w-16 rounded-full bg-[#DFF6D7] text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
           to="/stocks"
@@ -107,7 +99,6 @@ const MainContent: React.FC = () => {
           +
         </Link>
 
-        {/* Display user's investment portfolio */}
         <section className="w-full">
           <h2 className="text-2xl font-light mb-6 text-center">
             Your Investment Portfolio:
@@ -137,18 +128,15 @@ const MainContent: React.FC = () => {
   );
 }
 
-// Stock data structure
 interface Stock {
   stock_id: string;
   shares_owned: number;
 }
 
-// Props for StockCard component
 interface StockCardProps {
   stock: Stock;
 }
 
-// Component for displaying individual stock information
 function StockCard({ stock }: StockCardProps) {
   return (
     <div className="bg-[#DFF6D7] p-6 rounded-lg shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
@@ -162,7 +150,6 @@ function StockCard({ stock }: StockCardProps) {
   );
 }
 
-// Props for Header component
 interface HeaderProps {
   userName: string;
   onSettingsClick: () => void;
