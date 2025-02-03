@@ -16,7 +16,7 @@ def bulk_stock_data(ticker):
 def add_daily_data(ticker, days):
     data = yf.Ticker(ticker)
 
-    output = data.history(period="1d")
+    output = data.history(period=f"{days}d")
 
     output.reset_index(inplace=True)
 

@@ -54,8 +54,7 @@ export function LoginForm({
       email: "",
       password: "",
     },
-  }
-  );
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
     event?.preventDefault();
@@ -78,11 +77,15 @@ export function LoginForm({
   }, []);
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props} style={{
-      transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
-      transitionDuration: "250ms",
-      transformStyle: "preserve-3d",
-    }}>
+    <div
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+      style={{
+        transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
+        transitionDuration: "250ms",
+        transformStyle: "preserve-3d",
+      }}
+    >
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Log in</CardTitle>
@@ -129,17 +132,22 @@ export function LoginForm({
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="dark:text-white mt-3">Login</Button>
+              <Button
+                type="submit"
+                className="mt-3"
+              >
+                Login
+              </Button>
               <div className="text-center text-sm">
                 Forgot your{" "}
                 <span className="underline underline-offset-4">
                   <Link to="/">Username</Link>
-                </span>
-                {" "}or{" "}
+                </span>{" "}
+                or{" "}
                 <span className="underline underline-offset-4">
                   <Link to="/">Password</Link>
-                </span>
-                {" "}?
+                </span>{" "}
+                ?
               </div>
               <div className="flex items-center my-4">
                 <div className="w-full h-px bg-gray-300"></div>
@@ -170,10 +178,15 @@ export function LoginForm({
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <span className="underline underline-offset-4">
-                <button className="underline" onClick={() => {
-                  togglePageState();  // Toggle login/signup state
-                  setIsFlipped((prev) => !prev);  // Flip the UI element
-                }}>Create Account</button>
+                <button
+                  className="underline"
+                  onClick={() => {
+                    togglePageState(); // Toggle login/signup state
+                    setIsFlipped((prev) => !prev); // Flip the UI element
+                  }}
+                >
+                  Create Account
+                </button>
               </span>
             </div>
           </Form>

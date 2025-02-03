@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { Outlet, useLocation } from "react-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import React from "react";
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 export default function Dashboard() {
   const location = useLocation();
   const paths = useMemo(
@@ -46,21 +52,21 @@ export default function Dashboard() {
                     if (index === paths.length - 1) {
                       return (
                         <BreadcrumbItem key={index}>
-                          <BreadcrumbPage>{path}</BreadcrumbPage>
+                          <BreadcrumbPage>{capitalize(path)}</BreadcrumbPage>
                         </BreadcrumbItem>
                       );
                     }
                     return (
-                      <BreadcrumbItem key={index}>
-                        <BreadcrumbLink
-                          href={paths.slice(0, index + 1).join("/")}
-                        >
-                          {path}
-                        </BreadcrumbLink>
-                        <>
-                          <BreadcrumbSeparator className="hidden md:block" />
-                        </>
-                      </BreadcrumbItem>
+                      <React.Fragment key={index}>
+                        <BreadcrumbItem>
+                          <BreadcrumbLink
+                            href={paths.slice(0, index + 1).join("/")}
+                          >
+                            {capitalize(path)}
+                          </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator className="hidden md:block" />
+                      </React.Fragment>
                     );
                   })
                   .filter(Boolean)}
