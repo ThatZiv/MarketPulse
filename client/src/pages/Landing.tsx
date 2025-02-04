@@ -53,8 +53,8 @@ export default function Landing() {
   }
   return (
     <div className="min-h-screen">
-      <h1 className="text-4xl font-[Poppins] font-bold text-center flex-1 tracking-tight">
-        Welcome {displayName || "User"}
+      <h1 className="text-4xl text-center flex-1 tracking-tight">
+        Welcome <b>{displayName || "User"}</b>
       </h1>
       <Separator className="my-2" />
 
@@ -68,7 +68,7 @@ export default function Landing() {
 
         <section className="w-full">
           <h2 className="text-2xl font-light mb-6 text-center">
-            Your Investment Portfolio:
+            Your Investment Portfolio
           </h2>
 
           {loading ? (
