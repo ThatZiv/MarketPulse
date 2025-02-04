@@ -135,8 +135,8 @@ export default function StockPage() {
   }
   return (
     <main className="w-xl min-h-screen">
-      <header className="px-4 border-b border-gray-200 flex items-center justify-between mx-auto max-w-screen-sm">
-        <h1 className="text-4xl font-[Poppins] font-bold text-center flex-1 tracking-tight">
+      <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
+        <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
           Stock Details
         </h1>
       </header>
@@ -152,7 +152,10 @@ export default function StockPage() {
 
           {/* Stock Ticker Selection */}
           <div className="mb-6">
-            <label htmlFor="ticker" className="block text-lg font-light mb-2 text-center text-black dark:text-white">
+            <label
+              htmlFor="ticker"
+              className="block text-lg font-light mb-2 text-center text-black dark:text-white"
+            >
               What is the ticker?
             </label>
             {stocksLoading ? (
@@ -167,7 +170,10 @@ export default function StockPage() {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Stock" className="dark:text-white" />
+                  <SelectValue
+                    placeholder="Select Stock"
+                    className="dark:text-white"
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -198,7 +204,9 @@ export default function StockPage() {
                 onChange={handleInputChange}
                 required
               >
-                <option value="" disabled selected>Select Option</option>
+                <option value="" disabled selected>
+                  Select Option
+                </option>
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
               </select>
