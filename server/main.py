@@ -8,12 +8,15 @@ import flask_jwt_extended as jw
 from datetime import date
 from stockdataload import loadData
 from flask_cors import CORS
-from database.yfinanceapi import add_daily_data
+from database.yfinanceapi import add_daily_data, real_time_data
 from sqlalchemy import create_engine, select
-
 from flask_jwt_extended import JWTManager,jwt_required
 from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 from sqlalchemy.orm import sessionmaker
+from flask_caching import Cache
+
+
+
 load_dotenv()
 
 url: str = os.environ.get("SUPABASE_URL")
@@ -27,8 +30,9 @@ def dump_datetime(value):
 
 
 def create_app():
+
     app = Flask(__name__)
-  
+    
     from routes.auth import auth_bp
 
     app.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
@@ -44,7 +48,7 @@ if __name__ == '__main__':
     CORS(app)
     jwt = jw.JWTManager()
     jwt.init_app(app) 
-
+    cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
     USER = os.getenv("user")
     PASSWORD = os.getenv("password")
@@ -73,6 +77,42 @@ if __name__ == '__main__':
     def route():
         return jsonify('hello')
     
+    @app.route('/stockrealtime/', methods = ['GET'] )
+    @jwt_required()
+    def realtime():
+        if request.method == 'GET':
+            Session = sessionmaker(bind=engine)
+            session = Session()
+            ticker = request.args['ticker']
+            sId = select(Stocks).where(Stocks.stock_ticker == ticker)
+            output_id = session.connection().execute(sId).first()            
+            if output_id:
+                cache_output = cache.get(output_id)
+                
+                if cache_output is not None:
+                    print("Cache Output")
+                    return cache_output
+
+                stock_data = real_time_data(ticker)
+                close_rt =stock_data["Close"].astype(float).tolist()
+                open_rt = stock_data["Open"].astype(float).tolist()
+                low_rt = stock_data["Low"].astype(float).tolist()
+                high_rt = stock_data["High"].astype(float).tolist()
+                volume_rt = stock_data["Volume"].astype(int).tolist()
+            
+                json_output = []
+                for i in range(len(stock_data['Close'])):
+                    json_output.append({'stock_id' : output_id.stock_id, 'stock_close' : close_rt[i], 'stock_volume' : volume_rt[i], 'stock_open' : open_rt[i], 'stock_high' : high_rt[i], 'stock_low' : low_rt[i], 'sentiment_data'  : 0, 'time_stamp' : dump_datetime(stock_data["Datetime"][i])})
+                cache.set(output_id, json_output, timeout = 60)
+                print("Reset Cache")
+                return json_output
+            else:
+                return Response(status=400, mimetype='application/json')
+        else:
+            return Response(status=401, mimetype='application/json')
+    
+
+
     @app.route('/stockchart/', methods=['GET'])
     @jwt_required()
     def chart():
@@ -83,7 +123,7 @@ if __name__ == '__main__':
             sId = select(Stocks).where(Stocks.stock_ticker == ticker)
             output_id = session.connection().execute(sId).first()
             #validating the ticker from the frontend
-            if(output_id):
+            if output_id :
                 stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id)
                 output = session.connection().execute(stock_data).all()
                 json_output = []
