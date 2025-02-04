@@ -5,9 +5,8 @@ import {
   LifeBuoy,
   Send,
   Settings2,
-  ChartCandlestick,
   Gauge,
-  CirclePlus,  
+  CirclePlus,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -34,17 +33,6 @@ const data = {
       url: "/",
       icon: Gauge,
       isActive: true,
-    },
-    {
-      title: "Add New Stock",
-      url: "/stocks",
-      icon: CirclePlus,
-      isActive: true,
-    },
-    {
-      title: "Your Stocks",
-      url: "/",
-      icon: ChartCandlestick,
       items: [
         {
           title: "Ford",
@@ -67,6 +55,12 @@ const data = {
           url: "/stocks/RIVN",
         },
       ],
+    },
+    {
+      title: "Add New Stock",
+      url: "/stocks",
+      icon: CirclePlus,
+      isActive: true,
     },
     {
       title: "Documentation",
