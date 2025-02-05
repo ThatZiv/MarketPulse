@@ -3,7 +3,6 @@ import { LoginForm } from "@/components/login-form";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { useState } from "react";
 import { CreateForm } from "@/components/create_user_form";
-import { Footer } from "@/components/footer";
 export default function UserAuth() {
   const [pageState, setPageState] = useState("login"); // "login" or "signup"
 
@@ -31,7 +30,7 @@ export default function UserAuth() {
           <CreateForm togglePageState={togglePageState} />
         )}
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
