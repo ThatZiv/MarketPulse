@@ -137,7 +137,8 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     ) {
       navigate("/auth");
     }
-  }, [session, status, navigate, location]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, status, location.pathname]);
 
   const signUpNewUser = React.useCallback(
     async (email: string, password: string) => {
