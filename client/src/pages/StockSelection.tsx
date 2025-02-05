@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft} from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,6 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 
 interface StockFormData {
-
   ticker: string;
   hasStocks: string;
   sharesOwned: number;
@@ -56,23 +55,19 @@ export default function StockPage() {
   );
   const formSchema = z.object({
     ticker: z.string().nonempty("Please select a stock"),
-    hasStocks: z.string().nonempty(),
-    sharesOwned: z.number().int().min(0).optional(),
-    cashToInvest: z
-      .number()
-      .int()
-      .min(1, "Cash to invest must be greater than 0"),
+    hasStocks: z
+      .string()
+      .nonempty("Please specify if you own shared for this stock"),
+    sharesOwned: z.number().min(0).optional(),
+    cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-
     const { error } = formSchema.safeParse(formData);
     if (error) {
-      for (const issue of error.issues) {
-        setError(issue.message);
-      }
+      error.errors.reverse().forEach((err) => setError(err.message));
       return;
     }
 
@@ -134,7 +129,7 @@ export default function StockPage() {
         </h1>
       </header>
 
-      <main className="dark:text-black text-left p-2 flex flex-col">
+      <main className="text-black dark:text-white text-left p-2 flex flex-col">
         <form
           onSubmit={handleSubmit}
           className="bg-white w-full rounded-lg p-8 shadow-md tex-center dark:bg-black"
@@ -144,10 +139,9 @@ export default function StockPage() {
           )}
 
           <div className="mb-6">
-
-          <label htmlFor="ticker" className="block text-lg font-light mb-2">
-            What is the ticker? <span className="text-red-500">*</span>
-          </label>
+            <label htmlFor="ticker" className="block text-lg font-light mb-2">
+              What is the ticker? <span className="text-red-500">*</span>
+            </label>
 
             {stocksLoading ? (
               <Skeleton className="w-full h-12" />
@@ -181,37 +175,45 @@ export default function StockPage() {
           </div>
 
           <div className="mb-6">
-
-  <label htmlFor="hasStocks" className="block text-lg font-light mb-2">
-    Do you already own stocks for this ticker? <span className="text-red-500">*</span>
-  </label>
-  <Select
-    value={formData.hasStocks}
-    onValueChange={(value: string) => setFormData(prev => ({ ...prev, hasStocks: value }))}
-    required
-  >
-    <SelectTrigger>
-      <SelectValue placeholder="Select Option" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectGroup>
-        <SelectItem value="yes">Yes</SelectItem>
-        <SelectItem value="no">No</SelectItem>
-      </SelectGroup>
-    </SelectContent>
-  </Select>
-</div>
-
-
+            <label
+              htmlFor="hasStocks"
+              className="block text-lg font-light mb-2"
+            >
+              Do you already own stocks for this ticker?{" "}
+              <span className="text-red-500">*</span>
+            </label>
+            <Select
+              value={formData.hasStocks}
+              onValueChange={(value: string) =>
+                setFormData((prev) => ({ ...prev, hasStocks: value }))
+              }
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Option" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
-             <label htmlFor="sharesOwned" className="block text-lg font-light mb-2">
-  How many shares do you own? <span className="text-red-500">*</span>
-</label>
+              <label
+                htmlFor="sharesOwned"
+                className="block text-lg font-light mb-2"
+              >
+                How many shares do you own?{" "}
+                <span className="text-red-500">*</span>
+              </label>
               <input
                 id="sharesOwned"
                 type="number"
+                step="any"
                 min="0"
                 className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 value={formData.sharesOwned}
@@ -222,14 +224,18 @@ export default function StockPage() {
           )}
 
           <div className="mb-6">
-          <label htmlFor="cashToInvest" className="block text-lg font-light mb-2">
-  How much cash do you want to invest in this stock? <span className="text-red-500">*</span>
-</label>
+            <label
+              htmlFor="cashToInvest"
+              className="block text-lg font-light mb-2"
+            >
+              How much cash do you want to invest in this stock?{" "}
+              <span className="text-red-500">*</span>
+            </label>
             <input
               id="cashToInvest"
               type="number"
               min="0"
-              step="1"
+              step="any"
               className="w-full bg-white dark:bg-black dark:text-white border ring-offset-background rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               value={formData.cashToInvest}
               onChange={handleInputChange}
