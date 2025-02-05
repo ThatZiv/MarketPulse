@@ -61,7 +61,7 @@ export default function Landing() {
 
       <div className="flex flex-col items-center gap-8 flex-grow">
         <Link
-          className="flex items-center justify-center h-20 w-20 text-black dark:text-white rounded-full pb-2 bg-tertiary/50 text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
+          className="flex items-center justify-center h-20 w-20 text-black dark:text-white rounded-full pb-2 bg-tertiary/50 dark:bg-tertiary/20 text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
           to="/stocks"
         >
           +
@@ -97,7 +97,7 @@ export default function Landing() {
 
 function StockCard({ stock }: StockCardProps) {
   return (
-    <Link to={`/stocks/${stock.Stocks.stock_ticker}`} className="bg-tertiary/50 p-6 rounded-lg dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
+    <Link to={`/stocks/${stock.Stocks.stock_ticker}`} className="bg-tertiary/50 p-6 hover:scale-105 rounded-lg dark:bg-tertiary/20 dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
       <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
         {stock.Stocks.stock_name}
       </h3>
