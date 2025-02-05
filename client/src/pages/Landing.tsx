@@ -7,6 +7,7 @@ import { Link } from "react-router";
 interface StockResponse {
   Stocks: {
     stock_name: string;
+    stock_ticker: string;
   };
   shares_owned: number;
 }
@@ -27,7 +28,7 @@ export default function Landing() {
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name), shares_owned")
+          .select("Stocks (stock_name, stock_ticker), shares_owned")
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
@@ -58,14 +59,7 @@ export default function Landing() {
       </h1>
       <Separator className="my-2" />
 
-      <div className="flex flex-col items-center gap-8 flex-grow">
-        <Link
-          className="flex items-center justify-center h-20 w-20 text-black dark:text-white rounded-full pb-2 bg-tertiary/50 text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
-          to="/stocks"
-        >
-          +
-        </Link>
-
+      <div className="flex flex-col items-center gap-4 flex-grow">
         <section className="w-full">
           <h2 className="text-2xl font-light mb-6 text-center">
             Your Investment Portfolio
@@ -86,6 +80,12 @@ export default function Landing() {
               {stocks?.map((stock) => (
                 <StockCard key={stock?.Stocks?.stock_name} stock={stock} />
               ))}
+              <Link
+                className="flex items-center justify-center h-20 w-20 text-white rounded-full pb-1 bg-primary text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
+                to="/stocks"
+              >
+                +
+              </Link>
             </div>
           )}
         </section>
@@ -96,16 +96,18 @@ export default function Landing() {
 
 function StockCard({ stock }: StockCardProps) {
   return (
-    <div className="bg-tertiary/50 p-6 rounded-lg dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
-      <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
-        {stock.Stocks.stock_name}
-      </h3>
-      <p className="text-sm font-medium">
-        <span className="font-extrabold">
-          {stock.shares_owned.toLocaleString()}
-        </span>{" "}
-        shares owned
-      </p>
-    </div>
+    <Link to={`/stocks/${stock.Stocks.stock_ticker}`}>
+      <div className="bg-primary transition-all hover:px-8 p-6 rounded-lg text-white shadow flex flex-col justify-center items-center text-center hover:shadow-md">
+        <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
+          {stock.Stocks.stock_name}
+        </h3>
+        <p className="text-sm font-medium">
+          <span className="font-extrabold">
+            {stock.shares_owned.toLocaleString()}
+          </span>{" "}
+          shares owned
+        </p>
+      </div>
+    </Link>
   );
 }
