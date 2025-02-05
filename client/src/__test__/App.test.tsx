@@ -11,6 +11,8 @@ test("demo", () => {
 jest.mock("lucide-react", () => ({
   Moon: () => "MoonIcon",
   Sun: () => "SunIcon",
+  Eye: () => "EyeIcon",
+  EyeOff: () => "EyeOffIcon",
 }));
 
 // Needed to wrap in Router since it gets router App.tsx
