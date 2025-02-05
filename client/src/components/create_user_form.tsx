@@ -249,7 +249,7 @@ export function CreateForm({
             ></div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <span className="text-blue-600 hover:text-blue-900 ">
+              <span className="link ">
                 <button
                   onClick={() => {
                     togglePageState();
