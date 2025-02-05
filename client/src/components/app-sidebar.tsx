@@ -13,20 +13,15 @@ import {
 
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { Skeleton } from "./ui/skeleton";
-import { Button } from "./ui/button";
-import { Link } from "react-router";
 import useAsync from "@/hooks/useAsync";
 
 const data = {
@@ -110,7 +105,9 @@ const data = {
 interface NavItem {
   title: string;
   url: string;
-  icon: React.ForwardRefExoticComponent<LucideProps & React.RefAttributes<SVGSVGElement>>;
+  icon: React.ForwardRefExoticComponent<
+    LucideProps & React.RefAttributes<SVGSVGElement>
+  >;
   isActive: boolean | undefined;
   items: { title: string; url: string }[] | [] | undefined; // Allow null or undefined for items
 }
@@ -128,7 +125,7 @@ interface StockResponse {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, status, supabase } = useSupabase();
+  const { user, supabase } = useSupabase();
   const [navData, setNavData] = useState<NavData>(data);
 
   const { value: stocks, error: stocksError } = useAsync<StockResponse[]>(
@@ -158,9 +155,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ...prevData,
         navMain: prevData.navMain.map((navItem) =>
           navItem.title === "Dashboard"
-            ? { ...navItem, items: [...(navItem.items ?? []), ...((all_stocks ?? []).filter((stock) => 
-              !navItem.items?.some(((item) => 
-                item.url === stock.url))))] }
+            ? {
+                ...navItem,
+                items: [
+                  ...(navItem.items ?? []),
+                  ...(all_stocks ?? []).filter(
+                    (stock) =>
+                      !navItem.items?.some((item) => item.url === stock.url)
+                  ),
+                ],
+              }
             : navItem
         ),
       }));
@@ -202,28 +206,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavProjects projects={data.projects} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        {status === "loading" && (
-          <Skeleton className="flex items-center justify-center h-16">
-            <div className="flex items-center space-x-4">
-              <Skeleton className="rounded-full h-10 w-10" />
-              <div className="flex flex-col">
-                <Skeleton className="w-24 h-4" />
-                <Skeleton className="w-16 h-3" />
-              </div>
-            </div>
-          </Skeleton>
-        )}
-        {user ? (
-          <NavUser />
-        ) : (
-          <Link to="/auth">
-            <Button className="w-full" size="lg">
-              Login
-            </Button>
-          </Link>
-        )}
-      </SidebarFooter>
     </Sidebar>
   );
 }
