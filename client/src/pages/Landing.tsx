@@ -7,6 +7,7 @@ import { Link } from "react-router";
 interface StockResponse {
   Stocks: {
     stock_name: string;
+    stock_ticker: string;
   };
   shares_owned: number;
 }
@@ -27,7 +28,7 @@ export default function Landing() {
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name), shares_owned")
+          .select("Stocks (stock_name,stock_ticker), shares_owned")
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
@@ -96,7 +97,7 @@ export default function Landing() {
 
 function StockCard({ stock }: StockCardProps) {
   return (
-    <div className="bg-tertiary/50 p-6 rounded-lg dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
+    <Link to={`/stocks/${stock.Stocks.stock_ticker}`} className="bg-tertiary/50 p-6 rounded-lg dark:text-white text-black shadow flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
       <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
         {stock.Stocks.stock_name}
       </h3>
@@ -106,6 +107,6 @@ function StockCard({ stock }: StockCardProps) {
         </span>{" "}
         shares owned
       </p>
-    </div>
+    </Link>
   );
 }
