@@ -15,6 +15,10 @@ import { Separator } from "@/components/ui/separator";
 import { Link, Outlet, useLocation } from "react-router";
 import { useMemo } from "react";
 import React from "react";
+import { useSupabase } from "@/database/SupabaseProvider";
+import { NavUser } from "@/components/nav-user";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const capitalize = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -22,6 +26,7 @@ const capitalize = (str: string) => {
 
 export default function Dashboard() {
   const location = useLocation();
+  const { user, status } = useSupabase();
   const paths = useMemo(
     () => location.pathname.split("/"),
     [location.pathname]
@@ -75,6 +80,30 @@ export default function Dashboard() {
                   .filter(Boolean)}
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+          <div className="flex justify-right gap-2 ml-auto">
+            <div>
+              {status === "loading" && (
+                <Skeleton className="flex items-center justify-center h-16">
+                  <div className="flex items-center space-x-4">
+                    <Skeleton className="rounded-full h-10 w-10" />
+                    <div className="flex flex-col">
+                      <Skeleton className="w-24 h-4" />
+                      <Skeleton className="w-16 h-3" />
+                    </div>
+                  </div>
+                </Skeleton>
+              )}
+              {user ? (
+                <NavUser />
+              ) : (
+                <Link to="/auth">
+                  <Button className="w-full" size="lg">
+                    Login
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
         </header>
         <div
