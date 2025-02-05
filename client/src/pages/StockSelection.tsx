@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight} from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
