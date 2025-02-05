@@ -11,13 +11,17 @@ tokenizer = AutoTokenizer.from_pretrained("mrm8488/distilroberta-finetuned-finan
 model = AutoModelForSequenceClassification.from_pretrained("mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
 
 search = "TSLA"
-def news_search(search, date):
+def news_search(search):
+   
     url = requests.get(f"https://news.google.com/rss/search?q={search}")
-    soup = BeautifulSoup(url.content, 'xml')
+    soup = BeautifulSoup(url.text, 'xml')
+    print(soup.prettify())
     data = soup.find_all('item')
     articles = []
     content = []
+    
     # create an array of titles and links to connect to and gather data on
+    
     for article in data:
         title = article.title.text
         link = article.link.text
@@ -39,5 +43,8 @@ def news_search(search, date):
     print(logits)
 
     return logits
+    
+    return 1
+    
 
-out = news_search(search, "1/2/2022")
+out = news_search(search)

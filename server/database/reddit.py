@@ -1,10 +1,11 @@
 import requests
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
-public_key = "6Fw2rOLKECBtYpOD3Sr0uA"
-secret_key = "Jv4tM3v_MFUi-iIZmRDoIbfmkTaYyQ"
+public_key = os.environ.get("reddit_public_key")
+secret_key = os.environ.get("reddit_secret_key")
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
 
 auth = requests.auth.HTTPBasicAuth(public_key, secret_key)
@@ -25,7 +26,13 @@ if output.status_code == 200:
     auth_token = output.json()["access_token"]
     print("Success")
 
-
+'''
+r/stocks
+r/investing
+r/wallstreetbets
+r/Wallstreetbetsnew
+r/StockMarket
+'''
 
 def redditrequest(subreddit, topic):
     headers = {
@@ -35,8 +42,8 @@ def redditrequest(subreddit, topic):
     url = f"https://oauth.reddit.com/r/{subreddit}/search"
 
     params = {
-    "t": "week",
-    "limit": 10,
+    "t": "all",
+    "limit": 1,
     "q": topic
     }
 
@@ -45,10 +52,16 @@ def redditrequest(subreddit, topic):
     if output.status_code == 200:
         data = output.json()["data"]["children"]
 
+        print(output.json()["data"]["after"])
+
+        count = 0
         for listing in data:
+            count+=1
+            print(count, "\n")
             print(listing["data"]["title"])
             print(listing["data"]["selftext"])
-            print("\n")
+            print("UTC Time: ",listing["data"]["created_utc"])
+            
 
 redditrequest("stocks", "TSLA")
 
