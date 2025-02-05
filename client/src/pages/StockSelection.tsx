@@ -248,14 +248,14 @@ export default function StockPage() {
           <div className="flex flex-col md:flex-row gap-3 md:gap-0 justify-between mt-8">
             <Button
               type="button"
-              className="px-10 py-5 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 hover:bg-primary/60 active:bg-primary/70 transition-all duration-200"
+              className="px-10 py-5 text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 hover:bg-primary/60 active:bg-primary/70 transition-all duration-200"
               onClick={() => navigate("/")}
             >
               Return
             </Button>
             <Button
               type="submit"
-              className="px-10 py-5 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 transition-all duration-200 disabled:opacity-50 w-full sm:w-auto"
+              className="px-10 py-5 text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 transition-all duration-200 disabled:opacity-50 w-full sm:w-auto"
               disabled={stocksLoading}
             >
               Submit <ArrowRight className="hidden md:block ml-2" />

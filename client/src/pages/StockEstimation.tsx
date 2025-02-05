@@ -107,7 +107,7 @@ export default function Stocks() {
     );
   }
 
-  const hype_meter_labels = ["Positive", "Negative", "Neutral"];
+  const hype_meter_labels = ["Positive", "Neutral", "Negative"];
   const hype_meter_dataset = [
     {
       data: [50, 20, 30],
@@ -130,7 +130,7 @@ export default function Stocks() {
       legend: {
         display: true,
         labels: {
-          color: "#8894e3", //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
+          color: "red", //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
           //For now, chose a color that works with both light and dark mode.
         },
       },
@@ -147,7 +147,7 @@ export default function Stocks() {
           ? ticker_name[ticker as keyof typeof ticker_name] || "Undefined"
           : "Stock not found"}
       </h1>
-      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-tertiary/20 rounded-md w-full">
+      <div className="border border-black dark:border-white p-4 bg-tertiary/50 dark:bg-tertiary/20 rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
@@ -181,7 +181,7 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-      <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-tertiary/20 rounded-md mt-4">
+      <div className="border border-black dark:border-white p-6 bg-tertiary/50 dark:bg-tertiary/20 rounded-md mt-4">
         <h2 className="font-semibold text-xl pb-2">
           Buy: {buyScore}% Sell: {sellScore}%
         </h2>
@@ -191,7 +191,7 @@ export default function Stocks() {
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full ">
-        <div className="border border-black dark:border-white bg-secondary rounded-md dark:bg-tertiary/20 md:p-4">
+        <div className="border border-black dark:border-white bg-tertiary/50 rounded-md dark:bg-tertiary/20 md:p-4">
           <div className="flex flex-row justify-center gap-2 pt-2">
             <h3 className="text-center font-semibold text-xl">
               {Object.keys(meters[0])[0]}
@@ -242,7 +242,7 @@ export default function Stocks() {
           </div>
         </div>
         <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
-          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-tertiary/20 rounded-md">
+          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-tertiary/50 dark:bg-tertiary/20 rounded-md">
             <div className="flex flex-row gap-2 pt-2">
               <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">
                 {Object.keys(meters[1])[0]}
@@ -295,7 +295,7 @@ export default function Stocks() {
               />
             </div>
           </div>
-          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-tertiary/20 rounded-md">
+          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-tertiary/50 dark:bg-tertiary/20 rounded-md">
             <div className="flex flex-row gap-2 pt-2">
               <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">
                 {Object.keys(meters[2])[0]}
