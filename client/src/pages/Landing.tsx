@@ -64,30 +64,32 @@ export default function Landing() {
           <h2 className="text-2xl font-light mb-6 text-center">
             Your Investment Portfolio
           </h2>
-
-          {loading ? (
-            <div className="flex flex-row items-center justify-center gap-6">
-              <Skeleton className="w-40 h-[100px]" />
-              <Skeleton className="w-20 h-[100px]" />
-              <Skeleton className="w-32 h-[100px]" />
-            </div>
-          ) : stocks?.length === 0 ? (
-            <div className="text-center text-gray-500">
+          {stocks?.length === 0 && (
+            <div className="text-center text-gray-500 mb-4">
               No investments found, click the "+" to add your first investment
             </div>
-          ) : (
-            <div className="flex flex-row items-center justify-center gap-6">
-              {stocks?.map((stock) => (
-                <StockCard key={stock?.Stocks?.stock_name} stock={stock} />
-              ))}
-              <Link
-                className="flex items-center justify-center h-20 w-20 text-white rounded-full pb-1 bg-primary text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
-                to="/stocks"
-              >
-                +
-              </Link>
-            </div>
           )}
+          <div className="flex flex-row items-center justify-center gap-6">
+            {loading ? (
+              <>
+                <Skeleton className="w-40 h-[100px]" />
+                <Skeleton className="w-20 h-[100px]" />
+                <Skeleton className="w-32 h-[100px]" />
+              </>
+            ) : (
+              <div className="flex flex-row items-center justify-center gap-6">
+                {stocks?.map((stock) => (
+                  <StockCard key={stock?.Stocks?.stock_name} stock={stock} />
+                ))}
+              </div>
+            )}
+            <Link
+              className="flex items-center justify-center h-20 w-20 text-white rounded-full pb-1 bg-primary text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
+              to="/stocks"
+            >
+              +
+            </Link>
+          </div>
         </section>
       </div>
     </div>
