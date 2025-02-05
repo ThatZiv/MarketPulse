@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ArrowLeft} from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,11 +18,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 
-// Define the structure for stock form data
 interface StockFormData {
-  /**
-   * this is the stock_id
-   */
+
   ticker: string;
   hasStocks: string;
   sharesOwned: number;
@@ -33,7 +30,6 @@ export default function StockPage() {
   const navigate = useNavigate();
   const { user, supabase } = useSupabase();
 
-  // Manage form state
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
@@ -68,11 +64,9 @@ export default function StockPage() {
       .min(1, "Cash to invest must be greater than 0"),
   });
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // use zod
 
     const { error } = formSchema.safeParse(formData);
     if (error) {
@@ -110,7 +104,6 @@ export default function StockPage() {
     navigate("/", { replace: false });
   };
 
-  // Handle input field changes
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -150,21 +143,19 @@ export default function StockPage() {
             <div className="mb-4 text-red-500 text-center">{error}</div>
           )}
 
-          {/* Stock Ticker Selection */}
           <div className="mb-6">
-            <label
-              htmlFor="ticker"
-              className="block text-lg font-light mb-2 text-center text-black dark:text-white"
-            >
-              What is the ticker?
-            </label>
+
+          <label htmlFor="ticker" className="block text-lg font-light mb-2">
+            What is the ticker? <span className="text-red-500">*</span>
+          </label>
+
             {stocksLoading ? (
               <Skeleton className="w-full h-12" />
             ) : (
               <Select
                 value={formData.ticker}
                 defaultValue={""}
-                onValueChange={(value) => {
+                onValueChange={(value: string) => {
                   setFormData((prev) => ({ ...prev, ticker: value }));
                 }}
                 required
@@ -190,38 +181,34 @@ export default function StockPage() {
           </div>
 
           <div className="mb-6">
-            <label
-              htmlFor="hasStocks"
-              className="block text-lg font-light mb-2 text-center text-black dark:text-white"
-            >
-              Do you already have stocks for this ticker?
-            </label>
-            <div className="relative mb-6">
-              <select
-                id="hasStocks"
-                className="appearance-none  dark:text-white dark:bg-black bg-white flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                value={formData.hasStocks}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="" disabled selected>
-                  Select Option
-                </option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-              </select>
-              <ChevronDown className="absolute cursor-pointer right-3 top-1/2 transform -translate-y-1/2 w-5 h-4 text-gray-600 pointer-events-none" />
-            </div>
-          </div>
+
+  <label htmlFor="hasStocks" className="block text-lg font-light mb-2">
+    Do you already own stocks for this ticker? <span className="text-red-500">*</span>
+  </label>
+  <Select
+    value={formData.hasStocks}
+    onValueChange={(value: string) => setFormData(prev => ({ ...prev, hasStocks: value }))}
+    required
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select Option" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectGroup>
+        <SelectItem value="yes">Yes</SelectItem>
+        <SelectItem value="no">No</SelectItem>
+      </SelectGroup>
+    </SelectContent>
+  </Select>
+</div>
+
+
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
-              <label
-                htmlFor="sharesOwned"
-                className="block text-lg text-black dark:text-white font-light mb-2 text-center "
-              >
-                How many stocks do you own?
-              </label>
+             <label htmlFor="sharesOwned" className="block text-lg font-light mb-2">
+  How many shares do you own? <span className="text-red-500">*</span>
+</label>
               <input
                 id="sharesOwned"
                 type="number"
@@ -235,17 +222,14 @@ export default function StockPage() {
           )}
 
           <div className="mb-6">
-            <label
-              htmlFor="cashToInvest"
-              className="block text-lg font-light mb-2 text-center text-black dark:text-white"
-            >
-              How much cash do you want to invest in this stock? ($)
-            </label>
+          <label htmlFor="cashToInvest" className="block text-lg font-light mb-2">
+  How much cash do you want to invest in this stock? <span className="text-red-500">*</span>
+</label>
             <input
               id="cashToInvest"
               type="number"
               min="0"
-              step="0.01"
+              step="1"
               className="w-full bg-white dark:bg-black dark:text-white border ring-offset-background rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               value={formData.cashToInvest}
               onChange={handleInputChange}
