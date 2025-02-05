@@ -68,11 +68,11 @@ export default function Stock_Chart(props: props) {
           font: {
             size: 20,
           },
-          color: '#8894e3',
+          color: 'red',
         },
         legend:{
           labels: {
-            color: '#8894e3',
+            color: 'red',
           },
         }
         
@@ -116,13 +116,13 @@ export default function Stock_Chart(props: props) {
             stockData[length - 2].stock_close,
             stockData[length - 1].stock_close,
           ],
-          borderColor: "#8894e3",
+          borderColor: "red",
           tension: 0.1,
         },
       ],
     };
     return (
-      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-tertiary/20 rounded-md w-full">
+      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
         <Line data={data} options={options} />
         <a href="https://www.yahoo.com/?ilc=401" target="_blank">
           {" "}
