@@ -148,12 +148,12 @@ export function LoginForm({
               </Button>
               <div className="text-center text-sm">
                 Forgot your{" "}
-                <span className="underline underline-offset-4">
-                  <Link to="/">Username</Link>
+                <span className="link">
+                  <Link to="/">username</Link>
                 </span>{" "}
                 or{" "}
-                <span className="underline underline-offset-4">
-                  <Link to="/">Password</Link>
+                <span className="link">
+                  <Link to="/">password</Link>
                 </span>{" "}
                 ?
               </div>

@@ -150,4 +150,8 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .link {
+    @apply text-blue-600 hover:text-blue-900;
+  }
 }
