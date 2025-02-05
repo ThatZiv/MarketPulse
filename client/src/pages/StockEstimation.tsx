@@ -75,9 +75,25 @@ export default function Stocks() {
     if (!ticker_name) {
       // Redirect
       navigate("/");
-      toast.error("Invalid ticker name");
+      toast.error("Invalid ticker: The entered ticker is not found in our database.");
+      return;
     }
   });
+  useEffect(() => {
+    if (!stocks || stocks.length === 0) {
+      return;
+    }
+    const tickerToCheck = ticker_name?.[ticker as keyof typeof ticker_name];
+    const stockExists = stocks?.some(
+      (stock) => stock?.Stocks?.stock_name === tickerToCheck
+    );
+    if (!stockExists){
+      console.log(ticker_name?.[ticker as keyof typeof ticker_name]);
+      navigate("/");
+      toast.warning("Restricted access: To view this page, please add this ticker to your account.");
+      return;
+    }
+  }, [stocks]);
 
   if (stocksError) {
     return (
