@@ -14,7 +14,6 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -43,7 +42,7 @@ export function CreateForm({
   const [isFlipped, setIsFlipped] = useState(true);
   const { signInWithGoogle } = useSupabase();
   const [password, setPassword] = useState(""); 
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
