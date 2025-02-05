@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff } from "lucide-react"; 
+import { Eye, EyeOff } from "lucide-react";
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -90,7 +90,7 @@ export function LoginForm({
         <CardHeader>
           <CardTitle className="text-2xl">Log in</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your info below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -122,7 +122,7 @@ export function LoginForm({
                       <div className="relative">
                         <Input
                           placeholder="Password"
-                          type={showPassword ? "text" : "password"} 
+                          type={showPassword ? "text" : "password"}
                           required
                           {...field}
                         />
@@ -131,7 +131,11 @@ export function LoginForm({
                           onClick={() => setShowPassword((prev) => !prev)}
                           className="absolute inset-y-0 right-2 flex items-center text-gray-500"
                         >
-                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          {showPassword ? (
+                            <EyeOff size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
                         </button>
                       </div>
                     </FormControl>
@@ -144,12 +148,12 @@ export function LoginForm({
               </Button>
               <div className="text-center text-sm">
                 Forgot your{" "}
-                <span className="underline underline-offset-4">
-                  <Link to="/">Username</Link>
+                <span className="link">
+                  <Link to="/">username</Link>
                 </span>{" "}
                 or{" "}
-                <span className="underline underline-offset-4">
-                  <Link to="/">Password</Link>
+                <span className="link">
+                  <Link to="/">password</Link>
                 </span>{" "}
                 ?
               </div>
@@ -181,9 +185,9 @@ export function LoginForm({
 
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <span className="underline underline-offset-4">
+              <span className="text-blue-600 hover:text-blue-900 underline-offset-4">
                 <button
-                  className="underline"
+                  className=""
                   onClick={() => {
                     togglePageState();
                     setIsFlipped((prev) => !prev);

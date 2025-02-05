@@ -23,7 +23,6 @@ import { useSupabase } from "@/database/SupabaseProvider";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
-
 type googleResponse = {
   clientId: string;
   client_id: string;
@@ -41,18 +40,27 @@ export function CreateForm({
   const { signUpNewUser } = useSupabase();
   const [isFlipped, setIsFlipped] = useState(true);
   const { signInWithGoogle } = useSupabase();
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
   const [, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
-      password: z.string().min(8).max(50).regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter" })
-        .regex(/[0-9]/, { message: "Password must contain at least one number" })
-        .regex(/[\W_]/, { message: "Password must contain at least one special character" }),
+      password: z
+        .string()
+        .min(8)
+        .max(50)
+        .regex(/[A-Z]/, {
+          message: "Password must contain at least one uppercase letter",
+        })
+        .regex(/[0-9]/, {
+          message: "Password must contain at least one number",
+        })
+        .regex(/[\W_]/, {
+          message: "Password must contain at least one special character",
+        }),
       password2: z.string(),
     })
     .refine(
@@ -97,11 +105,15 @@ export function CreateForm({
   ];
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props} style={{
-      transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
-      transitionDuration: "250ms",
-      transformStyle: "preserve-3d",
-    }}>
+    <div
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+      style={{
+        transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
+        transitionDuration: "250ms",
+        transformStyle: "preserve-3d",
+      }}
+    >
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
@@ -135,7 +147,7 @@ export function CreateForm({
                       <div className="relative">
                         <Input
                           placeholder="Password"
-                          type={showPassword ? "text" : "password"} 
+                          type={showPassword ? "text" : "password"}
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -144,17 +156,25 @@ export function CreateForm({
                         />
                         <button
                           type="button"
-                          onClick={() => setShowPassword((prev) => !prev)} 
+                          onClick={() => setShowPassword((prev) => !prev)}
                           className="absolute inset-y-0 right-2 flex items-center text-gray-500"
                         >
-                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          {showPassword ? (
+                            <EyeOff size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
                         </button>
                       </div>
-
                     </FormControl>
                     <div className="mt-2 text-sm">
                       {passwordValidations.map((req, index) => (
-                        <div key={index} className={`flex items-center ${req.isValid ? "text-green-500" : "text-red-500"}`}>
+                        <div
+                          key={index}
+                          className={`flex items-center ${
+                            req.isValid ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
                           {req.isValid ? "✅" : "❌"} {req.text}
                         </div>
                       ))}
@@ -173,7 +193,7 @@ export function CreateForm({
                       <div className="relative">
                         <Input
                           placeholder="Confirm Password"
-                          type={showConfirmPassword ? "text" : "password"}  
+                          type={showConfirmPassword ? "text" : "password"}
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
@@ -182,19 +202,26 @@ export function CreateForm({
                         />
                         <button
                           type="button"
-                          onClick={() => setShowConfirmPassword((prev) => !prev)}  
+                          onClick={() =>
+                            setShowConfirmPassword((prev) => !prev)
+                          }
                           className="absolute inset-y-0 right-2 flex items-center text-gray-500"
                         >
-                          {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                          {showConfirmPassword ? (
+                            <EyeOff size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
                         </button>
                       </div>
-
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button className="dark:text-white" type="submit">Create</Button>
+              <Button className="dark:text-white" type="submit">
+                Create
+              </Button>
               <div className="flex items-center my-4">
                 <div className="w-full h-px bg-gray-300"></div>
                 <span className="px-4 text-gray-500 text-sm">OR</span>
@@ -222,12 +249,15 @@ export function CreateForm({
             ></div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <span className="underline underline-offset-4">
-                <button className="underline" onClick={() => {
-                  togglePageState();  
-                  setIsFlipped((prev) => !prev);
-                }}
-                >Login</button>
+              <span className="link ">
+                <button
+                  onClick={() => {
+                    togglePageState();
+                    setIsFlipped((prev) => !prev);
+                  }}
+                >
+                  Login
+                </button>
               </span>
             </div>
           </Form>

@@ -5,6 +5,7 @@
   padding: 0;
   text-align: center;
 }
+
 /* Only for gauge meters in StockEstimation.tsx */
 :root {
   --tick-label-color: black;
@@ -13,6 +14,7 @@
 .dark {
   --tick-label-color: white;
 }
+
 .logo {
   height: 6em;
   padding: 1.5em;
