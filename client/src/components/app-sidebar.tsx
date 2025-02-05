@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   BookOpen,
   Command,
@@ -152,7 +152,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     title: stock.Stocks.stock_name,
     url: `/stocks/${stock.Stocks.stock_ticker}`,
   }));
-  const stableStocks = useMemo(() => stocks, [stocks]);
   useEffect(() => {
     const updateStocks = () => {
       setNavData((prevData) => ({
@@ -167,7 +166,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }));
     };
     updateStocks();
-  }, [stableStocks]);
+  }, [stocks]);
   if (stocksError) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
