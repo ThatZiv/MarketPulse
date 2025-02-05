@@ -122,7 +122,7 @@ export default function Stock_Chart(props: props) {
       ],
     };
     return (
-      <div className="border border-black dark:border-white p-4 bg-tertiary/50 dark:bg-tertiary/20 rounded-md w-full">
+      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
         <Line data={data} options={options} />
         <a href="https://www.yahoo.com/?ilc=401" target="_blank">
           {" "}
