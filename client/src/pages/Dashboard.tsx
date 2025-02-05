@@ -7,13 +7,12 @@ import { AppSidebar } from "@/components/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { useMemo } from "react";
 import React from "react";
 
@@ -33,12 +32,14 @@ export default function Dashboard() {
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2">
           <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1"/>
+            <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                  <Link to="/" replace>
+                    Home
+                  </Link>
                 </BreadcrumbItem>
 
                 {paths.filter(Boolean).length > 0 && (
@@ -59,11 +60,13 @@ export default function Dashboard() {
                     return (
                       <React.Fragment key={index}>
                         <BreadcrumbItem>
-                          <BreadcrumbLink
-                            href={paths.slice(0, index + 1).join("/")}
+                          <Link
+                            className="transition-colors hover:text-foreground"
+                            to={paths.slice(0, index + 1).join("/")}
+                            replace
                           >
                             {capitalize(path)}
-                          </BreadcrumbLink>
+                          </Link>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator className="hidden md:block" />
                       </React.Fragment>
@@ -74,7 +77,9 @@ export default function Dashboard() {
             </Breadcrumb>
           </div>
         </header>
-        <div className={`flex p-4 justify-center transition-all duration-300 w-full bg-light-themed dark:bg-dark-themed bg-center bg-no-repeat bg-cover`}>
+        <div
+          className={`flex p-4 justify-center transition-all duration-300 w-full bg-light-themed dark:bg-dark-themed bg-center bg-no-repeat bg-cover`}
+        >
           <Outlet />
         </div>
       </SidebarInset>
