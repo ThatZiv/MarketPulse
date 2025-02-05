@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -107,7 +107,7 @@ export default function StockPage() {
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
 
-    navigate("/");
+    navigate("/", { replace: false });
   };
 
   // Handle input field changes
@@ -135,8 +135,8 @@ export default function StockPage() {
   }
   return (
     <main className="w-xl min-h-screen">
-      <header className="px-4 border-b border-gray-200 flex items-center justify-between mx-auto max-w-screen-sm">
-        <h1 className="text-4xl font-[Poppins] font-bold text-center flex-1 tracking-tight">
+      <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
+        <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
           Stock Details
         </h1>
       </header>
@@ -152,7 +152,10 @@ export default function StockPage() {
 
           {/* Stock Ticker Selection */}
           <div className="mb-6">
-            <label htmlFor="ticker" className="block text-lg font-light mb-2 text-center text-black dark:text-white">
+            <label
+              htmlFor="ticker"
+              className="block text-lg font-light mb-2 text-center text-black dark:text-white"
+            >
               What is the ticker?
             </label>
             {stocksLoading ? (
@@ -167,7 +170,10 @@ export default function StockPage() {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Stock" className="dark:text-white" />
+                  <SelectValue
+                    placeholder="Select Stock"
+                    className="dark:text-white"
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -198,7 +204,9 @@ export default function StockPage() {
                 onChange={handleInputChange}
                 required
               >
-                <option value="" disabled selected>Select Option</option>
+                <option value="" disabled selected>
+                  Select Option
+                </option>
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
               </select>
@@ -248,17 +256,18 @@ export default function StockPage() {
           <div className="flex flex-col md:flex-row gap-3 md:gap-0 justify-between mt-8">
             <Button
               type="button"
-              className="px-10 py-5 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 hover:bg-primary/60 active:bg-primary/70 transition-all duration-200"
+              className="flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 disabled:opacity-50 w-full sm:w-auto"
               onClick={() => navigate("/")}
             >
-              Return
+              <ArrowLeft className="hidden md:block" />
+              Back
             </Button>
             <Button
               type="submit"
-              className="px-10 py-5 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 transition-all duration-200 disabled:opacity-50 w-full sm:w-auto"
+              className="flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 disabled:opacity-50 w-full sm:w-auto"
               disabled={stocksLoading}
             >
-              Submit <ArrowRight className="hidden md:block ml-2" />
+              Submit <ArrowRight className="hidden md:block" />
             </Button>
           </div>
         </form>
