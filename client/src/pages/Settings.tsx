@@ -166,7 +166,7 @@ export default function SettingsPage() {
 
   return (
     <div className="h-screen text-left">
-      <h1 className="text-3xl">Settings</h1>
+      <h1 className="text-3xl text-center">Settings</h1>
       <Separator className="my-4" />
       {state === "done" ? (
         <>
