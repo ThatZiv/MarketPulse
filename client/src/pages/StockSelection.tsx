@@ -101,7 +101,7 @@ export default function StockPage() {
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
 
-    navigate("/");
+    navigate("/", { replace: false });
   };
 
   const handleInputChange = (
@@ -128,8 +128,8 @@ export default function StockPage() {
   }
   return (
     <main className="w-xl min-h-screen">
-      <header className="px-4 border-b border-gray-200 flex items-center justify-between mx-auto max-w-screen-sm">
-        <h1 className="text-4xl font-[Poppins] font-bold text-center flex-1 tracking-tight">
+      <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
+        <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
           Stock Details
         </h1>
       </header>
@@ -144,9 +144,11 @@ export default function StockPage() {
           )}
 
           <div className="mb-6">
+
           <label htmlFor="ticker" className="block text-lg font-light mb-2">
             What is the ticker? <span className="text-red-500">*</span>
           </label>
+
             {stocksLoading ? (
               <Skeleton className="w-full h-12" />
             ) : (
@@ -159,7 +161,10 @@ export default function StockPage() {
                 required
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Stock" className="dark:text-white" />
+                  <SelectValue
+                    placeholder="Select Stock"
+                    className="dark:text-white"
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
@@ -176,6 +181,7 @@ export default function StockPage() {
           </div>
 
           <div className="mb-6">
+
   <label htmlFor="hasStocks" className="block text-lg font-light mb-2">
     Do you already own stocks for this ticker? <span className="text-red-500">*</span>
   </label>
@@ -195,6 +201,7 @@ export default function StockPage() {
     </SelectContent>
   </Select>
 </div>
+
 
 
           {formData.hasStocks === "yes" && (
@@ -233,17 +240,18 @@ export default function StockPage() {
           <div className="flex flex-col md:flex-row gap-3 md:gap-0 justify-between mt-8">
             <Button
               type="button"
-              className="px-10 py-5 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 hover:bg-primary/60 active:bg-primary/70 transition-all duration-200"
+              className="flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 disabled:opacity-50 w-full sm:w-auto"
               onClick={() => navigate("/")}
             >
-              Return
+              <ArrowLeft className="hidden md:block" />
+              Back
             </Button>
             <Button
               type="submit"
-              className="px-10 py-5 rounded-full text-lg font-bold shadow-md transform hover:scale-105 active:scale-95 flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 transition-all duration-200 disabled:opacity-50 w-full sm:w-auto"
+              className="flex items-center justify-center hover:bg-primary/60 active:bg-primary/70 disabled:opacity-50 w-full sm:w-auto"
               disabled={stocksLoading}
             >
-              Submit <ArrowRight className="hidden md:block ml-2" />
+              Submit <ArrowRight className="hidden md:block" />
             </Button>
           </div>
         </form>
