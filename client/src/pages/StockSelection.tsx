@@ -57,7 +57,7 @@ export default function StockPage() {
     ticker: z.string().nonempty("Please select a stock"),
     hasStocks: z
       .string()
-      .nonempty("Please specify if you own shared for this stock"),
+      .nonempty("Please specify if you own shares for this stock"),
     sharesOwned: z.number().min(0).optional(),
     cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
   });
