@@ -14,12 +14,12 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Eye, EyeOff } from "lucide-react"; 
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -43,6 +43,8 @@ export function LoginForm({
 }: LoginFormProps) {
   const { signInWithEmail, signInWithGoogle } = useSupabase();
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const formSchema = z.object({
     email: z.string().max(50).email(),
     password: z.string().min(8).max(50),
@@ -61,8 +63,6 @@ export function LoginForm({
     await signInWithEmail(values.email, values.password);
   }
 
-  // This appears to work though throws errors in the browser?
-  // It is in test mode so emails need to be pre-approved
   window.handleSignInWithGoogle = async (response: googleResponse) => {
     console.log("Callback fired! Response:", response);
     await signInWithGoogle(response);
@@ -108,7 +108,6 @@ export function LoginForm({
                     <FormControl>
                       <Input placeholder="Email Address" required {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -120,22 +119,27 @@ export function LoginForm({
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Password"
-                        type="password"
-                        required
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Password"
+                          type={showPassword ? "text" : "password"} 
+                          required
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+                        >
+                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
                     </FormControl>
-                    <FormDescription></FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="mt-3"
-              >
+              <Button type="submit" className="mt-3">
                 Login
               </Button>
               <div className="text-center text-sm">
@@ -181,8 +185,8 @@ export function LoginForm({
                 <button
                   className="underline"
                   onClick={() => {
-                    togglePageState(); // Toggle login/signup state
-                    setIsFlipped((prev) => !prev); // Flip the UI element
+                    togglePageState();
+                    setIsFlipped((prev) => !prev);
                   }}
                 >
                   Create Account
