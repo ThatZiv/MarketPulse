@@ -26,15 +26,11 @@ if output.status_code == 200:
     auth_token = output.json()["access_token"]
     print("Success")
 
-'''
-r/stocks
-r/investing
-r/wallstreetbets
-r/Wallstreetbetsnew
-r/StockMarket
-'''
+sub_reddits = ["stocks","investing","wallstreetbets","Wallstreetbetsnew","StockMarket"]
+stocks = ["Tesla", "Ford Motor Company", "General Motors", "Toyota Motors", "Rivian"]
 
-def redditrequest(subreddit, topic):
+def reddit_request(subreddit, topic):
+    
     headers = {
     "Authorization": f"Bearer {auth_token}",
     "User-Agent": user_agent
@@ -43,27 +39,83 @@ def redditrequest(subreddit, topic):
 
     params = {
     "t": "all",
-    "limit": 1,
+    "limit": 100,
     "q": topic
     }
 
     output = requests.get(url, headers=headers, params=params)
-
+    inputs = []
     if output.status_code == 200:
         data = output.json()["data"]["children"]
-
-        print(output.json()["data"]["after"])
-
+        after = output.json()["data"]["after"]
+        print(after)
         count = 0
         for listing in data:
             count+=1
-            print(count, "\n")
-            print(listing["data"]["title"])
-            print(listing["data"]["selftext"])
-            print("UTC Time: ",listing["data"]["created_utc"])
+            inputs.append({'title': listing["data"]["title"], 'self_text': listing["data"]["selftext"], 'timestamp': listing["data"]["created_utc"], 'name': listing["data"]["name"]})
             
+       
+        
+        #gather the first 5000 results on this subreddit
+        for i in range (49):
+            params = {
+                "t": "all",
+                "limit": 100,
+                "q": topic,
+                "after": after
+            }
+            output = requests.get(url, headers=headers, params=params)
+            if count == 100:
+                if output.status_code == 200:
+                    data = output.json()["data"]["children"]
+                    after = output.json()["data"]["after"]
+                    print(after)
+                    count = 0
+                    for listing in data:
+                        count+=1
+                        inputs.append({'title': listing["data"]["title"], 'self_text': listing["data"]["selftext"], 'timestamp': listing["data"]["created_utc"], 'name': listing["data"]["name"]})
+            else:
+                break
+        # search for the comments to the posts
+        for listing in inputs:
+            url = f"https://oauth.reddit.com/api/morechildren"
+            params = {
+                "link_id": listing["name"],
+                "limit_children": False
+            }
+            output = requests.get(url, headers=headers, params=params)
+            print(output)
 
-redditrequest("stocks", "TSLA")
+
+
+        return inputs 
+        
+
+    
+def morechildren():
+    url = f"https://oauth.reddit.com/r/CoveredCalls/comments/"
+    headers = {
+    "Authorization": f"Bearer {auth_token}",
+    "User-Agent": user_agent
+    }
+    params = {
+        "article": 't3_1hgvjcq',
+        "depth": "10",
+        }
+    output = requests.get(url, headers=headers, params=params)
+    data = output.json()["data"]["children"]
+    count = 0
+    for listing in data:
+        count+=1
+        print('\n')
+        print(listing["data"]["link_title"])
+        print(listing["data"]["body"])
+        print(listing["data"]["created"])
+    print(count)
+#output = reddit_request("investing", "Ford Stock")
+morechildren()
+
+#print(len(output))
 
 
 
