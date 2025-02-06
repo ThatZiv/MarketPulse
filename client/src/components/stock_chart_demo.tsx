@@ -65,7 +65,17 @@ export default function Stock_Chart(props: props) {
         title: {
           display: true,
           text: "Stock Data for " + props.ticker,
+          font: {
+            size: 20,
+          },
+          color: 'red',
         },
+        legend:{
+          labels: {
+            color: 'red',
+          },
+        }
+        
       },
     };
     const data = {
@@ -106,13 +116,13 @@ export default function Stock_Chart(props: props) {
             stockData[length - 2].stock_close,
             stockData[length - 1].stock_close,
           ],
-          borderColor: "rgb(136, 0, 7)",
+          borderColor: "red",
           tension: 0.1,
         },
       ],
     };
     return (
-      <div>
+      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
         <Line data={data} options={options} />
         <a href="https://www.yahoo.com/?ilc=401" target="_blank">
           {" "}
