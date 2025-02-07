@@ -17,6 +17,8 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import { cache_keys } from "@/lib/constants";
 
 interface StockFormData {
   ticker: string;
@@ -26,6 +28,7 @@ interface StockFormData {
 }
 
 export default function StockPage() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user, supabase } = useSupabase();
 
@@ -95,7 +98,7 @@ export default function StockPage() {
       success: "Stock data saved successfully",
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
-
+    queryClient.invalidateQueries({ queryKey: [cache_keys.USER_STOCKS] });
     navigate("/", { replace: false });
   };
 

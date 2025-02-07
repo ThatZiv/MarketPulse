@@ -1,25 +1,24 @@
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 
 export interface IApi {
-  getStockLogo: (ticker: string) => Promise<Blob>;
+  getStockLogo: (ticker: string) => Promise<string>;
   get: <TRes>(path: string) => Promise<TRes>;
   post: <TReq, TRes>(path: string, object?: TReq) => Promise<TRes>;
 }
 
 export default class Api implements IApi {
   private instance: AxiosInstance;
-  private token: string;
-  constructor(token: string, instance?: AxiosInstance) {
+  private token?: string;
+
+  constructor(token?: string, instance?: AxiosInstance) {
     this.token = token;
     this.instance = instance || this.createInstance();
   }
+
   protected createInstance() {
     return axios.create({
       baseURL: import.meta.env.VITE_API_URL,
-      withCredentials: true,
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
     });
   }
 
@@ -62,12 +61,15 @@ export default class Api implements IApi {
   public async getStockLogo(ticker: string) {
     // return this.instance.get(`/auth/logo?ticker=${ticker}`);
     try {
-      const resp = await this.instance.get(`/auth/logo?ticker=${ticker}`);
-      return resp.data as Blob;
+      const resp = await this.instance.get(`/auth/logo?ticker=${ticker}`, {
+        responseType: "arraybuffer",
+      });
+      const img = new Blob([resp.data], { type: "image/png" });
+      return URL.createObjectURL(img);
     } catch (error) {
       handleServiceError(error as AxiosError);
     }
-    return {} as Blob;
+    return "";
   }
 }
 
