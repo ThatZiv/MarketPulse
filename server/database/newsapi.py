@@ -1,50 +1,31 @@
 from bs4 import BeautifulSoup
 import requests
 import torch
-
-
-
-# Load model directly
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
-tokenizer = AutoTokenizer.from_pretrained("mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
-model = AutoModelForSequenceClassification.from_pretrained("mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
+from models.sentimentHF import sentiment_model
 
 search = "TSLA"
-def news_search(search):
+
+# for todays news from google rss feed
+def news_search(search, engine):
    
     url = requests.get(f"https://news.google.com/rss/search?q={search}")
     soup = BeautifulSoup(url.text, 'xml')
-    print(soup.prettify())
     data = soup.find_all('item')
-    articles = []
     content = []
     
     # create an array of titles and links to connect to and gather data on
     
-    for article in data:
-        title = article.title.text
-        link = article.link.text
-        articles.append({'title': title, 'link': link})
-        inputs = tokenizer(title, return_tensors="pt")
-        with torch.no_grad():
-            logits = model(**inputs).logits
-        predicted_class_id = logits.argmax().item()
-        model.config.id2label[predicted_class_id]
-        # To train a model on `num_labels` classes, you can pass `num_labels=num_labels` to `.from_pretrained(...)`
-        num_labels = len(model.config.id2label)
-        labels = torch.tensor([1])
-        loss = model(**inputs, labels=labels).loss
-        round(loss.item(), 2)
-        content.append(logits)
+    for i in range (10):
+        title = data[i].title.text
+        content.append(sentiment_model(title))
 
-    # 0 -> Negative; 1 -> Neutral; 2 -> Positive I Think
-    print(content)
-    print(logits)
-
-    return logits
+    # 0 -> Negative; 1 -> Neutral; 2 -> Positive
     
-    return 1
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    # Add the data to the database
     
-
-out = news_search(search)
+    return content
+    
+    
+    
