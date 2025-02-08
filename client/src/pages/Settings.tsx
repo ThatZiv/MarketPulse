@@ -111,67 +111,68 @@ export default function SettingsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onPasswordSubmit = React.useCallback(
-    async (values: z.infer<typeof passwordFormSchema>, e?: React.FormEvent) => {
-      e?.preventDefault();
-      const result = passwordFormSchema.safeParse(values);
-      if (result.success) {
-        const { error } = await supabase.auth.updateUser({
-          password: values.password,
-        });
-        if (error) {
-          toast.error("Failed updating your password", {
-            description: error.message,
-          });
-          return;
-        }
-        toast.success("Password updated!");
-        await signOut();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  type AccountFormValues = z.infer<typeof accountFormSchema>;
+  type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
-  const onAccountSubmit = React.useCallback(
-    async (values: z.infer<typeof accountFormSchema>, e?: React.FormEvent) => {
-      e?.preventDefault();
-      const result = accountFormSchema.safeParse(values);
-      if (result.success) {
-        const prefillData = new Promise((resolve, reject) => {
-          supabase
+
+  const onPasswordSubmit = async (values: PasswordFormValues) => {
+    toast("Are you sure you want to change your password?", {
+      action: {
+        label: "Confirm",
+        onClick: async () => {
+          const { error } = await supabase.auth.updateUser({
+            password: values.password,
+          });
+  
+          if (error) {
+            toast.error("Failed updating your password", {
+              description: error.message,
+            });
+          } else {
+            toast.success("Password updated! Logging out...");
+            await signOut();
+          }
+        },
+      },
+    });
+  };
+  
+  
+
+  const onAccountSubmit = async (values: AccountFormValues) => {
+    toast("Are you sure you want to modify your name?", {
+      action: {
+        label: "Confirm",
+        onClick: async () => {
+          const { error } = await supabase
             .from("Account")
             .upsert({ ...values, user_id: user?.id })
             .select()
-            .single()
-            .then(({ data, error }) => {
-              return error ? reject(error) : resolve({ data, error });
+            .single();
+  
+          if (error) {
+            toast.error("Failed updating your profile", {
+              description: error.message,
             });
-        });
-        toast.promise(prefillData, {
-          loading: "Saving...",
-          success: () => "Saved!",
-          error: (error) => error.message,
-        });
-      } else {
-        for (const issue of result.error.issues) {
-          toast.error(issue.message);
-        }
-      }
-    },
-
-    [accountFormSchema, supabase, user?.id]
-  );
+          } else {
+            toast.success("Profile updated successfully!");
+            navigate("/");
+          }
+        },
+      },
+    });
+  };
+  
 
   return (
     <div className="h-screen text-left">
-      <h1 className="text-3xl">Settings</h1>
+      <h1 className="text-3xl text-center">Settings</h1>
       <Separator className="my-4" />
       {state === "done" ? (
         <>
           <Tabs
             value={tab}
-            onValueChange={(_tab) => {
+            onValueChange={(_tab: string) => {
               setTab(_tab);
               navigate(`/settings/${_tab}`, { replace: true });
             }}
