@@ -5,7 +5,7 @@ import copy
 import time
 from database.tables import Stock_Info
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, select, update
 import datetime
 from models.sentimentHF import sentiment_model
 import torch
@@ -160,9 +160,16 @@ def add_to_database(data, engine, id):
                         tensor = torch.add(tensor, logit)
             if tensors > 0:
                 # average tesor for the day
-                print(torch.div(tensor, tensors))
+                answer = torch.div(tensor, tensors)
+                update_row = update(Stock_Info).where(Stock_Info.stock_id == id).where(Stock_Info.time_stamp == i.time_stamp).values(sentiment_data = (answer[0][0]*-1+answer[0][2]).item())
+                print(session.connection().execute(update_row))
                 # update the database for the day
-                
+
+        session.commit()
+        session.flush() 
+        session.close()
+
+
         print(count)
                     
 
@@ -256,14 +263,17 @@ def daily_reddit_request(subreddit, topic, engine, id):
                         tensor = torch.add(tensor, logit)
             if tensors > 0:
                 # average tesor for the day
-                print(torch.div(tensor, tensors))
-                # update the database for the day
-                    
-            print(count)
-                    
+                answer = torch.div(tensor, tensors)
+                # value added to the database
+                return (answer[0][0]*-1+answer[0][2]).item()
+            else : 
+                return 0
+
+                # update the database for the day                    
 
         except Exception as e:
             print(e)
+            return 0
             
             
             

@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
                     # ADD missing days to the end of the output
                     for i in range(len(extra_data['Close'])):
-                        newRow = Stock_Info(stock_id = output_id.stock_id, stock_close = close_s[i], stock_volume = volume_s[i], stock_open=open_s[i], stock_high = high_s[i], stock_low=low_s[i], sentiment_data=0, time_stamp=extra_data["Date"][i])
+                        newRow = Stock_Info(stock_id = output_id.stock_id, stock_close = close_s[i], stock_volume = volume_s[i], stock_open=open_s[i], stock_high = high_s[i], stock_low=low_s[i], sentiment_data=0, time_stamp=extra_data["Date"][i], news_data=0)
                         session.add(newRow)
                         json_output.append({'stock_id' : output_id.stock_id, 'stock_close' : close_s[i], 'stock_volume' : volume_s[i], 'stock_open' : open_s[i], 'stock_high' : high_s[i], 'stock_low' : low_s[i], 'sentiment_data'  : 0, 'time_stamp' : dump_datetime(extra_data["Date"][i])})
 
