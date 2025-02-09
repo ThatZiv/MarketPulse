@@ -50,10 +50,7 @@ const data = {
           title: "Introduction",
           url: "/documentation/introduction",
         },
-        {
-          title: "Get Started",
-          url: "#",
-        },
+
         {
           title: "Tutorials",
           url: "/documentation/tutorials",
