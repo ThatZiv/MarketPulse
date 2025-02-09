@@ -17,6 +17,8 @@ def private():
 def ticker_logo():
     ticker = request.args.get('ticker')
     cache_dir = f"{os.getcwd()}/public/cache"
+    if not ticker:
+        return {"error": "Ticker parameter is required"}, 400
     # sanitize input
     ticker = ticker.replace('/', '').replace('..', '')\
         .replace(' ', '').replace('\\', '').replace('..', '')

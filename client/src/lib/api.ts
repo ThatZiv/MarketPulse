@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosError } from "axios";
+import { toast } from "sonner";
 
 export interface IApi {
   getStockLogo: (ticker: string) => Promise<string>;
@@ -32,7 +33,7 @@ export default class Api implements IApi {
       const resp = await this.instance.get(path);
       return resp.data as TRes;
     } catch (error) {
-      handleServiceError(error as AxiosError);
+      this.handleError(error as AxiosError);
     }
     return {} as TRes;
   }
@@ -47,7 +48,7 @@ export default class Api implements IApi {
       const resp = await this.instance.post<TRes>(path, object);
       return resp.data as TRes;
     } catch (error) {
-      handleServiceError(error as AxiosError);
+      this.handleError(error as AxiosError);
     }
     return {} as TRes;
   }
@@ -57,9 +58,7 @@ export default class Api implements IApi {
    * @example AAPL
    * @returns stock logo as a blob
    */
-
   public async getStockLogo(ticker: string) {
-    // return this.instance.get(`/auth/logo?ticker=${ticker}`);
     try {
       const resp = await this.instance.get(`/auth/logo?ticker=${ticker}`, {
         responseType: "arraybuffer",
@@ -67,29 +66,58 @@ export default class Api implements IApi {
       const img = new Blob([resp.data], { type: "image/png" });
       return URL.createObjectURL(img);
     } catch (error) {
-      handleServiceError(error as AxiosError);
+      this.handleError(error as AxiosError);
     }
     return "";
   }
-}
 
-function handleServiceError(error: AxiosError) {
-  if (error.response) {
-    const status = error.response.status;
-    if (status === 401) {
-      // unauthorized error
-    } else if (status === 403) {
-      // forbidden error
-    } else if (status === 404) {
-      // not found error
-    } else if (status === 500) {
-      // internal server error
-    } else if (status === 503) {
-      // service unavailable error
-    } else if (status === 504) {
-      // gateway timeout error
-    } else {
-      // other errors
+  /**
+   * handle error from axios
+   * @param error  axios error
+   */
+  protected async handleError(error: AxiosError) {
+    const status = error.response?.status;
+    // TODO: find a way to make these customizable (duration, dismiss, etc.)
+    switch (status) {
+      case 400:
+        toast.error("Bad Request", {
+          description: "The request was invalid or cannot be served",
+        });
+        break;
+      case 401:
+        toast.error("Unauthorized", {
+          description: "You are not authorized to perform this action",
+        });
+        break;
+      case 403:
+        toast.error("Forbidden", {
+          description: "You are not allowed to perform this action",
+        });
+        break;
+      case 404:
+        toast.error("Not Found", {
+          description: "The requested resource was not found",
+        });
+        break;
+      case 500:
+        toast.error("Internal Server Error", {
+          description: "An error occurred on the server",
+        });
+        break;
+      case 503:
+        toast.error("Service Unavailable", {
+          description: "The service is currently unavailable",
+        });
+        break;
+      case 504:
+        toast.error("Timeout", {
+          description: "The server took too long to respond",
+        });
+        break;
+      default:
+        toast.error("Error", {
+          description: error.message,
+        });
     }
   }
 }

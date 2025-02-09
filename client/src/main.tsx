@@ -7,7 +7,7 @@ import { SupabaseProvider } from "./database/SupabaseProvider.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ApiProvider } from "./lib/ApiProvider.tsx";
+import { ApiProvider } from "@/lib/ApiProvider.tsx";
 
 const queryClient = new QueryClient();
 
