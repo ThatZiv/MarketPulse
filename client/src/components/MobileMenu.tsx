@@ -6,7 +6,7 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { ChevronsUpDown } from 'lucide-react';
-
+import { Separator } from './ui/separator';
 export type MenuItem = {
     href: string;
     label: string;
@@ -23,29 +23,32 @@ type MobileMenuProps = {
 }
 const MobileMenu = ({ menuItems }: MobileMenuProps) => {
     return (
-        <div>
-            <ul className="">
+        <div className="bg-black text-white rounded-lg pb-3">
+            <ul>
                 {menuItems.map(({ href, label, submenu }, index) => (
-                    <li key={index}>
+                    <li key={index} className='w-full' >
                         {submenu ? (
                             <Collapsible>
-                                <CollapsibleTrigger>
-                                    <Button variant="ghost" className='w-full justify-start'>
-                                        {label}
-                                        <ChevronsUpDown />
+                                <CollapsibleTrigger className="w-full">
+                                    <Button asChild variant="ghost" className='w-full pr-3 justify-start'>
+                                        <div className='w-full gap-10 justify-between px-2'>
+                                            {label}
+                                            <ChevronsUpDown className=''/>
+                                        </div>
+
                                     </Button>
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="ps-2 ">
-                                  <ul className="border-l border-l-muted-foreground/20">
-                                    {submenu.map(({href,label},index)=>(
-                                        <li key={index}>
-                                            <Button asChild variant="ghost" className='w-full justify-start text-muted-foreground
-                                            hover:bg-transparent'>
-                                            <a href={href}>{label}</a>
-                                            </Button>
-                                        </li>
-                                    ))}
-                                  </ul>
+                                    <ul className="border-l border-l-muted-foreground/60">
+                                        {submenu.map(({ href, label }, index) => (
+                                            <li key={index}>
+                                                <Button asChild variant="ghost" className='w-full justify-start text-muted-foreground
+                                                hover:bg-transparent hover:text-white'>
+                                                    <a href={href}>{label}</a>
+                                                </Button>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </CollapsibleContent>
                             </Collapsible>
                         ) : (
@@ -56,6 +59,15 @@ const MobileMenu = ({ menuItems }: MobileMenuProps) => {
                     </li>
                 ))}
             </ul>
+            <Separator className='bg-muted-foreground/60'/>
+            <div className='flex items-center gap-2 mt-4 mx-4'>
+                <Button variant="ghost" className='w-full'>
+                    Sign In
+                </Button>
+                <Button className='w-full'>
+                    Create account
+                </Button>
+            </div>
         </div>
     )
 }
