@@ -8,6 +8,7 @@ import { useSupabase } from "@/database/SupabaseProvider";
 import { Spinner } from "@/components/ui/spinner";
 import Settings from "@/pages/Settings";
 import Landing from "@/pages/Landing";
+import HomePage from "./pages/HomePage";
 
 function App() {
   const { status } = useSupabase();
@@ -39,6 +40,7 @@ function App() {
             <Route index element={<Settings />} />
           </Route>
         </Route>
+        <Route path="/home" element={<HomePage />} />
         <Route path="/auth" element={<UserAuth />} />
         <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
