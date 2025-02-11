@@ -6,7 +6,7 @@ on:
     branches: ["master"]
 
 jobs:
-  build:
+  build_client:
     env:
       VITE_API_URL: ${{ secrets.VITE_API_URL }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Restore node_modules from cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             client/node_modules
@@ -39,4 +39,29 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: client
-      # - run: npm run test
+
+  build_server:
+    env:
+      SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
+      dbname: ${{ secrets.DB_NAME }}
+      user: ${{ secrets.DB_USER }}
+      password: ${{ secrets.DB_PASSWORD }}
+      host: ${{ secrets.DB_HOST }}
+      port: 6543
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - uses: syphar/restore-virtualenv@v1
+        id: cache-virtualenv
+        with:
+          requirement_files: server/requirements*.txt
+      - uses: syphar/restore-pip-download-cache@v1
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+      - run: pip install -r requirements.txt
+        if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+      - name: Test
+        run: python -m unittest discover -p '*_test.py'
