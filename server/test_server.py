@@ -52,8 +52,8 @@ if __name__ == '__main__':
 
     #reddit_request("stocks", "Tesla")
     #add_to_database(reddit_request("stocks", "Rivian"), engine, 5)
-    #daily_reddit_request("stocks", "Tesla", engine, 1)
-    print(news_search("Rivian", engine, 5))
+    daily_reddit_request("stocks", "Tesla", engine, 1)
+    #print(news_search("Rivian", engine, 5))
     app.run(debug=True, host='0.0.0.0')
 
 
