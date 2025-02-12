@@ -1,8 +1,11 @@
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSupabase } from "@/database/SupabaseProvider";
-import useAsync from "@/hooks/useAsync";
+import { useApi } from "@/lib/ApiProvider";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { extractColors } from "extract-colors";
 import { Link } from "react-router";
+import { cache_keys } from "@/lib/constants";
 
 interface StockResponse {
   Stocks: {
@@ -18,13 +21,15 @@ interface StockCardProps {
 
 export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
+  const api = useApi();
 
   const {
-    value: stocks,
+    data: stocks,
     error: stocksError,
-    loading: loading,
-  } = useAsync<StockResponse[]>(
-    () =>
+    status: stocksStatus,
+  } = useQuery<StockResponse[]>({
+    queryKey: [cache_keys.USER_STOCKS],
+    queryFn: () =>
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
@@ -38,14 +43,38 @@ export default function Landing() {
             resolve(data || []);
           });
       }),
-    [user, supabase]
-  );
+  });
+
+  const stockImages = useQueries({
+    queries:
+      stocks?.map((stock) => ({
+        queryKey: ["stock", stock.Stocks.stock_ticker],
+        queryFn: () => api?.getStockLogo(stock.Stocks.stock_ticker),
+        staleTime: Infinity,
+      })) || [],
+  }).map((query) => query.data);
+
+  const stockColors = useQueries({
+    queries:
+      stockImages?.map((img) => ({
+        queryKey: ["stock", img],
+        queryFn: () => extractColors(img ?? ""),
+        staleTime: Infinity,
+      })) || [],
+  })
+    ?.map((query) => query.data)
+    .map(
+      // sort by most common color first
+      (img) => img?.sort((a, b) => b.area - a.area).map((color) => color.hex)
+    );
+
+  const loading = stocksStatus === "pending";
 
   if (stocksError) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p>
           Unfortunately, we encountered an error fetching your stocks. Please
           refresh the page or try again later.
         </p>
@@ -78,8 +107,13 @@ export default function Landing() {
               </>
             ) : (
               <div className="flex flex-row items-center justify-center gap-6">
-                {stocks?.map((stock) => (
-                  <StockCard key={stock?.Stocks?.stock_name} stock={stock} />
+                {stocks?.map((stock, index) => (
+                  <StockCard
+                    key={stock?.Stocks?.stock_name}
+                    stock={stock}
+                    img={stockImages[index] ?? ""}
+                    colors={stockColors[index] ?? []}
+                  />
                 ))}
               </div>
             )}
@@ -95,16 +129,35 @@ export default function Landing() {
     </div>
   );
 }
-
-function StockCard({ stock }: StockCardProps) {
+function StockCard({
+  stock,
+  img,
+  colors,
+}: StockCardProps & { img: string; colors: string[] }) {
   return (
     <Link to={`/stocks/${stock.Stocks.stock_ticker}`}>
-      <div className="bg-primary transition-all hover:px-8 p-6 rounded-lg text-white shadow flex flex-col justify-center items-center text-center hover:shadow-md">
-        <h3 className="text-lg font-bold uppercase tracking-wide mb-4">
+      <div
+        className="bg-white dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 duration-200 ease-in-out"
+        style={{
+          border: `4px solid ${colors[0]}`,
+        }}
+      >
+        <div className="flex justify-center mb-4">
+          <img
+            src={img}
+            alt={stock.Stocks.stock_name}
+            className="w-20 h-20 object-cover rounded-lg shadow-md"
+          />
+        </div>
+
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
           {stock.Stocks.stock_name}
         </h3>
-        <p className="text-sm font-medium">
-          <span className="font-extrabold">
+
+        <Separator className="mb-4  border-2 dark:border-gray-300 border-gray-800" />
+
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+          <span className="text-xl font-semibold text-gray-900 dark:text-white">
             {stock.shares_owned.toLocaleString()}
           </span>{" "}
           shares owned
