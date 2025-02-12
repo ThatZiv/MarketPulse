@@ -32,6 +32,7 @@ class Stocks(Base):
     stock_ticker = Column("stock_ticker", String)
     stock_name = Column("stock_name", String)
     search = Column("search", String)
+    stock = relationship("Stock_Info", back_populates="stocks")
 
     def __init__(self, stock_id, stock_ticker, stock_name,search):
         self.stock_id = stock_id
@@ -74,6 +75,7 @@ class Stock_Info(Base):
     sentiment_data = Column("sentiment_data", Float)
     time_stamp = Column("time_stamp", Date)
     news_data = Column("news_data", Float)
+    stocks = relationship("Stocks", back_populates="stock")  
 
     __table_args__ = (PrimaryKeyConstraint('stock_id', 'time_stamp'),)
 

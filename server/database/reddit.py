@@ -178,7 +178,8 @@ def add_to_database(data, engine, id):
         
 
 # Finds the daily reddit posts for a stock and adds them to the database
-def daily_reddit_request(subreddit, topic, engine, id):
+def daily_reddit_request(subreddit, dates):
+    
     headers = {
     "Authorization": f"Bearer {auth_token}",
     "User-Agent": user_agent
@@ -186,9 +187,9 @@ def daily_reddit_request(subreddit, topic, engine, id):
     url = f"https://oauth.reddit.com/r/{subreddit}/search"
 
     params = {
-    "t": "day",
-    "limit": 20,
-    "q": topic,
+    "t": "week",
+    "limit": 50,
+    "q": dates[0]["search"],
     "sort": "relevance",
     "type": "link"
     }
@@ -217,7 +218,7 @@ def daily_reddit_request(subreddit, topic, engine, id):
                 "User-Agent": user_agent
                 }
                 params = {
-                "limit": 20,
+                "limit": 25,
                 "sort": "top",
                 
                 }
@@ -235,7 +236,7 @@ def daily_reddit_request(subreddit, topic, engine, id):
                         # This will error happen every pass because the last element is a list of comments and does not have a body
                         continue
                 # Number of elements currently in the output array
-                print(count)
+                
                 
             except Exception as e:
                 print(e)
@@ -244,36 +245,40 @@ def daily_reddit_request(subreddit, topic, engine, id):
                 continue
         
         try:
-            Session = sessionmaker(bind=engine)
-            count = 0
-            tensors = 0
-            tensor = torch.tensor([[0,0,0]])
-            for j in inputs:
-                today = datetime.date.today()    
-                date = datetime.date.fromtimestamp(j['timestamp'])
-                if date == today:
-                    count+=1
-                    tensors+=1
-                    # If message is to long we will only take the first 512 characters of the message
-                    if len(j['title']+" "+ j['self_text']) > 512:
-                        logit = sentiment_model((j['title']+" "+j['self_text'])[:512])
-                        tensor = torch.add(tensor, logit)
-                    else:
-                        logit = sentiment_model(j['title']+" "+j['self_text'])
-                        tensor = torch.add(tensor, logit)
-            if tensors > 0:
-                # average tesor for the day
-                answer = torch.div(tensor, tensors)
-                # value added to the database
-                return (answer[0][0]*-1+answer[0][2]).item()
-            else : 
-                return 0
+            
+            answers = []
+            for k in dates:
+                count = 0
+                tensors = 0
+                tensor = torch.tensor([[0,0,0]])
 
-                # update the database for the day                    
-
+                for j in inputs:
+                    temp_day = datetime.datetime.strptime(k["time_stamp"].strftime("%b %d %H:%M:%S %Y"), "%b %d %H:%M:%S %Y")
+                    temp_day = temp_day.date()
+                    date = datetime.date.fromtimestamp(j['timestamp'])
+                    
+                    if date == temp_day:
+                        count+=1
+                        tensors+=1
+                        # If message is to long we will only take the first 512 characters of the message
+                        if len(j['title']+" "+ j['self_text']) > 512:
+                            logit = sentiment_model((j['title']+" "+j['self_text'])[:512])
+                            tensor = torch.add(tensor, logit)
+                        else:
+                            logit = sentiment_model(j['title']+" "+j['self_text'])
+                            tensor = torch.add(tensor, logit)
+                if tensors > 0:
+                    # average tesor for the day
+                    answer = torch.div(tensor, tensors)
+                    # value added to the database
+                    answers.append({"answer": (answer[0][0]*-1+answer[0][2]).item(), "time_stamp": k["time_stamp"]})
+                                
+            return answers
         except Exception as e:
             print(e)
-            return 0
+            return -1
+        
+            
             
             
             
