@@ -14,12 +14,12 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -43,6 +43,8 @@ export function LoginForm({
 }: LoginFormProps) {
   const { signInWithEmail, signInWithGoogle } = useSupabase();
   const [isFlipped, setIsFlipped] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const formSchema = z.object({
     email: z.string().max(50).email(),
     password: z.string().min(8).max(50),
@@ -54,16 +56,13 @@ export function LoginForm({
       email: "",
       password: "",
     },
-  }
-  );
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
     event?.preventDefault();
     await signInWithEmail(values.email, values.password);
   }
 
-  // This appears to work though throws errors in the browser?
-  // It is in test mode so emails need to be pre-approved
   window.handleSignInWithGoogle = async (response: googleResponse) => {
     console.log("Callback fired! Response:", response);
     await signInWithGoogle(response);
@@ -78,16 +77,20 @@ export function LoginForm({
   }, []);
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props} style={{
-      transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
-      transitionDuration: "250ms",
-      transformStyle: "preserve-3d",
-    }}>
+    <div
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+      style={{
+        transform: `rotateY(${isFlipped ? 180 : 0}deg)`,
+        transitionDuration: "250ms",
+        transformStyle: "preserve-3d",
+      }}
+    >
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Log in</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your info below to login to your account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,7 +108,6 @@ export function LoginForm({
                     <FormControl>
                       <Input placeholder="Email Address" required {...field} />
                     </FormControl>
-                    <FormDescription></FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -117,29 +119,43 @@ export function LoginForm({
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Password"
-                        type="password"
-                        required
-                        {...field}
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+                        >
+                          {showPassword ? (
+                            <EyeOff size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
-                    <FormDescription></FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="dark:text-white mt-3">Login</Button>
+              <Button type="submit" className="mt-3">
+                Login
+              </Button>
               <div className="text-center text-sm">
                 Forgot your{" "}
-                <span className="underline underline-offset-4">
-                  <Link to="/">Username</Link>
-                </span>
-                {" "}or{" "}
-                <span className="underline underline-offset-4">
-                  <Link to="/">Password</Link>
-                </span>
-                {" "}?
+                <span className="link">
+                  <Link to="/">username</Link>
+                </span>{" "}
+                or{" "}
+                <span className="link">
+                  <Link to="/">password</Link>
+                </span>{" "}
+                ?
               </div>
               <div className="flex items-center my-4">
                 <div className="w-full h-px bg-gray-300"></div>
@@ -169,11 +185,16 @@ export function LoginForm({
 
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
-              <span className="underline underline-offset-4">
-                <button className="underline" onClick={() => {
-                  togglePageState();  // Toggle login/signup state
-                  setIsFlipped((prev) => !prev);  // Flip the UI element
-                }}>Create Account</button>
+              <span className="text-blue-600 hover:text-blue-900 underline-offset-4">
+                <button
+                  className=""
+                  onClick={() => {
+                    togglePageState();
+                    setIsFlipped((prev) => !prev);
+                  }}
+                >
+                  Create Account
+                </button>
               </span>
             </div>
           </Form>
