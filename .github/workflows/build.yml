@@ -59,9 +59,20 @@ jobs:
         id: cache-virtualenv
         with:
           requirement_files: server/requirements*.txt
+      - name: install deps
+        run: |
+          apt-get update -y && apt-get install -y
+          apt-get install libpq-dev postgresql-client -y
+          pip install pylint -U
+          python -m pip install --upgrade pip
       - uses: syphar/restore-pip-download-cache@v1
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
-      - run: pip install -r requirements.txt
+      - run: |
+          cd server
+          pip install -r requirements.txt
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
+      - name: Lint
+        run: |
+          pylint server/**/*.py
       - name: Test
         run: python -m unittest discover -p '*_test.py'
