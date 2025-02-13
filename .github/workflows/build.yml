@@ -1,4 +1,4 @@
-name: Build client
+name: Build
 on:
   push:
     branches: ["master"]
@@ -6,7 +6,7 @@ on:
     branches: ["master"]
 
 jobs:
-  build_client:
+  build-client:
     env:
       VITE_API_URL: ${{ secrets.VITE_API_URL }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
@@ -40,7 +40,7 @@ jobs:
         run: npm run build
         working-directory: client
 
-  build_server:
+  build-server:
     env:
       SUPABASE_JWT_SECRET: ${{ secrets.SUPABASE_JWT_SECRET }}
       dbname: ${{ secrets.DB_NAME }}
