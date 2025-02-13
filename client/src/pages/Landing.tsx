@@ -98,7 +98,7 @@ export default function Landing() {
               No investments found, click the "+" to add your first investment
             </div>
           )}
-          <div className="flex flex-row items-center justify-center gap-6">
+          <div className="flex md:flex-row flex-col justify-center items-center gap-6">
             {loading ? (
               <>
                 <Skeleton className="w-40 h-[100px]" />
@@ -106,7 +106,7 @@ export default function Landing() {
                 <Skeleton className="w-32 h-[100px]" />
               </>
             ) : (
-              <div className="flex flex-row items-center justify-center gap-6">
+              <div className="flex flex-row flex-wrap items-center justify-center gap-6">
                 {stocks?.map((stock, index) => (
                   <StockCard
                     key={stock?.Stocks?.stock_name}
@@ -118,7 +118,7 @@ export default function Landing() {
               </div>
             )}
             <Link
-              className="flex items-center justify-center h-20 w-20 text-white rounded-full pb-1 bg-primary text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
+              className="flex items-center justify-center w-20 h-20 text-white rounded-full pb-1 bg-primary text-4xl font-bold shadow hover:shadow-md transition-transform transform hover:scale-105 active:scale-95"
               to="/stocks"
             >
               +
