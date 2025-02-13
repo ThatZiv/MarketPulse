@@ -78,6 +78,7 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine)
     
     def load_stocks():
+        print("Starting job")
         today = date.today()
         #Find the most recent entry for all stocks joined to the stock infromation
         stock_q=select(func.max(Stock_Info.time_stamp), Stock_Info.stock_id, Stocks.stock_ticker, Stocks.search).select_from(Stock_Info).join(Stocks, Stocks.stock_id == Stock_Info.stock_id).group_by(Stock_Info.stock_id, Stocks.stock_ticker, Stocks.search)
@@ -130,7 +131,7 @@ if __name__ == '__main__':
     # For testing
     #load_stocks()
     # run the load_stocks job at a specific time.
-    scheduler.add_job(func=load_stocks, trigger='cron', hour=0, id="load_stocks")
+    scheduler.add_job(func=load_stocks, trigger='cron', hour='0', id="load_stocks")
 
     @app.route('/test', methods=['GET', 'POST'])
     @jwt_required()
