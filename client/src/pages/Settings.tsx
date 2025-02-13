@@ -2,8 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { LockIcon, SaveIcon } from "lucide-react";
-import React from "react";
+import { LockIcon, SaveIcon, Eye, EyeOff } from "lucide-react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,13 @@ export default function SettingsPage() {
   const { setTheme } = useTheme();
   const navigate = useNavigate();
   const [tab, setTab] = React.useState(tabParam ?? "account");
+  const [password, setPassword] = useState("");
+  const [, setOldPassword] = useState("");
+  const [, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const accountFormSchema = z.object({
     first_name: z.string().min(2).max(50),
     last_name: z.string().min(2).max(50),
@@ -56,8 +63,21 @@ export default function SettingsPage() {
 
   const passwordFormSchema = z
     .object({
-      password: z.string().min(8),
-      confirm_password: z.string().min(8),
+      old_password: z.string().min(1, "Old password is required"),
+      password: z
+        .string()
+        .min(8, "")
+        .max(50)
+        .regex(/[A-Z]/, {
+          message: "Password must contain at least one uppercase letter",
+        })
+        .regex(/[0-9]/, {
+          message: "Password must contain at least one number",
+        })
+        .regex(/[\W_]/, {
+          message: "Password must contain at least one special character",
+        }),
+      confirm_password: z.string().min(8, ""),
     })
     .refine((data) => data.password === data.confirm_password, {
       message: "Passwords don't match",
@@ -71,7 +91,7 @@ export default function SettingsPage() {
 
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
     resolver: zodResolver(passwordFormSchema),
-    defaultValues: { password: "", confirm_password: "" },
+    defaultValues: { old_password: "", password: "", confirm_password: "" },
   });
 
   React.useEffect(() => {
@@ -82,14 +102,6 @@ export default function SettingsPage() {
         .select()
         .eq("user_id", user?.id);
 
-      // TODO: figure out what to do for non-email provider
-      // supabase.auth.getUserIdentities().then(({ data, error }) => {
-      //   for (const identity of data) {
-      //     if (identity.provider === "google") {
-
-      //     }
-      //   }
-      // });
       if (data?.length === 0) {
         setState("done");
         return;
@@ -108,14 +120,24 @@ export default function SettingsPage() {
     };
     getAccount();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   type AccountFormValues = z.infer<typeof accountFormSchema>;
   type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
-
   const onPasswordSubmit = async (values: PasswordFormValues) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: user?.email ?? "",
+      password: values.old_password,
+    });
+
+    if (error) {
+      toast.error("Old password is incorrect", {
+        description: error.message,
+      });
+      return;
+    }
+
     toast("Are you sure you want to change your password?", {
       action: {
         label: "Confirm",
@@ -123,7 +145,7 @@ export default function SettingsPage() {
           const { error } = await supabase.auth.updateUser({
             password: values.password,
           });
-  
+
           if (error) {
             toast.error("Failed updating your password", {
               description: error.message,
@@ -136,8 +158,6 @@ export default function SettingsPage() {
       },
     });
   };
-  
-  
 
   const onAccountSubmit = async (values: AccountFormValues) => {
     toast("Are you sure you want to modify your name?", {
@@ -149,7 +169,7 @@ export default function SettingsPage() {
             .upsert({ ...values, user_id: user?.id })
             .select()
             .single();
-  
+
           if (error) {
             toast.error("Failed updating your profile", {
               description: error.message,
@@ -162,7 +182,13 @@ export default function SettingsPage() {
       },
     });
   };
-  
+
+  const passwordValidations = [
+    { text: "At least 8 characters", isValid: password.length >= 8 },
+    { text: "At least 1 uppercase letter", isValid: /[A-Z]/.test(password) },
+    { text: "At least 1 number", isValid: /[0-9]/.test(password) },
+    { text: "At least 1 special character", isValid: /[\W_]/.test(password) },
+  ];
 
   return (
     <div className="h-screen text-left">
@@ -268,14 +294,86 @@ export default function SettingsPage() {
                       <div className="space-y-1">
                         <FormField
                           control={passwordForm.control}
+                          name="old_password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Old password</FormLabel>
+                              <FormControl>
+                                <div className="relative">
+                                  <Input
+                                    type={showOldPassword ? "text" : "password"}
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      setOldPassword(e.target.value);
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowOldPassword((prev) => !prev)
+                                    }
+                                    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+                                  >
+                                    {showOldPassword ? (
+                                      <EyeOff size={20} />
+                                    ) : (
+                                      <Eye size={20} />
+                                    )}
+                                  </button>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <FormField
+                          control={passwordForm.control}
                           name="password"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>New password</FormLabel>
                               <FormControl>
-                                <Input type="password" {...field} />
+                                <div className="relative">
+                                  <Input
+                                    type={showPassword ? "text" : "password"}
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      setPassword(e.target.value);
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowPassword((prev) => !prev)
+                                    }
+                                    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+                                  >
+                                    {showPassword ? (
+                                      <EyeOff size={20} />
+                                    ) : (
+                                      <Eye size={20} />
+                                    )}
+                                  </button>
+                                </div>
                               </FormControl>
-                              <FormDescription></FormDescription>
+                              <div className="mt-2 text-sm">
+                                {passwordValidations.map((req, index) => (
+                                  <div
+                                    key={index}
+                                    className={`flex items-center ${
+                                      req.isValid
+                                        ? "text-green-500"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {req.isValid ? "✅" : "❌"} {req.text}
+                                  </div>
+                                ))}
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -289,9 +387,33 @@ export default function SettingsPage() {
                             <FormItem>
                               <FormLabel>Confirm password</FormLabel>
                               <FormControl>
-                                <Input type="password" {...field} />
+                                <div className="relative">
+                                  <Input
+                                    type={
+                                      showConfirmPassword ? "text" : "password"
+                                    }
+                                    {...field}
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      setConfirmPassword(e.target.value);
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setShowConfirmPassword((prev) => !prev)
+                                    }
+                                    className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+                                  >
+                                    {showConfirmPassword ? (
+                                      <EyeOff size={20} />
+                                    ) : (
+                                      <Eye size={20} />
+                                    )}
+                                  </button>
+                                </div>
                               </FormControl>
-                              <FormDescription></FormDescription>
+                           
                               <FormMessage />
                             </FormItem>
                           )}
