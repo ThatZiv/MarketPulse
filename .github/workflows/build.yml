@@ -61,8 +61,8 @@ jobs:
           requirement_files: server/requirements*.txt
       - name: install deps
         run: |
-          apt-get update -y && apt-get install -y
-          apt-get install libpq-dev postgresql-client -y
+          sudo apt-get update -y && sudo apt-get install -y
+          sudo apt-get install libpq-dev postgresql-client -y
           pip install pylint -U
           python -m pip install --upgrade pip
       - uses: syphar/restore-pip-download-cache@v1
