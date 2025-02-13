@@ -42,25 +42,23 @@ const data = {
     },
     {
       title: "Documentation",
-      url: "#",
+      url: "/documentation",
       icon: BookOpen,
       isActive: false,
       items: [
         {
           title: "Introduction",
-          url: "#",
+          url: "/documentation/introduction",
+
         },
-        {
-          title: "Get Started",
-          url: "#",
-        },
+
         {
           title: "Tutorials",
-          url: "#",
+          url: "/documentation/tutorials",
         },
         {
-          title: "Changelog",
-          url: "#",
+          title: "FAQ",
+          url: "/documentation/faq",
         },
       ],
     },
@@ -109,12 +107,12 @@ interface NavItem {
     LucideProps & React.RefAttributes<SVGSVGElement>
   >;
   isActive: boolean | undefined;
-  items: { title: string; url: string }[] | [] | undefined; // Allow null or undefined for items
+  items: { title: string; url: string }[] | [] | undefined; 
 }
 
 interface NavData {
   navMain: NavItem[];
-  navSecondary: NavItem[]; // Adjust based on your structure for secondary items
+  navSecondary: NavItem[];
 }
 
 interface StockResponse {
@@ -194,7 +192,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">MarketPulse</span>
-                  {/* <span className="truncate text-xs"></span> */}
                 </div>
               </a>
             </SidebarMenuButton>
@@ -203,7 +200,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>
