@@ -31,11 +31,14 @@ class Stocks(Base):
     stock_id = Column("stock_id", INTEGER, primary_key=True)
     stock_ticker = Column("stock_ticker", String)
     stock_name = Column("stock_name", String)
+    search = Column("search", String)
+    stock = relationship("Stock_Info", back_populates="stocks")
 
-    def __init__(self, stock_id, stock_ticker, stock_name):
+    def __init__(self, stock_id, stock_ticker, stock_name,search):
         self.stock_id = stock_id
         self.stock_ticker = stock_ticker
         self.stock_name = stock_name
+        self.search = search
 
 
 
@@ -45,6 +48,7 @@ class User_Stocks(Base):
     user_id = Column("user_id", ForeignKey("Account.user_id"))
     stock_id = Column("stock_id", ForeignKey("Stocks.stock_id"))
     amount_owned = Column("amount_owned", INTEGER)
+
 
     __table_args__ = (PrimaryKeyConstraint('user_id', 'stock_id'),)
 
@@ -70,10 +74,12 @@ class Stock_Info(Base):
     stock_low= Column("stock_low", Float)
     sentiment_data = Column("sentiment_data", Float)
     time_stamp = Column("time_stamp", Date)
+    news_data = Column("news_data", Float)
+    stocks = relationship("Stocks", back_populates="stock")  
 
     __table_args__ = (PrimaryKeyConstraint('stock_id', 'time_stamp'),)
 
-    def __init__(self, stock_id, stock_close, stock_volume, stock_open, stock_high, stock_low, sentiment_data, time_stamp):
+    def __init__(self, stock_id, stock_close, stock_volume, stock_open, stock_high, stock_low, sentiment_data, time_stamp, news_data):
         self.stock_id = stock_id
         self.stock_close = stock_close
         self.stock_volume = stock_volume
@@ -82,4 +88,5 @@ class Stock_Info(Base):
         self.stock_low = stock_low
         self.sentiment_data = sentiment_data
         self.time_stamp = time_stamp
+        self.news_data = news_data
     
