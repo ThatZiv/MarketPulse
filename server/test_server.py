@@ -1,5 +1,5 @@
 #Created as a test server to allow for testing api's without adding them to the main server
-
+# pylint: disable=all
 
 from flask import Flask, session, redirect, url_for, request, jsonify, Response
 from dotenv import load_dotenv

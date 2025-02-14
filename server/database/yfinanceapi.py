@@ -1,7 +1,7 @@
-from pandas.core.indexes import period
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
 import yfinance as yf
-
-import pandas as pd
 
 
 
@@ -22,8 +22,7 @@ def add_daily_data(ticker, days):
 
     output.reset_index(inplace=True)
 
-    return output 
-
+    return output
 
 def real_time_data(ticker):
     data = yf.Ticker(ticker)
@@ -32,5 +31,3 @@ def real_time_data(ticker):
     output.reset_index(inplace=True)
 
     return output
-
-

@@ -1,3 +1,6 @@
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
 import datetime
 from typing import Literal
 from duckduckgo_search import DDGS
@@ -51,5 +54,6 @@ def search_duckduckgo(query: str, \
 #     end_date = '2023-01-31'
 #     # interval = 'm'
 #     num_results = 5
-#     results = search_duckduckgo(query('APPL'), start_date=start_date, end_date=end_date, num_results=num_results)
+#     results = search_duckduckgo(query('APPL'),
+#           start_date=start_date, end_date=end_date, num_results=num_results)
 #     print(json.dumps(results, indent=2))
