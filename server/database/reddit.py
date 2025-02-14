@@ -190,11 +190,11 @@ def daily_reddit_request(subreddit, dates):
     "type": "link"
     }
 
-    output = requests.get(f"https://oauth.reddit.com/r/{subreddit}/search",
+    out = requests.get(f"https://oauth.reddit.com/r/{subreddit}/search",
                         headers=headers, params=params, timeout = 5)
     inputs = []
-    if output.status_code == 200:
-        data = output.json()["data"]["children"]
+    if out.status_code == 200:
+        data = out.json()["data"]["children"]
         for j in data:
             inputs.append({'title': j["data"]["title"],
             'self_text': j["data"]["selftext"],
@@ -216,10 +216,9 @@ def daily_reddit_request(subreddit, dates):
                 "limit": 25,
                 "sort": "top",
                 }
-                output=requests.get((f"https://oauth.reddit.com/r/{j["url"]}"
-                                    f"/comments/{j["name"][3:]}"),
+                out=requests.get(f"https://oauth.reddit.com/r/{j["url"]}/comments/{j["name"][3:]}",
                                     headers=headers, params=params, timeout = 5)
-                data = output.json()[1]["data"]["children"]
+                data = out.json()[1]["data"]["children"]
                 #print(data)
                 try:
                     for k in data:
@@ -236,7 +235,7 @@ def daily_reddit_request(subreddit, dates):
                 print(e)
                 time.sleep(60)
                 continue
-        output = []
+        out = []
         for k in dates:
             tensors = 0
             tensor = torch.tensor([[0,0,0]])
@@ -258,7 +257,7 @@ def daily_reddit_request(subreddit, dates):
                 # average tesor for the day
                 answer = torch.div(tensor, tensors)
                 # value added to the database
-                output.append({"answer": (answer[0][0]*-1+answer[0][2]).item(),
+                out.append({"answer": (answer[0][0]*-1+answer[0][2]).item(),
                                     "time_stamp": k["time_stamp"]})
-        return output
+        return out
     return 0
