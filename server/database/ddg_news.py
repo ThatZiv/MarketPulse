@@ -85,7 +85,7 @@ def add_news(dates):
         time.sleep(5)
         try:
             day["time_stamp"] = day["time_stamp"].strftime("%Y-%m-%d")
-            results = DDGS().text(f"{day["search"]} news", max_results=5,
+            results = DDGS().text(f"{day['search']} news", max_results=5,
             timelimit=f"{day["time_stamp"]}..{day["time_stamp"]}")
 
             tensors = 0

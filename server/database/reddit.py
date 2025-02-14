@@ -107,7 +107,7 @@ def reddit_request(subreddit, topic):
             #reddit will allow 100 requests per minute so this could be lowered
             time.sleep(1)
             try:
-                url = f"https://oauth.reddit.com/r/{lists["url"]}/comments/{lists["name"][3:]}"
+                url = f"https://oauth.reddit.com/r/{lists['url']}/comments/{lists['name'][3:]}"
                 headers = {
                 "Authorization": f"Bearer {AUTH_TOKEN}",
                 "User-Agent": USER_AGENT

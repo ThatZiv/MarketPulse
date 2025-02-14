@@ -152,8 +152,6 @@ if __name__ == '__main__':
     #load_stocks()
     # run the load_stocks job at a specific time.
     scheduler.add_job(func=load_stocks, trigger='cron', hour='0', id="load_stocks")
-
-    load_stocks()
     @app.route('/test', methods=['GET', 'POST'])
     @jwt_required()
     def route():
