@@ -216,7 +216,7 @@ def daily_reddit_request(subreddit, dates):
                 "limit": 25,
                 "sort": "top",
                 }
-                out=requests.get(f"https://oauth.reddit.com/r/{j["url"]}/comments/{j["name"][3:]}",
+                out=requests.get(f"https://oauth.reddit.com/r/{j['url']}/comments/{j['name'][3:]}",
                                     headers=headers, params=params, timeout = 5)
                 data = out.json()[1]["data"]["children"]
                 #print(data)

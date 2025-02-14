@@ -86,7 +86,7 @@ def add_news(dates):
         try:
             day["time_stamp"] = day["time_stamp"].strftime("%Y-%m-%d")
             results = DDGS().text(f"{day['search']} news", max_results=5,
-            timelimit=f"{day["time_stamp"]}..{day["time_stamp"]}")
+                    timelimit=f"{day['time_stamp']}..{day['time_stamp']}")
 
             tensors = 0
             tensor = torch.tensor([[0,0,0]])
