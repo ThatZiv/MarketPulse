@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "name": "Supabase",
+      "path": "../supabase"
+    },
+    {
+      "name": "Server",
+      "path": "../server"
+    },
+    {
+      "name": "Client",
+      "path": "../client"
+    }
+  ],
+  "settings": {}
+}
