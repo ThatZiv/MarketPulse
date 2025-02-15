@@ -2,7 +2,7 @@
 from models.lstm_attention import attention_lstm
 
 
-attention_lstm('RIVN')
+attention_lstm('TSLA')
 
 
 

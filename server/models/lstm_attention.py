@@ -1,4 +1,4 @@
-from database.yfinanceapi import bulk_stock_data
+from database.yfinanceapi import bulk_stock_data, add_daily_data
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,10 +11,12 @@ import matplotlib.pyplot as plt
 import json
 import requests
 
+# r squared
+# mean squared error
 
 def attention_lstm(ticker):
     device = 'cpu'
-    data = bulk_stock_data(ticker)
+    data = add_daily_data(ticker, 500)
     #normalized volume
     data['Volume'] = (data['Volume'] - data['Volume'].min())/ (data['Volume'].max() - data['Volume'].min())
     # normalized precent difference between open and close
@@ -35,7 +37,7 @@ def attention_lstm(ticker):
     data.set_index('Date', inplace = True)
     
     answer = data['Low']
-    data = data.drop(columns=['Low','Close', 'Dividends', 'Stock Splits'])
+    data = data.drop(columns=['Open','High','Low','Close', 'Dividends', 'Stock Splits'])
     
     print(data)
     
@@ -53,23 +55,23 @@ def attention_lstm(ticker):
             y.append(label)
         return np.array(x), np.array(y)
     
-    lookback = 20
-    x_np, y_np = shif_data_frame(data, answer, lookback)
+    lookback = 30
+    x_np, y_np = shif_data_frame(data, data, lookback)
 
-    split_index = int(0.90 * len(x_np))
+    split_index = int(0.80 * len(x_np))
 
     
     x_train = x_np[:split_index]
-    x_test = x_np[split_index:-15]
-    x_pred = x_np[-20:]
+    x_test = x_np[split_index:-50]
+    x_pred = x_np[-50:]
     
     y_train = y_np[:split_index]
-    y_test = y_np[split_index:-15]
-    y_pred = y_np[-20:]
+    y_test = y_np[split_index:-50]
+    y_pred = y_np[-50:]
     
-    x_train = x_train.reshape(-1, lookback, 3)
-    x_test = x_test.reshape(-1, lookback, 3)
-    x_pred = x_pred.reshape(-1, lookback, 3)
+    x_train = x_train.reshape(-2, lookback, 1)
+    x_test = x_test.reshape(-2, lookback, 1)
+    x_pred = x_pred.reshape(-2, lookback, 1)
 
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
@@ -141,6 +143,7 @@ def attention_lstm(ticker):
 
             self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
             self.att = Attention(hidden_size, hidden_size)
+            self.att2 = Attention(hidden_size, hidden_size)
             self.fc = nn.Linear(hidden_size, 1)
         
         def forward(self, x):
@@ -149,18 +152,18 @@ def attention_lstm(ticker):
             h1 = torch.zeros(self.num_stacked_layers, batch_size, self.hidden_size).to(device)
 
             out, _ = self.lstm(x, (h0, h1))
-            out = self.att(out)
             #out = self.att(out)
+            #out = self.att2(out)
             #out = self.att(out)
             out = self.fc(out[:,-1,:])
             return out
 
 
-    model = LSTM_Attention_Model(3, 32, 8)
+    model = LSTM_Attention_Model(1, 2, 1)
 
     model.to(device)
 
-    learning_rate = 0.0001
+    learning_rate = 0.00000000001
     num_epochs = 5
 
     loss_function = nn.MSELoss()
@@ -220,8 +223,8 @@ def attention_lstm(ticker):
                 #print(x_batch)
                 with torch.no_grad():
                     output = model(x_batch)
-                    predictions.append((output[0][0].item()*multiple)+minimum+close[len(close)-1-20+count])                
-                    actual.append((y_batch[0][0].item()*multiple)+minimum+close[len(close)-1-20+count])
+                    predictions.append(output[0][0].item())                
+                    actual.append(y_batch[0][0].item())
                     count+=1
             print(predictions)
             print(actual)
