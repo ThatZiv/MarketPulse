@@ -7,6 +7,7 @@ import numpy as np
 from copy import deepcopy as dc
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 import json
 import requests
 
@@ -21,22 +22,26 @@ def attention_lstm(ticker):
     # normalized
     for i in range(1, len(data['High'])):
         data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
+        data['Low'][i] = data['Close'][i]-data['Close'][i-1]
     data['High'][0] = 0
+    data['Low'][0] = 0
 
-    multiple = (data['High'].max() - data['High'].min())
-    minimum =  data['High'].min()
+    multiple = (data['Low'].max() - data['Low'].min())
+    minimum =  data['Low'].min()
     close = data['Close']
+    data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min()) 
     data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
-
+    data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
     data.set_index('Date', inplace = True)
-
-    data = data.drop(columns=['Low', 'Close', 'Dividends', 'Stock Splits'])
-
-
+    
+    answer = data['Low']
+    data = data.drop(columns=['Low','Close', 'Dividends', 'Stock Splits'])
+    
     print(data)
     
-    def shif_data_frame(df, shift):
+    def shif_data_frame(df, an,shift):
         df_np = df.to_numpy()
+        an_np = an.to_numpy()
         x = []
         y = []
 
@@ -44,32 +49,41 @@ def attention_lstm(ticker):
             row = [r for r in df_np[i:i+shift]]
             x.append(row)
             #We are only predicting precent price change
-            label = df_np[i+shift][1]
+            label = an_np[i+shift]
             y.append(label)
         return np.array(x), np.array(y)
     
-    lookback = 15
-    x_np, y_np = shif_data_frame(data, lookback)
+    lookback = 20
+    x_np, y_np = shif_data_frame(data, answer, lookback)
 
-    split_index = int(0.95 * len(x_np))
+    split_index = int(0.90 * len(x_np))
 
     
     x_train = x_np[:split_index]
-    x_test = x_np[split_index:]
-
+    x_test = x_np[split_index:-15]
+    x_pred = x_np[-20:]
+    
     y_train = y_np[:split_index]
-    y_test = y_np[split_index:]
-
+    y_test = y_np[split_index:-15]
+    y_pred = y_np[-20:]
+    
     x_train = x_train.reshape(-1, lookback, 3)
     x_test = x_test.reshape(-1, lookback, 3)
+    x_pred = x_pred.reshape(-1, lookback, 3)
 
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
+    y_pred = y_pred.reshape(-1, 1)
 
     x_train = torch.tensor(x_train).float()
     x_test = torch.tensor(x_test).float()
+    x_pred = torch.tensor(x_pred).float()
+
     y_train = torch.tensor(y_train).float()
     y_test = torch.tensor(y_test).float()
+    y_pred = torch.tensor(y_pred).float()
+
+
 
     print(x_test.shape)
     class TimeSeriesData(Dataset):
@@ -86,11 +100,12 @@ def attention_lstm(ticker):
 
     train_dataset = TimeSeriesData(x_train, y_train)
     test_dataset = TimeSeriesData(x_test, y_test)
-
-    batch_size = 15
+    pred_dataset = TimeSeriesData(x_pred, y_pred)
+    batch_size = 10
 
     train_loader = DataLoader(dataset = train_dataset, batch_size = batch_size, shuffle = True)
     test_loader = DataLoader(dataset = test_dataset, batch_size = batch_size, shuffle = False)
+    pred_loader = DataLoader(dataset = pred_dataset, batch_size = 1, shuffle = False)
 
     for _, batch in enumerate(train_loader):
         x_batch, y_batch = batch[0].to(device), batch[1].to(device)
@@ -135,17 +150,18 @@ def attention_lstm(ticker):
 
             out, _ = self.lstm(x, (h0, h1))
             out = self.att(out)
+            #out = self.att(out)
+            #out = self.att(out)
             out = self.fc(out[:,-1,:])
             return out
 
 
-    model = LSTM_Attention_Model(3, 64, 8)
+    model = LSTM_Attention_Model(3, 32, 8)
 
     model.to(device)
 
     learning_rate = 0.0001
-    num_epochs = 4
-
+    num_epochs = 5
 
     loss_function = nn.MSELoss()
 
@@ -161,7 +177,6 @@ def attention_lstm(ticker):
             optimizer.zero_grad()
             output= model(x_batch)
             loss = loss_function(output, y_batch)
-
             running_loss += loss.item()
 
             loss.backward()
@@ -175,7 +190,6 @@ def attention_lstm(ticker):
     def validate_one_epoch():
         model.train(False)
         running_loss = 0.0
-
         for batch_index, batch in enumerate(test_loader):
             x_batch, y_batch = batch[0].to(device), batch[1].to(device)
 
@@ -193,3 +207,28 @@ def attention_lstm(ticker):
     for epoch in range(num_epochs):
         train_one_epoch()
         validate_one_epoch()
+
+    
+    def predicting():
+        model.eval()
+        with torch.no_grad():
+            predictions = []
+            actual = []
+            count = 0
+            for batch_index, batch in enumerate(pred_loader):
+                x_batch, y_batch = batch[0].to(device), batch[1].to(device)
+                #print(x_batch)
+                with torch.no_grad():
+                    output = model(x_batch)
+                    predictions.append((output[0][0].item()*multiple)+minimum+close[len(close)-1-20+count])                
+                    actual.append((y_batch[0][0].item()*multiple)+minimum+close[len(close)-1-20+count])
+                    count+=1
+            print(predictions)
+            print(actual)
+            plt.plot(actual, label='Actual')
+            plt.plot(predictions, label='Predicted')
+            plt.legend()
+            plt.show()
+        
+    predicting()
+
