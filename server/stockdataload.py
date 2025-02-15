@@ -10,7 +10,6 @@ def load_data(engine):
     session = session()
     stocks = []
     stock1 = bulk_stock_data("TSLA")
-    stocks[]
     stocks.append(stock1["Close"].astype(float).tolist())
     stocks.append(stock1["Open"].astype(float).tolist())
     stocks.append(stock1["Low"].astype(float).tolist())
@@ -40,11 +39,11 @@ def load_data(engine):
 
     stock3 = bulk_stock_data("GM")
     stocks = []
-    stocks[0] = stock3["Close"].astype(float).tolist())
-    stocks[1] = stock3["Open"].astype(float).tolist())
-    stocks[2] = stock3["Low"].astype(float).tolist())
-    stocks[3] = stock3["High"].astype(float).tolist())
-    stocks[4] = stock3["Volume"].astype(int).tolist())
+    stocks[0] = stock3["Close"].astype(float).tolist()
+    stocks[1] = stock3["Open"].astype(float).tolist()
+    stocks[2] = stock3["Low"].astype(float).tolist()
+    stocks[3] = stock3["High"].astype(float).tolist()
+    stocks[4] = stock3["Volume"].astype(int).tolist()
 
     for i in range(len(stock3['Close'])):
         new_row = Stock_Info(stock_id = 3, stock_close = stocks[0][i],
