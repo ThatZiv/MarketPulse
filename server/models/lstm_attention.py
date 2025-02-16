@@ -10,35 +10,50 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import json
 import requests
+import pywt
 
 # r squared
 # mean squared error
+
+def wavelet(data):
+    wavelet = 'db4'
+    coes = pywt.wavedec(data, wavelet, mode = 'reflect')
+    threshold = .75
+    coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
+    smoothed = pywt.waverec(coe_threshold, wavelet)
+
+    return smoothed
 
 def attention_lstm(ticker):
     device = 'cpu'
     data = add_daily_data(ticker, 1500)
     #normalized volume
     data['Volume'] = (data['Volume'] - data['Volume'].min())/(data['Volume'].max() - data['Volume'].min())
-    # normalized precent difference between open and close
-    data['Open'] = ((data['Close']/data['Open'])-(data['Close']/data['Open']).min())/((data['Close']/data['Open']).max()-(data['Close']/data['Open']).min())
     # normalized
+    multiple = (data['Close'].max() - data['Close'].min())
+    minimum =  data['Close'].min()
+    data['Close'] = wavelet(data['Close'])
+    data['Low'] = wavelet(data['Low'])
+    data['High'] = wavelet(data['High'])
+    data['Open'] = wavelet(data['Open'])
     for i in range(1, len(data['High'])):
-        #data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
-        data['Low'][i] = data['Close'][i]-data['Low'][i]
+        data['Low'][i] = data['High'][i]-data['Low'][i]
+        data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
+    
     data['High'][0] = 0
     data['Low'][0] = 0
 
-    multiple = (data['Low'].max() - data['Low'].min())
-    minimum =  data['Low'].min()
-    close = data['Close']
     data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min()) 
     data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
     data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
+    data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min()) 
     data.set_index('Date', inplace = True)
     
-    answer = data['High']
-    data = data.drop(columns=['Open','Close', 'Dividends', 'Stock Splits'])
+    answer = data['Close']
+    print(data['Open'])
+    data = data.drop(columns=['Close', 'Dividends', 'Stock Splits'])
     
+   
     print(data)
     
     def shif_data_frame(df, an,shift):
@@ -56,7 +71,7 @@ def attention_lstm(ticker):
         return np.array(x), np.array(y)
     
 
-    lookback = 30
+    lookback = 25
     x_np, y_np = shif_data_frame(data, answer, lookback)
 
     split_index = int(0.8 * len(x_np))
@@ -64,15 +79,17 @@ def attention_lstm(ticker):
     
     x_train = x_np[:split_index]
     x_test = x_np[split_index:]
-    x_pred = x_np[split_index:]
-    
+    x_pred = x_np[-30:]
+    #x_pred = x_np
+
     y_train = y_np[:split_index]
     y_test = y_np[split_index:]
-    y_pred = y_np[split_index:]
+    y_pred = y_np[-30:]
+    #y_pred = y_np
     
-    x_train = x_train.reshape(-1, lookback, 3)
-    x_test = x_test.reshape(-1, lookback, 3)
-    x_pred = x_pred.reshape(-1, lookback, 3)
+    x_train = x_train.reshape(-1, lookback, 4)
+    x_test = x_test.reshape(-1, lookback, 4)
+    x_pred = x_pred.reshape(-1, lookback, 4)
 
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
@@ -144,7 +161,6 @@ def attention_lstm(ticker):
 
             self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
             self.att = Attention(hidden_size, hidden_size)
-            self.att2 = Attention(hidden_size, hidden_size)
             self.fc = nn.Linear(hidden_size, 1, )
         
         def forward(self, x):
@@ -153,22 +169,20 @@ def attention_lstm(ticker):
             h1 = torch.zeros(self.num_stacked_layers, batch_size, self.hidden_size).to(device)
 
             out, _ = self.lstm(x,  (h0,h1))
-            #out = self.att(out)
-            #out = self.att2(out)
-            #out = self.att(out)
+            out = self.att(out)
             out = self.fc(out[:,-1,:])
             return out
 
 
-    model = LSTM_Attention_Model(3, 8, 1)
+    model = LSTM_Attention_Model(4, 8, 2)
 
 
     model.to(device)
 
 
-    learning_rate = 0.001
-    num_epochs = 15
-
+    learning_rate = 0.01
+    num_epochs = 30
+#
     loss_function = nn.MSELoss()
     
     #optimizer = torch.optim.SGD(model.named_parameters(), lr=learning_rate, momentum=0.1)
@@ -227,17 +241,17 @@ def attention_lstm(ticker):
                 #print(x_batch)
                 with torch.no_grad():
                     output = model(x_batch)
-                    predictions.append(output[0][0].item())                
-                    actual.append(y_batch[0][0].item())
+                    print(output[0][0].item())
+                    predictions.append((output[0][0].item()* multiple)+minimum)                
+                    actual.append((y_batch[0][0].item()* multiple)+minimum)
                     count+=1
-            print(predictions)
-            print(actual)
+            
             x = np.linspace(0.3, 1, 100)
             y = x
-            plt.plot(x, y, color = 'red')
-            plt.scatter(actual, predictions)
-            plt.xlabel("Actual")
-            plt.ylabel("Predicted")
+            #plt.plot(x, y, color = 'red')
+            #plt.scatter(actual, predictions)
+            plt.plot(actual)
+            plt.plot(predictions, color = 'red')
             
             plt.show()
         
