@@ -98,8 +98,8 @@ export default function StockPage() {
       success: "Stock data saved successfully",
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
-    queryClient.invalidateQueries({ queryKey: [cache_keys.USER_STOCKS] });
-    navigate("/", { replace: false });
+    await queryClient.invalidateQueries({ queryKey: [cache_keys.USER_STOCKS] });
+    navigate("/");
   };
 
   const handleInputChange = (
