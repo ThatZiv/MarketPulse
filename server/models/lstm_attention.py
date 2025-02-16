@@ -23,7 +23,7 @@ def attention_lstm(ticker):
     data['Open'] = ((data['Close']/data['Open'])-(data['Close']/data['Open']).min())/((data['Close']/data['Open']).max()-(data['Close']/data['Open']).min())
     # normalized
     for i in range(1, len(data['High'])):
-        data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
+        #data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
         data['Low'][i] = data['Close'][i]-data['Low'][i]
     data['High'][0] = 0
     data['Low'][0] = 0
@@ -55,7 +55,8 @@ def attention_lstm(ticker):
             y.append(label)
         return np.array(x), np.array(y)
     
-    lookback = 15
+
+    lookback = 30
     x_np, y_np = shif_data_frame(data, answer, lookback)
 
     split_index = int(0.8 * len(x_np))
@@ -144,7 +145,7 @@ def attention_lstm(ticker):
             self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
             self.att = Attention(hidden_size, hidden_size)
             self.att2 = Attention(hidden_size, hidden_size)
-            self.fc = nn.Linear(hidden_size, 1)
+            self.fc = nn.Linear(hidden_size, 1, )
         
         def forward(self, x):
             batch_size = x.size(0)
@@ -159,7 +160,8 @@ def attention_lstm(ticker):
             return out
 
 
-    model = LSTM_Attention_Model(3, 3, 1)
+    model = LSTM_Attention_Model(3, 8, 1)
+
 
     model.to(device)
 
@@ -168,7 +170,8 @@ def attention_lstm(ticker):
     num_epochs = 15
 
     loss_function = nn.MSELoss()
-
+    
+    #optimizer = torch.optim.SGD(model.named_parameters(), lr=learning_rate, momentum=0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
     def train_one_epoch():
@@ -178,11 +181,11 @@ def attention_lstm(ticker):
 
         for batch_index, batch in enumerate(train_loader):
             x_batch, y_batch = batch[0].to(device), batch[1].to(device)
-            optimizer.zero_grad()
+            
             output= model(x_batch)
             loss = loss_function(output, y_batch)
             running_loss += loss.item()
-
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
@@ -229,6 +232,9 @@ def attention_lstm(ticker):
                     count+=1
             print(predictions)
             print(actual)
+            x = np.linspace(0.3, 1, 100)
+            y = x
+            plt.plot(x, y, color = 'red')
             plt.scatter(actual, predictions)
             plt.xlabel("Actual")
             plt.ylabel("Predicted")
