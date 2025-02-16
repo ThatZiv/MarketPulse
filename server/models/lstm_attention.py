@@ -16,15 +16,15 @@ import requests
 
 def attention_lstm(ticker):
     device = 'cpu'
-    data = add_daily_data(ticker, 500)
+    data = add_daily_data(ticker, 1500)
     #normalized volume
-    data['Volume'] = (data['Volume'] - data['Volume'].min())/ (data['Volume'].max() - data['Volume'].min())
+    data['Volume'] = (data['Volume'] - data['Volume'].min())/(data['Volume'].max() - data['Volume'].min())
     # normalized precent difference between open and close
     data['Open'] = ((data['Close']/data['Open'])-(data['Close']/data['Open']).min())/((data['Close']/data['Open']).max()-(data['Close']/data['Open']).min())
     # normalized
     for i in range(1, len(data['High'])):
         data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
-        data['Low'][i] = data['Close'][i]-data['Close'][i-1]
+        data['Low'][i] = data['Close'][i]-data['Low'][i]
     data['High'][0] = 0
     data['Low'][0] = 0
 
@@ -36,8 +36,8 @@ def attention_lstm(ticker):
     data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
     data.set_index('Date', inplace = True)
     
-    answer = data['Low']
-    data = data.drop(columns=['Open','High','Low','Close', 'Dividends', 'Stock Splits'])
+    answer = data['High']
+    data = data.drop(columns=['Open','Close', 'Dividends', 'Stock Splits'])
     
     print(data)
     
@@ -55,23 +55,23 @@ def attention_lstm(ticker):
             y.append(label)
         return np.array(x), np.array(y)
     
-    lookback = 30
-    x_np, y_np = shif_data_frame(data, data, lookback)
+    lookback = 15
+    x_np, y_np = shif_data_frame(data, answer, lookback)
 
-    split_index = int(0.80 * len(x_np))
+    split_index = int(0.8 * len(x_np))
 
     
     x_train = x_np[:split_index]
-    x_test = x_np[split_index:-50]
-    x_pred = x_np[-50:]
+    x_test = x_np[split_index:]
+    x_pred = x_np[split_index:]
     
     y_train = y_np[:split_index]
-    y_test = y_np[split_index:-50]
-    y_pred = y_np[-50:]
+    y_test = y_np[split_index:]
+    y_pred = y_np[split_index:]
     
-    x_train = x_train.reshape(-2, lookback, 1)
-    x_test = x_test.reshape(-2, lookback, 1)
-    x_pred = x_pred.reshape(-2, lookback, 1)
+    x_train = x_train.reshape(-1, lookback, 3)
+    x_test = x_test.reshape(-1, lookback, 3)
+    x_pred = x_pred.reshape(-1, lookback, 3)
 
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
@@ -103,7 +103,7 @@ def attention_lstm(ticker):
     train_dataset = TimeSeriesData(x_train, y_train)
     test_dataset = TimeSeriesData(x_test, y_test)
     pred_dataset = TimeSeriesData(x_pred, y_pred)
-    batch_size = 10
+    batch_size = 25
 
     train_loader = DataLoader(dataset = train_dataset, batch_size = batch_size, shuffle = True)
     test_loader = DataLoader(dataset = test_dataset, batch_size = batch_size, shuffle = False)
@@ -151,7 +151,7 @@ def attention_lstm(ticker):
             h0 = torch.zeros(self.num_stacked_layers, batch_size, self.hidden_size).to(device)
             h1 = torch.zeros(self.num_stacked_layers, batch_size, self.hidden_size).to(device)
 
-            out, _ = self.lstm(x, (h0, h1))
+            out, _ = self.lstm(x,  (h0,h1))
             #out = self.att(out)
             #out = self.att2(out)
             #out = self.att(out)
@@ -159,12 +159,13 @@ def attention_lstm(ticker):
             return out
 
 
-    model = LSTM_Attention_Model(1, 2, 1)
+    model = LSTM_Attention_Model(3, 3, 1)
 
     model.to(device)
 
-    learning_rate = 0.00000000001
-    num_epochs = 5
+
+    learning_rate = 0.001
+    num_epochs = 15
 
     loss_function = nn.MSELoss()
 
@@ -228,9 +229,10 @@ def attention_lstm(ticker):
                     count+=1
             print(predictions)
             print(actual)
-            plt.plot(actual, label='Actual')
-            plt.plot(predictions, label='Predicted')
-            plt.legend()
+            plt.scatter(actual, predictions)
+            plt.xlabel("Actual")
+            plt.ylabel("Predicted")
+            
             plt.show()
         
     predicting()
