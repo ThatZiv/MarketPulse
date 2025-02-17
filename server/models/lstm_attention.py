@@ -18,7 +18,7 @@ import pywt
 def wavelet(data):
     wavelet = 'db4'
     coes = pywt.wavedec(data, wavelet, mode = 'reflect')
-    threshold = .75
+    threshold = .5
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet)
 
@@ -50,8 +50,8 @@ def attention_lstm(ticker):
     data.set_index('Date', inplace = True)
     
     answer = data['Close']
-    print(data['Open'])
-    data = data.drop(columns=['Close', 'Dividends', 'Stock Splits'])
+   
+    data = data.drop(columns=['Open', 'Dividends', 'Stock Splits'])
     
    
     print(data)
@@ -71,7 +71,7 @@ def attention_lstm(ticker):
         return np.array(x), np.array(y)
     
 
-    lookback = 25
+    lookback = 15
     x_np, y_np = shif_data_frame(data, answer, lookback)
 
     split_index = int(0.8 * len(x_np))
@@ -79,12 +79,12 @@ def attention_lstm(ticker):
     
     x_train = x_np[:split_index]
     x_test = x_np[split_index:]
-    x_pred = x_np[-30:]
+    x_pred = x_np[-250:]
     #x_pred = x_np
 
     y_train = y_np[:split_index]
     y_test = y_np[split_index:]
-    y_pred = y_np[-30:]
+    y_pred = y_np[-250:]
     #y_pred = y_np
     
     x_train = x_train.reshape(-1, lookback, 4)
@@ -174,13 +174,13 @@ def attention_lstm(ticker):
             return out
 
 
-    model = LSTM_Attention_Model(4, 8, 2)
+    model = LSTM_Attention_Model(4, 16, 1)
 
 
     model.to(device)
 
 
-    learning_rate = 0.01
+    learning_rate = 0.005
     num_epochs = 30
 #
     loss_function = nn.MSELoss()
@@ -246,11 +246,11 @@ def attention_lstm(ticker):
                     actual.append((y_batch[0][0].item()* multiple)+minimum)
                     count+=1
             
-            x = np.linspace(0.3, 1, 100)
+            x = np.linspace(0, 250, 250)
             y = x
             #plt.plot(x, y, color = 'red')
             #plt.scatter(actual, predictions)
-            plt.plot(actual)
+            plt.plot( actual)
             plt.plot(predictions, color = 'red')
             
             plt.show()
