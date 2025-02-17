@@ -113,7 +113,7 @@ def main():
         
  
 
-    torch.save(model.state_dict(), 'models/checkpoints/transformer.pth')
+    torch.save(model.state_dict(), 'models/checkpoints/transformer-old.pth')
 
 
     
