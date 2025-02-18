@@ -6,7 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import r2_score, mean_squared_error
 import matplotlib.pyplot as plt
 
-modelLoc = 'models/checkpoints/transformer.pth'
+modelLoc = 'models/checkpoints/transformer-old.pth'
 
 def create_sequence(data, window_size):
     sequences = []
@@ -99,18 +99,22 @@ def plot_results(predictions, actuals, title):
 def main():
     # hyperparams
     input_size = 1
-    hidden_size = 64
+    hidden_size = 128
     num_heads = 4
     num_layers = 2
-    window_size = 12
-    epochs = 10
-    lr = 0.001
+    window_size = 20
+    epochs = 150
+    lr = 0.0005
 
     # TODO: get from postgres
-    data = yf.download('F', start='2020-01-01', end='2024-12-27')
+    # data = yf.download('F', start='2020-01-01', end='2024-12-27')
+    import json
+    import os
+    data = json.load(open(os.path.join(os.path.dirname(__file__), 't.json')))
     # normalize
     # TODO: implement other features like volume, open, high, low
-    data = data['Close'].values.reshape(-1, 1)
+    data = np.array(data['Close']["values"]).reshape(-1, 1)
+    # data = data['Close'].vales.reshape(-1, 1)
     scaler = MinMaxScaler()
     scaled_data = scaler.fit_transform(data)
 
@@ -160,9 +164,9 @@ def main():
         print(f'\nEpoch [{epoch + 1}/{epochs}]')
         print(f'training Loss: {train_loss/len(train_dataloader):.4f}')
         print(f'validation Loss: {val_metrics["loss"]:.4f}')
-        print(f'validation RMSE: ${val_metrics["rmse"]:.2f}')
+        # print(f'validation RMSE: ${val_metrics["rmse"]:.2f}')
         print(f'validation R^2: {val_metrics["r2"]:.4f}')
-        print(f'validation Directional Accuracy: {val_metrics["accuracy"]:.2f}%')
+        # print(f'validation Directional Accuracy: {val_metrics["accuracy"]:.2f}%')
 
         # early stopping when loss isnt improve
         if val_metrics["loss"] < best_val_loss:
@@ -178,10 +182,10 @@ def main():
     model.load_state_dict(torch.load(modelLoc))
     test_metrics = evaluate_model(model, test_dataloader, criterion, scaler)
     print('\nfinal metrics:')
-    print(f'MSE: {test_metrics["mse"]:.4f}')
-    print(f'RMSE: ${test_metrics["rmse"]:.2f}')
+    # print(f'MSE: {test_metrics["mse"]:.4f}')
+    # print(f'RMSE: ${test_metrics["rmse"]:.2f}')
     print(f'R^2 Score: {test_metrics["r2"]:.4f}')
-    print(f'directional accuracy: {test_metrics["accuracy"]:.2f}%')
+    # print(f'directional accuracy: {test_metrics["accuracy"]:.2f}%')
     plot_results(test_metrics["predictions"], test_metrics["actuals"],
                 "test set predictions vs actual set")
 
