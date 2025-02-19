@@ -1,30 +1,39 @@
-import torch
-import torch.nn as nn
-import numpy as np
-import pandas as pd
+"""
+An implementation of a transformer model for stock price prediction
+"""
 import time
-import math
-import matplotlib.pyplot as plt
-import yfinance as yf
 import os
 import json
-from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error, mean_absolute_percentage_error
+import math
+import torch
+from torch import nn
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+# import yfinance as yf
+from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error
 
 # pylint: disable=line-too-long
 
 class Transformer:
     """transformer model wrapper for timeseries forecasting"""
-    def __init__(self, input_window=10, output_window=1, batch_size=250):
+    def __init__(self, input_window=10, output_window=1, batch_size=250, lr=0.0005):
         self.input_window = input_window
         self.output_window = output_window
         self.batch_size = batch_size
+        self.lr = lr
+        self.ticker = "TSLA".upper()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model_dir = "models/checkpoints"
-        self.model_loc = f"{self.model_dir}/z-transformer2.pth"
-        self.model_path = os.path.join(os.path.dirname(__file__), "checkpoints/z-transformer2.pth")
-        self.ticker = "TM"
+        self.model_dir = "checkpoints"
+        # use a ticker-specific model or a generalizable one/
+        self.use_spec_model = False
+        self.file_name = f"z-transformer2{'-' + self.ticker if self.use_spec_model else '' }.pth"
+        self.model_loc = f"{self.model_dir}/{self.file_name}"
+        self.model_path = os.path.join(os.path.dirname(__file__), self.model_loc)
         # data = yf.download(self.ticker, start='2020-01-01', end='2024-12-27')
+        # pylint: disable=consider-using-with
         data = json.load(open(os.path.join(os.path.dirname(__file__), f'mockStocks/{self.ticker}.json'), 'r', encoding='utf-8'))
+        # pylint: enable=consider-using-with
         close = pd.DataFrame(data["close"])
 
         # close = np.array(pd.DataFrame(data['Close'].values))
@@ -50,38 +59,16 @@ class Transformer:
         self.model = TransformerModel()
         self.model.to(self.device)
         self.criterion = nn.MSELoss() # Loss function
-        lr = 0.0005 # learning rate
         if os.path.exists(self.model_path):
-            self.model.load_state_dict(torch.load(self.model_loc))
-            print("Model loaded from checkpoint.")
-            test_eval = self.evaluate(self.model, val_data)
-            print(f"Test loss: {test_eval}")
-            test_result, truth = self.forecast_seq(val_data)
-            plt.plot(truth, color='red', alpha=0.7)
-            plt.plot(test_result, color='blue', linewidth=0.7)
-            plt.title('Actual vs Forecast')
-            plt.legend(['Actual', 'Forecast'])
-            plt.xlabel('Time Steps')
-            plt.show()
-            exit(0)
+            self.load_and_run(val_data)
+            return
 
 
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1.0, gamma=0.95)
 
-        epochs = 150
-
-        for epoch in range(1, epochs + 1):
-            epoch_start_time = time.time()
-            self.train(train_data, epoch)
-
-            if epoch % epochs == 0: # valid model after last training epoch
-                val_loss = self.evaluate(self.model, val_data)
-                print(f'epoch {epoch} | time: {time.time() - epoch_start_time}s | valid loss: {val_loss}')
-            else:
-                print(f'epoch {epoch} | time: {time.time() - epoch_start_time}s')
-
-            self.scheduler.step()
+        # training
+        self.training_seq(train_data, val_data)
 
         test_result, truth = self.forecast_seq(val_data)
         plt.plot(truth, color='red', alpha=0.7)
@@ -91,7 +78,8 @@ class Transformer:
         plt.xlabel('Time Steps')
         plt.show()
 
-        torch.save(self.model.state_dict(), self.model_loc)
+        torch.save(self.model.state_dict(), self.model_path)
+        print(f"Model saved to {self.model_path}")
 
     def create_inout_sequences(self, input_data, tw):
         """ create input and output sequences for transformer"""
@@ -102,6 +90,35 @@ class Transformer:
             train_label = input_data[i+self.output_window:i+tw+self.output_window]
             inout_seq.append((train_seq ,train_label))
         return torch.FloatTensor(np.array(inout_seq))
+
+    def load_and_run(self, val_data):
+        """ load local model and run """
+        self.model.load_state_dict(torch.load(self.model_path))
+        print("Model loaded from checkpoint: ", self.model_path)
+        test_eval = self.evaluate(self.model, val_data)
+        print(f"Test loss: {test_eval}")
+        test_result, truth = self.forecast_seq(val_data)
+        plt.plot(truth, color='red', alpha=0.7)
+        plt.plot(test_result, color='blue', linewidth=0.7)
+        plt.title('Actual vs Forecast')
+        plt.legend(['Actual', 'Forecast'])
+        plt.xlabel('Time Steps')
+        plt.show()
+
+    def training_seq(self, train_data, val_data, epochs=150):
+        """ train model on epoch """
+        for epoch in range(1, epochs + 1):
+            epoch_start_time = time.time()
+            self.train(train_data, epoch)
+
+            if epoch % epochs == 0:
+                val_loss = self.evaluate(self.model, val_data)
+                print(f'epoch {epoch} | time: {time.time() - epoch_start_time:.2f}s | valid loss: {val_loss}')
+            else:
+                print(f'epoch {epoch} | time: {time.time() - epoch_start_time:.2f}s')
+
+            self.scheduler.step()
+
 
     def get_data(self, data, split):
         """split data into train and test set"""
@@ -127,7 +144,6 @@ class Transformer:
 
     def get_batch(self, source, i, batch_size=None):
         """get batch of data"""
-        
         seq_len = min(batch_size or self.batch_size, len(source) - 1 - i)
         data = source[i:i+seq_len]
         x = torch.stack(torch.stack([item[0] for item in data]).chunk(self.input_window, 1))
@@ -220,6 +236,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer('pe', pe)
 
     def forward(self, x):
+        """add positional encoding to the input"""
         return x + self.pe[:x.size(0), :]
 
 class TransformerModel(nn.Module):
