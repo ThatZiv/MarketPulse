@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import json
 import requests
 import pywt
+import math
+from sklearn.metrics import r2_score, mean_squared_error
 
 # r squared
 # mean squared error
@@ -18,7 +20,7 @@ import pywt
 def wavelet(data):
     wavelet = 'db4'
     coes = pywt.wavedec(data, wavelet, mode = 'reflect')
-    threshold = .5
+    threshold = .01
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet)
 
@@ -26,41 +28,45 @@ def wavelet(data):
 
 def attention_lstm(ticker):
     device = 'cpu'
-    data = add_daily_data(ticker, 1500)
+    data = add_daily_data(ticker, 1300)
     #normalized volume
     data['Volume'] = (data['Volume'] - data['Volume'].min())/(data['Volume'].max() - data['Volume'].min())
     # normalized
     multiple = (data['Close'].max() - data['Close'].min())
     minimum =  data['Close'].min()
+    data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min()) 
+    validation = data['Close']
     data['Close'] = wavelet(data['Close'])
     data['Low'] = wavelet(data['Low'])
     data['High'] = wavelet(data['High'])
     data['Open'] = wavelet(data['Open'])
     for i in range(1, len(data['High'])):
         data['Low'][i] = data['High'][i]-data['Low'][i]
-        data['High'][i] = 1-(data['Close'][i]/data['Close'][i-1])
+        data['High'][i] = 1-(data['Close'][i]-data['Close'][i-1])
     
     data['High'][0] = 0
     data['Low'][0] = 0
 
-    data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min()) 
+    
     data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
     data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
     data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min()) 
     data.set_index('Date', inplace = True)
     
     answer = data['Close']
-   
+    print(data)
     data = data.drop(columns=['Open', 'Dividends', 'Stock Splits'])
     
    
     print(data)
     
-    def shif_data_frame(df, an,shift):
+    def shif_data_frame(df, an, v, shift):
         df_np = df.to_numpy()
         an_np = an.to_numpy()
+        v_np = v.to_numpy()
         x = []
         y = []
+        z = []
 
         for i in range(len(df_np)-shift):
             row = [r for r in df_np[i:i+shift]]
@@ -68,23 +74,28 @@ def attention_lstm(ticker):
             #We are only predicting precent price change
             label = an_np[i+shift]
             y.append(label)
-        return np.array(x), np.array(y)
+            label = v_np[i+shift]
+            z.append(label)
+        return np.array(x), np.array(y), np.array(z)
     
 
-    lookback = 15
-    x_np, y_np = shif_data_frame(data, answer, lookback)
+    lookback = 10
+    x_np, y_np, v_np = shif_data_frame(data, answer, validation, lookback)
 
     split_index = int(0.8 * len(x_np))
 
+    split_index2 = int(0.9 * len(x_np))
+
     
     x_train = x_np[:split_index]
-    x_test = x_np[split_index:]
-    x_pred = x_np[-250:]
+    x_test = x_np[split_index:split_index2]
+    x_pred = x_np[split_index2:]
     #x_pred = x_np
 
     y_train = y_np[:split_index]
-    y_test = y_np[split_index:]
-    y_pred = y_np[-250:]
+    y_test = y_np[split_index:split_index2]
+    y_pred = y_np[split_index2:]
+    v_pred = v_np[split_index2:]
     #y_pred = y_np
     
     x_train = x_train.reshape(-1, lookback, 4)
@@ -94,6 +105,7 @@ def attention_lstm(ticker):
     y_train = y_train.reshape(-1, 1)
     y_test = y_test.reshape(-1, 1)
     y_pred = y_pred.reshape(-1, 1)
+    v_pred = v_pred.reshape(-1, 1)
 
     x_train = torch.tensor(x_train).float()
     x_test = torch.tensor(x_test).float()
@@ -102,7 +114,7 @@ def attention_lstm(ticker):
     y_train = torch.tensor(y_train).float()
     y_test = torch.tensor(y_test).float()
     y_pred = torch.tensor(y_pred).float()
-
+    v_pred = torch.tensor(v_pred).float()
 
 
     print(x_test.shape)
@@ -121,7 +133,7 @@ def attention_lstm(ticker):
     train_dataset = TimeSeriesData(x_train, y_train)
     test_dataset = TimeSeriesData(x_test, y_test)
     pred_dataset = TimeSeriesData(x_pred, y_pred)
-    batch_size = 25
+    batch_size = 10
 
     train_loader = DataLoader(dataset = train_dataset, batch_size = batch_size, shuffle = True)
     test_loader = DataLoader(dataset = test_dataset, batch_size = batch_size, shuffle = False)
@@ -174,14 +186,14 @@ def attention_lstm(ticker):
             return out
 
 
-    model = LSTM_Attention_Model(4, 16, 1)
+    model = LSTM_Attention_Model(4, 32, 2)
 
 
     model.to(device)
 
 
     learning_rate = 0.005
-    num_epochs = 30
+    num_epochs = 15
 #
     loss_function = nn.MSELoss()
     
@@ -235,17 +247,31 @@ def attention_lstm(ticker):
         with torch.no_grad():
             predictions = []
             actual = []
+            val = []
             count = 0
             for batch_index, batch in enumerate(pred_loader):
                 x_batch, y_batch = batch[0].to(device), batch[1].to(device)
                 #print(x_batch)
                 with torch.no_grad():
                     output = model(x_batch)
-                    print(output[0][0].item())
                     predictions.append((output[0][0].item()* multiple)+minimum)                
                     actual.append((y_batch[0][0].item()* multiple)+minimum)
+                    val.append(output[0][0].item())
                     count+=1
             
+            r2 = r2_score(v_pred, val)
+            print('R2 Score: ', r2)
+
+            mse = mean_squared_error(v_pred, val)
+
+            np_val = np.array(val)
+            np_v = np.array(v_pred)
+
+            
+
+            print("MSE: " + str(mse))
+            print("RMSE: " + str(math.sqrt(mse)))
+            print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
             x = np.linspace(0, 250, 250)
             y = x
             #plt.plot(x, y, color = 'red')
