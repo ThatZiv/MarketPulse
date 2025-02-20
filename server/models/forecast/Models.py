@@ -1,19 +1,25 @@
 import os
 from typing import *
 import torch
-
+from .Model import ForecastModel
+from .ForecastTypes import DatasetType, ForecastSeriesType, DataForecastType
 
 class ForecastModels:
-    def __init__(self, *args, **kwargs):
-        self.models: List[ForecastModel] = args
+    """
+    class used to manage all forecast models
+    """
+    def __init__(self, *args: Optional[List[type[ForecastModel]]]):
+        self.models: List[type[ForecastModel]] = args or []
 
-    def train_all(self, data_set):
+    def train_all(self, data_set: DatasetType):
+        """ method used to train all models """
         for model in self.models:
             model.train(data_set)
 
-    def run_all(self, forecast_days: int) -> List[Dict[name: str, forecast: List[float]]]:
+    def run_all(self, forecast_days: int) -> ForecastSeriesType:
+        """ method used to run all models and forecast the next n days """
         # TODO: implement ingestion to stock_prediction table here
-        return {
-            "forecast": [model.run(forecast_days) for model in self.models],
-            "name": model.name
-        }
+        return [
+            { "forecast": model.run(forecast_days),"name": model.name } \
+                for model in self.models
+        ]

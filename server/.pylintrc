@@ -443,7 +443,8 @@ disable=raw-checker-failed,
         fixme,
         too-many-instance-attributes,
         too-many-locals,
-        super-with-arguments
+        super-with-arguments,
+        wildcard-import
 
 
 # Enable the message, report, category or checker with the given id(s). You can
