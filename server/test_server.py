@@ -11,8 +11,8 @@ from flask_cors import CORS
 from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine, select, update
-from database.newsapi import news_search
 from database.reddit import reddit_request, add_to_database, daily_reddit_request
+from stockdataload import load_data
 load_dotenv()
 
 def create_app():
@@ -49,11 +49,11 @@ if __name__ == '__main__':
         print(f"Failed to connect: {e}")
 
     Base.metadata.create_all(engine)
-
+    load_data(engine)
     #reddit_request("stocks", "Tesla")
     #add_to_database(reddit_request("stocks", "Rivian"), engine, 5)
-    daily_reddit_request("stocks", "Tesla", engine, 1)
+    #daily_reddit_request("stocks", "Tesla", engine, 1)
     #print(news_search("Rivian", engine, 5))
-    app.run(debug=True, host='0.0.0.0')
+    #app.run(debug=True, host='0.0.0.0')
 
 
