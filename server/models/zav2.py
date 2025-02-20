@@ -30,56 +30,52 @@ class Transformer:
         self.file_name = f"z-transformer2{'-' + self.ticker if self.use_spec_model else '' }.pth"
         self.model_loc = f"{self.model_dir}/{self.file_name}"
         self.model_path = os.path.join(os.path.dirname(__file__), self.model_loc)
-        # data = yf.download(self.ticker, start='2020-01-01', end='2024-12-27')
+        
         # pylint: disable=consider-using-with
-        data = json.load(open(os.path.join(os.path.dirname(__file__), f'mockStocks/{self.ticker}.json'), 'r', encoding='utf-8'))
+        # data = json.load(open(os.path.join(os.path.dirname(__file__), f'mockStocks/{self.ticker}.json'), 'r', encoding='utf-8'))
         # pylint: enable=consider-using-with
-        close = pd.DataFrame(data["close"])
+        # close = pd.DataFrame(data["close"])
 
         # close = np.array(pd.DataFrame(data['Close'].values))
 
         # log returns for normalization isntead of minmax
-        logreturn = np.diff(np.log(close), axis=0)
-        # normalize
-        csum_logreturn = logreturn.cumsum()
-        fig, axs = plt.subplots(2, 1)
-        axs[0].plot(close, color='red')
-        axs[0].set_title('closing Prices')
-        axs[0].set_ylabel('close Price')
-        axs[0].set_xlabel('Time steps')
+        # logreturn = np.diff(np.log(close), axis=0)
+        # # normalize
+        # csum_logreturn = logreturn.cumsum()
+        # fig, axs = plt.subplots(2, 1)
+        # axs[0].plot(close, color='red')
+        # axs[0].set_title('closing Prices')
+        # axs[0].set_ylabel('close Price')
+        # axs[0].set_xlabel('Time steps')
 
-        axs[1].plot(csum_logreturn, color='green')
-        axs[1].set_title('CSLR')
-        axs[1].set_xlabel('Time Steps')
+        # axs[1].plot(csum_logreturn, color='green')
+        # axs[1].set_title('CSLR')
+        # axs[1].set_xlabel('Time Steps')
 
-        fig.tight_layout()
-        plt.show()
+        # fig.tight_layout()
+        # plt.show()
 
-        train_data, val_data = self.get_data(logreturn, 0.6) # 60% train, 40% test split
         self.model = TransformerModel()
         self.model.to(self.device)
         self.criterion = nn.MSELoss() # Loss function
-        if os.path.exists(self.model_path):
-            self.load_and_run(val_data)
-            return
-
+ 
 
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1.0, gamma=0.95)
 
-        # training
-        self.training_seq(train_data, val_data)
+        # # training
+        # self.training_seq(train_data, val_data)
 
-        test_result, truth = self.forecast_seq(val_data)
-        plt.plot(truth, color='red', alpha=0.7)
-        plt.plot(test_result, color='blue', linewidth=0.7)
-        plt.title('Actual vs Forecast')
-        plt.legend(['Actual', 'Forecast'])
-        plt.xlabel('Time Steps')
-        plt.show()
+        # test_result, truth = self.forecast_seq(val_data)
+        # plt.plot(truth, color='red', alpha=0.7)
+        # plt.plot(test_result, color='blue', linewidth=0.7)
+        # plt.title('Actual vs Forecast')
+        # plt.legend(['Actual', 'Forecast'])
+        # plt.xlabel('Time Steps')
+        # plt.show()
 
-        torch.save(self.model.state_dict(), self.model_path)
-        print(f"Model saved to {self.model_path}")
+        # torch.save(self.model.state_dict(), self.model_path)
+        # print(f"Model saved to {self.model_path}")
 
     def create_inout_sequences(self, input_data, tw):
         """ create input and output sequences for transformer"""
@@ -93,8 +89,6 @@ class Transformer:
 
     def load_and_run(self, val_data):
         """ load local model and run """
-        self.model.load_state_dict(torch.load(self.model_path))
-        print("Model loaded from checkpoint: ", self.model_path)
         test_eval = self.evaluate(self.model, val_data)
         print(f"Test loss: {test_eval}")
         test_result, truth = self.forecast_seq(val_data)
@@ -123,7 +117,8 @@ class Transformer:
     def get_data(self, data, split):
         """split data into train and test set"""
 
-        series = data
+        # normalize data
+        series = np.diff(np.log(data), axis=0)
         split = round(split*len(series))
         train_data = series[:split]
         test_data = series[split:]
