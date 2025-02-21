@@ -12,8 +12,10 @@ import json
 import requests
 import pywt
 import math
+from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 from sklearn.metrics import r2_score, mean_squared_error
-
+from sqlalchemy import create_engine, select, func
+from sqlalchemy.orm import sessionmaker
 # r squared
 # mean squared error
 
@@ -26,9 +28,32 @@ def wavelet(data):
 
     return smoothed
 
-def attention_lstm(ticker):
+def attention_lstm(ticker, engine):
+
+
+    stock_q= select(Stock_Info).where(Stock_Info.stock_id == 1)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    data2 = session.connection().execute(stock_q).all()
+
+    print(data2[0])
+    s_open = []
+    s_close = []
+    s_high = []
+    s_low = []
+    s_volume = []
+    for row in data2:
+        s_open.append(row[3])
+        s_close.append(row[1])
+        s_high.append(row[4])
+        s_low.append(row[5])
+        s_volume.append(row[2])
+
+
     device = 'cpu'
-    data = add_daily_data(ticker, 1300)
+    data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
+    data = pd.DataFrame(data)    
+    #data = add_daily_data(ticker, 1300)
     #normalized volume
     data['Volume'] = (data['Volume'] - data['Volume'].min())/(data['Volume'].max() - data['Volume'].min())
     # normalized
@@ -51,11 +76,10 @@ def attention_lstm(ticker):
     data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
     data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
     data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min()) 
-    data.set_index('Date', inplace = True)
     
     answer = data['Close']
     print(data)
-    data = data.drop(columns=['Open', 'Dividends', 'Stock Splits'])
+    data = data.drop(columns=['Open'])
     
    
     print(data)
