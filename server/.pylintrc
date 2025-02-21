@@ -444,7 +444,10 @@ disable=raw-checker-failed,
         too-many-instance-attributes,
         too-many-locals,
         super-with-arguments,
-        wildcard-import
+        wildcard-import,
+        missing-final-newline,
+        unused-wildcard-import,
+        missing-module-docstring
 
 
 # Enable the message, report, category or checker with the given id(s). You can

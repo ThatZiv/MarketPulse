@@ -3,13 +3,12 @@ An implementation of a transformer model for stock price prediction
 """
 import time
 import os
-import json
+# import json
 import math
 import torch
 from torch import nn
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+# import pandas as pd
 # import yfinance as yf
 from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error
 
@@ -30,7 +29,7 @@ class Transformer:
         self.file_name = f"z-transformer2{'-' + self.ticker if self.use_spec_model else '' }.pth"
         self.model_loc = f"{self.model_dir}/{self.file_name}"
         self.model_path = os.path.join(os.path.dirname(__file__), self.model_loc)
-        
+
         # pylint: disable=consider-using-with
         # data = json.load(open(os.path.join(os.path.dirname(__file__), f'mockStocks/{self.ticker}.json'), 'r', encoding='utf-8'))
         # pylint: enable=consider-using-with
@@ -58,21 +57,13 @@ class Transformer:
         self.model = TransformerModel()
         self.model.to(self.device)
         self.criterion = nn.MSELoss() # Loss function
- 
+
 
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1.0, gamma=0.95)
 
         # # training
         # self.training_seq(train_data, val_data)
-
-        # test_result, truth = self.forecast_seq(val_data)
-        # plt.plot(truth, color='red', alpha=0.7)
-        # plt.plot(test_result, color='blue', linewidth=0.7)
-        # plt.title('Actual vs Forecast')
-        # plt.legend(['Actual', 'Forecast'])
-        # plt.xlabel('Time Steps')
-        # plt.show()
 
         # torch.save(self.model.state_dict(), self.model_path)
         # print(f"Model saved to {self.model_path}")
@@ -87,17 +78,17 @@ class Transformer:
             inout_seq.append((train_seq ,train_label))
         return torch.FloatTensor(np.array(inout_seq))
 
-    def load_and_run(self, val_data):
-        """ load local model and run """
-        test_eval = self.evaluate(self.model, val_data)
-        print(f"Test loss: {test_eval}")
-        test_result, truth = self.forecast_seq(val_data)
-        plt.plot(truth, color='red', alpha=0.7)
-        plt.plot(test_result, color='blue', linewidth=0.7)
-        plt.title('Actual vs Forecast')
-        plt.legend(['Actual', 'Forecast'])
-        plt.xlabel('Time Steps')
-        plt.show()
+    # def load_and_run(self, val_data):
+    #     """ load local model and run """
+    #     test_eval = self.evaluate(self.model, val_data)
+    #     print(f"Test loss: {test_eval}")
+    #     test_result, truth = self.forecast_seq(val_data)
+    #     plt.plot(truth, color='red', alpha=0.7)
+    #     plt.plot(test_result, color='blue', linewidth=0.7)
+    #     plt.title('Actual vs Forecast')
+    #     plt.legend(['Actual', 'Forecast'])
+    #     plt.xlabel('Time Steps')
+    #     plt.show()
 
     def training_seq(self, train_data, val_data, epochs=150):
         """ train model on epoch """

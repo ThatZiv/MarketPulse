@@ -1,8 +1,6 @@
-import os
 from typing import *
-import torch
-from .Model import ForecastModel
-from .ForecastTypes import DatasetType, ForecastSeriesType, DataForecastType
+from .model import ForecastModel
+from .forecast_types import DatasetType, ForecastSeriesType
 
 class ForecastModels:
     """

@@ -1,11 +1,15 @@
+"""
+Transformer for price forecasting
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from models.zav2 import Transformer
+from ..zav2 import Transformer
 
-from .ForecastTypes import DataForecastType, DatasetType
-from .Model import ForecastModel
+from .forecast_types import DataForecastType, DatasetType
+from .model import ForecastModel
 
 
 class ZavTransformer(ForecastModel):
@@ -34,6 +38,7 @@ class ZavTransformer(ForecastModel):
 
 
 if __name__ == "__main__":
+    # this is just a test
     model = ZavTransformer(Transformer(), "zav-transformer", "TSLA")
     data = yf.download(model.ticker, start='2020-01-01', end='2024-12-27')
     data = pd.DataFrame(data['Close'].values)
