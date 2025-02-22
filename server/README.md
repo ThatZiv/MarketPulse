@@ -19,6 +19,9 @@ source venv/bin/activate
 
 ```bash
 pip install -r requirements.txt
+
+# you may have to install these
+sudo apt-get install libpq-dev postgresql-client
 ```
 
 4. Run the server
