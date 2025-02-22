@@ -245,7 +245,7 @@ def attention_lstm(ticker, engine):
                 running_loss = 0.0
 
     def validate_one_epoch():
-        model.train(False)
+        model.eval()
         running_loss = 0.0
         for batch_index, batch in enumerate(test_loader):
             x_batch, y_batch = batch[0].to(device), batch[1].to(device)
