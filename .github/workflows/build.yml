@@ -93,6 +93,6 @@ jobs:
         if: steps.cache-virtualenv.outputs.cache-hit != 'true'
       - name: Lint
         run: |
-          pylint server/**/*.py
+          pylint --rcfile server/.pylintrc server/**/*.py
       - name: Test
         run: python -m unittest discover -p '*_test.py'
