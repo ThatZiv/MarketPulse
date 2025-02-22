@@ -23,7 +23,7 @@ class AttentionLstm:
         self.learning_rate = learning_rate
         self.model = LSTMAttentionModel(input_size, hidden_size, num_layers)
         self.criterion = nn.MSELoss()
-        self.optimizer = nn.optim.Adam(self.model.parameters(), lr=learning_rate)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.ticker = "TSLA".upper()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model_dir = "checkpoints"
@@ -48,7 +48,7 @@ class AttentionLstm:
 
     # Normalize smooth and format the data frame for predictions
     def format_data(self, data):
-        data = pd.DataFrame(data)
+        
         data['Volume'] = (data['Volume'] - data['Volume'].min())/(data['Volume'].max() - data['Volume'].min())
         multiple = (data['Close'].max() - data['Close'].min())
         minimum =  data['Close'].min()
@@ -67,12 +67,17 @@ class AttentionLstm:
 
         data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
-
+        data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min()) 
+    
         data = data.drop(columns=['Open'])
         answer = data['Close']
+        print(data)
 
-        return data, answer, valid_answer, multiple, minimum
-
+        data2, answer = self.create_inout_sequences(data, 10, answer)
+        _, valid_answer = self.create_inout_sequences(data, 10, valid_answer)
+        
+        return data2, answer, valid_answer, multiple, minimum
+        
 
     def get_data(self, data, answer, train_answer, split, lookback = 10):
         split_index = int(len(data)*(1-split))
@@ -82,10 +87,15 @@ class AttentionLstm:
         x_test = data[split_index2:split_index]
         x_valid = data[split_index:]
 
+        print(x_train.shape)
+        print(x_test.shape)
+
         # training and testing use smoothed data validation uses raw data
         y_train = train_answer[:split_index2]
         y_test = train_answer[split_index2:split_index]
         y_valid = answer[split_index:]
+
+
 
         x_train = x_train.reshape(-1, lookback, 4)
         x_test = x_test.reshape(-1, lookback, 4)
@@ -115,47 +125,48 @@ class AttentionLstm:
         return train_loader, test_loader, valid_loader
 
     def model_training(self, train_loader, test_loader, epochs):
-        for epoch in range(epochs):
-            self.train(train_loader, epoch)
-            self.test(test_loader, epoch)
 
-    def train(self, train_data, epoch=0):
-        self.model.train()
-        print(f'Epoch: {epoch+1}')
-        running_loss = 0.0
-        for batch_index, batch in enumerate(train_data):
-            x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
-            output= self.model(x_batch)
-            loss = self.loss_function(output, y_batch)
-            running_loss += loss.item()
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
-
-            if batch_index % 25 == 24:
-                avg_loss_across_batches = running_loss / 25
-                print('Batch {0}, Loss {1:.4f}'.format(batch_index+1,avg_loss_across_batches))
-                running_loss = 0.0
-
-    def test(self, test_data, epoch):
-        self.model.eval()
-        running_loss = 0.0
-        for batch_index, batch in enumerate(test_data):
-            x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
-
-            with torch.no_grad():
-                output = self.model(x_batch)
+        def train(train_loader):
+            self.model.train()
+            print(f'Epoch: {epoch+1}')
+            running_loss = 0.0
+            for batch_index, batch in enumerate(train_loader):
+                x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
+                output= self.model(x_batch)
                 loss = self.loss_function(output, y_batch)
                 running_loss += loss.item()
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
 
-        avg_loss_across_batches = running_loss / len(test_data)
+                if batch_index % 25 == 24:
+                    avg_loss_across_batches = running_loss / 25
+                    print('Batch {0}, Loss {1:.4f}'.format(batch_index+1,avg_loss_across_batches))
+                    running_loss = 0.0
+
+        def test():
+            self.model.eval()
+            running_loss = 0.0
+            for batch_index, batch in enumerate(test_loader):
+                x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
+
+                with torch.no_grad():
+                    output = self.model(x_batch)
+                    loss = self.loss_function(output, y_batch)
+                    running_loss += loss.item()
+
+            avg_loss_across_batches = running_loss / len(test_loader)
 
 
-        print('AVG Loss: {0: .4f}'.format(avg_loss_across_batches))
-        print()
+            print('AVG Loss: {0: .4f}'.format(avg_loss_across_batches))
+            print()
+        
+        for epoch in range(epochs):
+            train(train_loader)
+            test()
 
     def evaluate(self, eval_model, data_source):
-        eval_model.eval()
+        self.model.eval()
 
         val = []
         anws = []
@@ -164,7 +175,7 @@ class AttentionLstm:
             x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
 
             with torch.no_grad():
-                output = eval_model(x_batch)
+                output = self.model(x_batch)
                 loss = self.loss_function(output, y_batch)
                 running_loss += loss.item()
                 val.append(output[0][0].item())
@@ -215,6 +226,7 @@ class LSTMAttentionModel(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
         self.att = Attention(hidden_size, hidden_size)
         self.fc = nn.Linear(hidden_size, 1, )
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def forward(self, x):
         batch_size = x.size(0)
@@ -228,7 +240,7 @@ class LSTMAttentionModel(nn.Module):
 
 def wavelet(data):
     wavelet_graph = 'db4'
-    coes = pywt.wavedec(data, wavelet, mode = 'reflect')
+    coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
     threshold = .01
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)

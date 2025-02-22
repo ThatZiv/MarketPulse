@@ -5,16 +5,32 @@ LSTM for price forecasting
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from ..lstm__attention_2 import AttentionLstm
+
 
 from dotenv import load_dotenv
 import os
 from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import sessionmaker
+from forecast_types import DataForecastType, DatasetType
+from model import ForecastModel
+
+import sys
+import os
+
+current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(current)
+sys.path.append(parent)
+
+from lstm_attention_2 import AttentionLstm
+
+parent = os.path.dirname(parent)
+sys.path.append(parent)
+
 from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 
-from .forecast_types import DataForecastType, DatasetType
-from .model import ForecastModel
+
+
+
 
 
 class AttentionLSTM(ForecastModel):
@@ -23,7 +39,11 @@ class AttentionLSTM(ForecastModel):
         super().__init__(my_model.model, name, ticker)
         self.my_model = my_model
 
-    def def train(self, data_set: DatasetType):
+    def train(self, data_set):
+        model_input, testing_out, validation_out, scale, minimum = self.my_model.format_data(data_set)
+        test_data, train_data, validation_data = self.my_model.get_data(model_input,  validation_out, testing_out, 0.1)
+        self.my_model.model_training(train_data, test_data, 900)
+        self.my_model.evaluate(self.my_model, validation_data)
         self.save()
     
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
@@ -65,6 +85,7 @@ if __name__ == "__main__":
         s_volume.append(row[2])
     data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
     data = pd.DataFrame(data) 
+    
 
     model.train(data)
     model.run(data, 30)
