@@ -15,7 +15,7 @@ from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_erro
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 32, num_layers = 2, output_size = 1, batch_size = 10, learning_rate = 0.01):
+    def __init__(self, input_size = 4, hidden_size = 32, num_layers = 2, output_size = 1, batch_size = 10, learning_rate = 0.005):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
@@ -174,8 +174,10 @@ class AttentionLstm:
     def evaluate(self, eval_model, data_source):
         self.model.eval()
         print(data_source.__len__())
-        val = [[0]*data_source.__len__()]*7
-        anws = [[0]*data_source.__len__()]*7
+        value = 0
+       
+        val =  [[value for _ in range(data_source.__len__())] for _ in range(7)]
+        anws =  [[value for _ in range(data_source.__len__())] for _ in range(7)]
         running_loss = 0.0
         count = 0
         for batch_index, batch in enumerate(data_source):
@@ -185,7 +187,8 @@ class AttentionLstm:
                 output = self.model(x_batch)
                 loss = self.loss_function(output, y_batch)
                 running_loss += loss.item()
-                print(output)
+                #print(output, y_batch)
+        
                 val[0][count] = output[0][0].item()
                 anws[0][count] = y_batch[0][0].item()
                 val[1][count] = output[0][1].item()
@@ -200,6 +203,11 @@ class AttentionLstm:
                 anws[5][count] = y_batch[0][5].item()
                 val[6][count] = output[0][6].item()
                 anws[6][count] = y_batch[0][6].item()
+                print(output[0][0].item(), output[0][1].item(), output[0][2].item(), output[0][3].item(), output[0][4].item(), output[0][5].item(), output[0][6].item())
+                print(val[0][count],val[1][count],val[2][count],val[3][count],val[4][count],val[5][count],val[6][count])
+                print(y_batch[0][0].item(), y_batch[0][1].item(), y_batch[0][2].item(), y_batch[0][3].item(), y_batch[0][4].item(), y_batch[0][5].item(), y_batch[0][6].item())
+                print(anws[0][count],anws[1][count],anws[2][count],anws[3][count],anws[4][count],anws[5][count],anws[6][count])
+                print()
                 count += 1
 
         for i in range(7):
@@ -214,9 +222,33 @@ class AttentionLstm:
             print("RMSE: " + str(math.sqrt(mse)))
             print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
             
-        
+
         plt.plot(anws[0])
         plt.plot(val[0], color = 'red')
+            
+        plt.show()
+        plt.plot(anws[1])
+        plt.plot(val[1], color = 'red')
+            
+        plt.show()
+        plt.plot(anws[2])
+        plt.plot(val[2], color = 'red')
+            
+        plt.show()
+        plt.plot(anws[3])
+        plt.plot(val[3], color = 'red')
+            
+        plt.show()
+        plt.plot(anws[4])
+        plt.plot(val[4], color = 'red')
+            
+        plt.show()
+        plt.plot(anws[5])
+        plt.plot(val[5], color = 'red')
+            
+        plt.show()
+        plt.plot(anws[6])
+        plt.plot(val[6], color = 'red')
             
         plt.show()
         
