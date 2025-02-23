@@ -49,7 +49,6 @@ const data = {
         {
           title: "Introduction",
           url: "/documentation/introduction",
-
         },
 
         {
@@ -59,6 +58,10 @@ const data = {
         {
           title: "FAQ",
           url: "/documentation/faq",
+        },
+        {
+          title: "Disclaimer",
+          url: "/documentation/disclaimer",
         },
       ],
     },
@@ -107,7 +110,7 @@ interface NavItem {
     LucideProps & React.RefAttributes<SVGSVGElement>
   >;
   isActive: boolean | undefined;
-  items: { title: string; url: string }[] | [] | undefined; 
+  items: { title: string; url: string }[] | [] | undefined;
 }
 
 interface NavData {
