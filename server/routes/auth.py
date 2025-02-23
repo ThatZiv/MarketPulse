@@ -7,8 +7,11 @@ import os
 from flask import Blueprint, request, send_file
 import flask_jwt_extended as jw
 import requests
+from routes.llm import llm_bp
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
+
+auth_bp.register_blueprint(llm_bp)
 
 @auth_bp.route('/private', methods=['GET', 'POST'])
 @jw.jwt_required()
