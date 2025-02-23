@@ -103,7 +103,7 @@ def attention_lstm(ticker, engine):
         return np.array(x), np.array(y), np.array(z)
     
 
-    lookback = 10
+    lookback = 20
     x_np, y_np, v_np = shif_data_frame(data, answer, validation, lookback)
 
     split_index = int(0.8 * len(x_np))
@@ -164,6 +164,7 @@ def attention_lstm(ticker, engine):
     pred_loader = DataLoader(dataset = pred_dataset, batch_size = 1, shuffle = False)
 
     for _, batch in enumerate(train_loader):
+        print(batch)
         x_batch, y_batch = batch[0].to(device), batch[1].to(device)
         print(x_batch.shape, y_batch.shape)
         break
@@ -231,7 +232,6 @@ def attention_lstm(ticker, engine):
 
         for batch_index, batch in enumerate(train_loader):
             x_batch, y_batch = batch[0].to(device), batch[1].to(device)
-            
             output= model(x_batch)
             loss = loss_function(output, y_batch)
             running_loss += loss.item()

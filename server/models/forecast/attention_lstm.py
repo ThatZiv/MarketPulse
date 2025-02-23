@@ -41,8 +41,8 @@ class AttentionLSTM(ForecastModel):
 
     def train(self, data_set):
         model_input, testing_out, validation_out, scale, minimum = self.my_model.format_data(data_set)
-        test_data, train_data, validation_data = self.my_model.get_data(model_input,  validation_out, testing_out, 0.1)
-        self.my_model.model_training(train_data, test_data, 900)
+        train_data, test_data, validation_data = self.my_model.get_data(model_input,  validation_out, testing_out, 0.1)
+        self.my_model.model_training(train_data, test_data, 15)
         self.my_model.evaluate(self.my_model, validation_data)
         self.save()
     

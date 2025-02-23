@@ -39,11 +39,12 @@ class AttentionLstm:
         answer = answer.to_numpy()
         x = []
         y = []
-        for i in range(len(input_data)-shift):
+        for i in range(len(input_data)-shift-6):
             row = [r for r in input_data[i:i+shift]]
             x.append(row)
             #We are only predicting precent price change
-            label = answer[i+shift]
+            label = answer[i+shift:i+shift+7]
+            #label = answer[i+shift]
             y.append(label)
         return np.array(x), np.array(y)
 
@@ -96,13 +97,13 @@ class AttentionLstm:
         y_test = train_answer[split_index2:split_index]
         y_valid = answer[split_index:]
 
-        x_train = x_train.reshape(-1, lookback, 4)
-        x_test = x_test.reshape(-1, lookback, 4)
-        x_valid = x_valid.reshape(-1, lookback, 4)
+        x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 4)
+        x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 4)
+        x_valid = x_valid.reshape(x_valid.shape[0], x_valid.shape[1], 4)
 
-        y_train = y_train.reshape(-1, 1)
-        y_test = y_test.reshape(-1, 1)
-        y_valid = y_valid.reshape(-1, 1)
+        y_train = y_train.reshape(-1, 7)
+        y_test = y_test.reshape(-1, 7)
+        y_valid = y_valid.reshape(-1, 7)
 
         x_train = torch.tensor(x_train).float()
         x_test = torch.tensor(x_test).float()
@@ -172,10 +173,11 @@ class AttentionLstm:
 
     def evaluate(self, eval_model, data_source):
         self.model.eval()
-
-        val = []
-        anws = []
+        print(data_source.__len__())
+        val = [[0]*data_source.__len__()]*7
+        anws = [[0]*data_source.__len__()]*7
         running_loss = 0.0
+        count = 0
         for batch_index, batch in enumerate(data_source):
             x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
 
@@ -183,23 +185,38 @@ class AttentionLstm:
                 output = self.model(x_batch)
                 loss = self.loss_function(output, y_batch)
                 running_loss += loss.item()
-                val.append(output[0][0].item())
-                anws.append(y_batch[0][0].item())
+                print(output)
+                val[0][count] = output[0][0].item()
+                anws[0][count] = y_batch[0][0].item()
+                val[1][count] = output[0][1].item()
+                anws[1][count] = y_batch[0][1].item()
+                val[2][count] = output[0][2].item()
+                anws[2][count] = y_batch[0][2].item()
+                val[3][count] = output[0][3].item()
+                anws[3][count] = y_batch[0][3].item()
+                val[4][count] = output[0][4].item()
+                anws[4][count] = y_batch[0][4].item()
+                val[5][count] = output[0][5].item()
+                anws[5][count] = y_batch[0][5].item()
+                val[6][count] = output[0][6].item()
+                anws[6][count] = y_batch[0][6].item()
+                count += 1
 
-        r2 = r2_score(anws, val)
-        mse = mean_squared_error(anws, val)
+        for i in range(7):
+            print("Day: " + str(i))
+            r2 = r2_score(anws[i], val[i])
+            mse = mean_squared_error(anws[i], val[i])
 
-        np_val = np.array(val)
-        np_v = np.array(anws)
-
-        print('R2 Score: ', r2)
-        print("MSE: " + str(mse))
-        print("RMSE: " + str(math.sqrt(mse)))
-        print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
+            np_val = np.array(val[i])
+            np_v = np.array(anws[i])
+            print('R2 Score: ', r2)
+            print("MSE: " + str(mse))
+            print("RMSE: " + str(math.sqrt(mse)))
+            print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
+            
         
-        
-        plt.plot(anws)
-        plt.plot(val, color = 'red')
+        plt.plot(anws[0])
+        plt.plot(val[0], color = 'red')
             
         plt.show()
         
@@ -236,7 +253,7 @@ class LSTMAttentionModel(nn.Module):
         self.num_stacked_layers = num_stacked_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
         self.att = Attention(hidden_size, hidden_size)
-        self.fc = nn.Linear(hidden_size, 1, )
+        self.fc = nn.Linear(hidden_size, 7, )
         self.device =  "cpu"
 
     def forward(self, x):
