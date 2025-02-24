@@ -15,7 +15,7 @@ from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_erro
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 32, num_layers = 2, output_size = 1, batch_size = 10, learning_rate = 0.005):
+    def __init__(self, input_size = 4, hidden_size = 32, num_layers = 1, output_size = 1, batch_size = 10, learning_rate = 0.005):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
