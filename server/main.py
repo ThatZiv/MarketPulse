@@ -16,7 +16,7 @@ from flask_caching import Cache
 from flask_apscheduler import APScheduler
 from database.ddg_news import add_news
 from database.reddit import daily_reddit_request
-from database.tables import Base, Stocks, Stock_Info
+from database.tables import Base, Stocks, Stock_Info, Stock_Predictions
 from database.yfinanceapi import add_daily_data, real_time_data
 from routes.auth import auth_bp
 
@@ -224,4 +224,26 @@ if __name__ == '__main__':
 
         return Response(status=401, mimetype='application/json')
 
+    @app.route('/forcast', methods=['Get'])
+        @jw.jwt_required()
+        def forcast():
+            ticker = request.args.get('ticker')
+            if not ticker:
+                return Response(status=400, mimetype='application/json')
+            if request.method == 'GET':
+                session = sessionmaker(bind=engine)
+                session = session()
+                ticker = request.args['ticker']
+                s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
+                output_id = session.connection().execute(s_id).first()
+                if output_id :
+                    forcast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at.desc()).limit(7)
+                    output = session.connection().execute(forcast).all()
+                    return jsonify(output)
+
+                return Response(status=400, mimetype='application/json') 
+        
+            return Response(status=500, mimetype='application/json')
+    
+    
     app.run(debug=True, host='0.0.0.0')
