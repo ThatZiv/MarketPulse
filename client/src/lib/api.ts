@@ -1,8 +1,13 @@
+import { PromptType } from "@/types/llm";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { toast } from "sonner";
 
 export interface IApi {
   getStockLogo: (ticker: string) => Promise<string>;
+  getStockLlmOutput: (
+    ticker: string,
+    onToken: (token: string) => void
+  ) => Promise<ReadableStream>;
   get: <TRes>(path: string) => Promise<TRes>;
   post: <TReq, TRes>(path: string, object?: TReq) => Promise<TRes>;
 }
@@ -19,7 +24,11 @@ export default class Api implements IApi {
   protected createInstance() {
     return axios.create({
       baseURL: import.meta.env.VITE_API_URL,
-      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+      headers: this.token
+        ? {
+            Authorization: `Bearer ${this.token}`,
+          }
+        : {},
     });
   }
 
@@ -60,7 +69,10 @@ export default class Api implements IApi {
    */
   public async getStockLogo(ticker: string) {
     try {
-      const resp = await this.instance.get(`/auth/logo?ticker=${ticker}`, {
+      const resp = await this.instance.get(`/auth/logo`, {
+        params: {
+          ticker,
+        },
         responseType: "arraybuffer",
       });
       const img = new Blob([resp.data], { type: "image/png" });
@@ -71,6 +83,67 @@ export default class Api implements IApi {
     return "";
   }
 
+  /**
+   * get the LLM output for a given prompt type
+   * @param ticker {string} the stock ticker
+   * @returns {Promise<ReadableStream>} the output stream
+   */
+  public async getStockLlmOutput(
+    ticker: string,
+    onToken: (token: string) => void
+  ) {
+    const params = new URLSearchParams();
+    params.append("ticker", ticker);
+    // have to use fetch here because axios sucks at streaming
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/auth/llm/stock?${params.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          ...(this.token ? { Authorization: `Bearer ${this.token}` } : {}),
+        },
+      }
+    );
+
+    if (!response.ok) {
+      this.handleError({
+        response: {
+          status: response.status,
+          statusText: response.statusText,
+        },
+      } as AxiosError);
+      return new ReadableStream();
+    }
+
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+
+    return new ReadableStream({
+      start(controller) {
+        async function read() {
+          if (!reader) {
+            controller.close();
+            return;
+          }
+          const { done, value } = await reader.read();
+          if (done) {
+            controller.close();
+            return;
+          }
+          if (value) {
+            const chunk = decoder.decode(value, { stream: true });
+            onToken(chunk);
+            controller.enqueue(value);
+          }
+          read();
+        }
+        read();
+      },
+      cancel() {
+        reader?.cancel();
+      },
+    });
+  }
   /**
    * handle error from axios
    * @param error  axios error
