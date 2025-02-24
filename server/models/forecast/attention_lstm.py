@@ -21,7 +21,7 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
-from lstm_attention_7 import AttentionLstm
+from lstm_attention_2 import AttentionLstm
 
 parent = os.path.dirname(parent)
 sys.path.append(parent)
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Failed to connect: {e}")
     
-    stock_q= select(Stock_Info).where(Stock_Info.stock_id == 1)
+    stock_q= select(Stock_Info).where(Stock_Info.stock_id == 4)
     Session = sessionmaker(bind=engine)
     session = Session()
     data2 = session.connection().execute(stock_q).all()
