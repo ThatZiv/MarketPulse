@@ -55,22 +55,36 @@ export default function StockPage() {
   );
   const formSchema = z.object({
     ticker: z.string().nonempty("Please select a stock"),
-    hasStocks: z
-      .string()
-      .nonempty("Please specify if you own shares for this stock"),
-    sharesOwned: z.number().min(0).optional(),
+    hasStocks: z.string().nonempty("Please specify if you own shares for this stock"),
+    sharesOwned: z
+      .number()
+      .min(1, "Shares owned must be at least 1")
+      .optional()
+      .refine((val) => val !== undefined, {
+        message: "Shares owned is required if you own stocks",
+        path: ["sharesOwned"],
+      }),
     cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
   });
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const { error } = formSchema.safeParse(formData);
-    if (error) {
-      error.errors.reverse().forEach((err) => setError(err.message));
+  
+    const dynamicSchema = formSchema.refine(
+      (data) => data.hasStocks === "no" || (data.sharesOwned && data.sharesOwned > 0),
+      {
+        message: "Shares owned must be at least 1",
+        path: ["sharesOwned"],
+      }
+    );
+  
+    const validation = dynamicSchema.safeParse(formData);
+    if (!validation.success) {
+      setError(validation.error.errors[0].message);
       return;
     }
-
+  
     const updateStock = new Promise((resolve, reject) => {
       supabase
         .from("User_Stocks")
@@ -78,8 +92,7 @@ export default function StockPage() {
           {
             user_id: user?.id,
             stock_id: formData.ticker,
-            shares_owned:
-              formData.hasStocks === "yes" ? formData.sharesOwned : 0,
+            shares_owned: formData.hasStocks === "yes" ? formData.sharesOwned : 0,
             desired_investiture: formData.cashToInvest,
           },
           { onConflict: "user_id,stock_id" }
@@ -89,15 +102,16 @@ export default function StockPage() {
           resolve(null);
         });
     });
-
+  
     toast.promise(updateStock, {
       loading: "Saving...",
       success: "Stock data saved successfully",
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
-
+  
     navigate("/", { replace: false });
   };
+  
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -132,6 +146,7 @@ export default function StockPage() {
       <main className="text-black dark:text-white text-left p-2 flex flex-col">
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="bg-white w-full rounded-lg p-8 shadow-md tex-center dark:bg-black"
         >
           {error && (
@@ -214,7 +229,7 @@ export default function StockPage() {
                 id="sharesOwned"
                 type="number"
                 step="any"
-                min="0"
+                min="1"
                 className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 value={formData.sharesOwned}
                 onChange={handleInputChange}
