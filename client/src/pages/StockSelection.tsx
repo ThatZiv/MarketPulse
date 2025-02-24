@@ -95,10 +95,14 @@ export default function StockPage() {
 
     toast.promise(updateStock, {
       loading: "Saving...",
-      success: "Stock data saved successfully",
+      success: async () => {
+        await queryClient.invalidateQueries({
+          queryKey: [cache_keys.USER_STOCKS],
+        });
+        return "Stock data saved successfully";
+      },
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
-    await queryClient.invalidateQueries({ queryKey: [cache_keys.USER_STOCKS] });
     navigate("/");
   };
 

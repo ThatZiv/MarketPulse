@@ -22,8 +22,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { useQuery } from "@tanstack/react-query";
-import { cache_keys } from "@/lib/constants";
+import useAsync from "@/hooks/useAsync";
 
 const data = {
   navMain: [
@@ -59,10 +58,6 @@ const data = {
         {
           title: "FAQ",
           url: "/documentation/faq",
-        },
-        {
-          title: "Disclaimer",
-          url: "/documentation/disclaimer",
         },
       ],
     },
@@ -130,9 +125,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, supabase } = useSupabase();
   const [navData, setNavData] = useState<NavData>(data);
 
-  const { data: stocks, error: stocksError } = useQuery<StockResponse[]>({
-    queryKey: [cache_keys.USER_STOCKS],
-    queryFn: () =>
+  const { value: stocks, error: stocksError } = useAsync<StockResponse[]>(
+    () =>
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
@@ -146,8 +140,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             resolve(data || []);
           });
       }),
-  });
-
+    [user, supabase]
+  );
   const all_stocks = stocks?.map((stock) => ({
     title: stock.Stocks.stock_name,
     url: `/stocks/${stock.Stocks.stock_ticker}`,
