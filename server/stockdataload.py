@@ -8,6 +8,7 @@ import yfinance as yf
 def load_data(engine):
     session = sessionmaker(bind=engine)
     session = session()
+    '''
     stocks = []
     stock1 = yf.download("TSLA", start='2020-01-29', end='2023-01-29')
     stock1.reset_index(inplace=True)
@@ -70,15 +71,15 @@ def load_data(engine):
                             stock_high =stocks[3][i], stock_low=stocks[2][i],
                             sentiment_data=0, time_stamp=stock4["Date"][i], news_data = 0)
         session.add(new_row)
-
-    stock5 = yf.download("RIVN", start='2020-01-29', end='2023-01-29')
+    '''
+    stock5 = yf.download("STLA", start='2020-01-29', end='2025-02-25')
     stocks = []
     stock5.reset_index(inplace=True)
-    stocks.append(stock5["Close"]['RIVN'].astype(float).tolist())
-    stocks.append(stock5["Open"]['RIVN'].astype(float).tolist())
-    stocks.append(stock5["Low"]['RIVN'].astype(float).tolist())
-    stocks.append(stock5["High"]['RIVN'].astype(float).tolist())
-    stocks.append(stock5["Volume"]['RIVN'].astype(int).tolist())
+    stocks.append(stock5["Close"]['STLA'].astype(float).tolist())
+    stocks.append(stock5["Open"]['STLA'].astype(float).tolist())
+    stocks.append(stock5["Low"]['STLA'].astype(float).tolist())
+    stocks.append(stock5["High"]['STLA'].astype(float).tolist())
+    stocks.append(stock5["Volume"]['STLA'].astype(int).tolist())
 
     for i in range(len(stock5['Close'])):
         new_row = Stock_Info(stock_id = 5, stock_close = stocks[0][i],
