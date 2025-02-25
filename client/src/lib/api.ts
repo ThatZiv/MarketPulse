@@ -1,4 +1,3 @@
-import { PromptType } from "@/types/llm";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { toast } from "sonner";
 

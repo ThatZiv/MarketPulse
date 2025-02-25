@@ -5,6 +5,15 @@ export default {
   theme: {
     extend: {
       darkMode: "class",
+      keyframes: {
+        slideInRight: {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+      },
+      animation: {
+        "slide-in-right": "slideInRight 0.3s ease-in-out",
+      },
       fontFamily: {
         caveat: ["Caveat", "sans-serif"],
         Abril_Fatface: ["Abril Fatface", "cursive"],
