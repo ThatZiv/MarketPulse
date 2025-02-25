@@ -42,10 +42,20 @@ class AttentionLstm:
         for i in range(len(input_data)-shift):
             row = [r for r in input_data[i:i+shift]]
             x.append(row)
-            #We are only predicting precent price change
             label = answer[i+shift]
             y.append(label)
+        print("row")
+        print(np.array(x).shape)
+
         return np.array(x), np.array(y)
+
+    # Return the last sequence to use for a prediction 
+    def create_prediction_sequence(self, input_data, shift):
+        p = [r for r in input_data[len(input_data)-shift+1:len(input_data)+1]]       
+        
+
+        return torch.tensor(np.array(p)).float() 
+        
 
     # Normalize smooth and format the data frame for predictions
     def format_data(self, data):
@@ -60,11 +70,11 @@ class AttentionLstm:
         data['High'] = wavelet(data['High'])
         data['Open'] = wavelet(data['Open'])
         for i in range(1, len(data['High'])):
-            data['Low'][i] = data['High'][i]-data['Low'][i]
-            data['High'][i] = 1-(data['Close'][i]-data['Close'][i-1])
+            data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
+            data.loc[i, 'High'] = 1-(data.loc[i, 'Close']-data.loc[i-1,'Close'])
 
-        data['High'][0] = 0
-        data['Low'][0] = 0
+        data.loc[0, 'High'] = 0
+        data.loc[0, 'Low'] = 0
 
         #data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
@@ -72,7 +82,7 @@ class AttentionLstm:
     
         data = data.drop(columns=['Open'])
         answer = data['Close']
-        print(data)
+        #print(data)
 
         data2, answer = self.create_inout_sequences(data, 20, answer)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
@@ -88,8 +98,8 @@ class AttentionLstm:
         x_test = data[split_index2:split_index]
         x_valid = data[split_index:]
 
-        print(x_train.shape)
-        print(x_test.shape)
+        #print(x_train.shape)
+        #print(x_test.shape)
 
         # training and testing use smoothed data validation uses raw data
         y_train = train_answer[:split_index2]
@@ -121,9 +131,9 @@ class AttentionLstm:
         test_loader = DataLoader(dataset = test_dataset, batch_size = batch_size, shuffle = False)
         valid_loader = DataLoader(dataset = valid_dataset, batch_size = 1, shuffle = False)
         for _, batch in enumerate(train_loader):
-            print(batch)
+            #print(batch)
             x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
-            print(x_batch.shape, y_batch.shape)
+            #print(x_batch.shape, y_batch.shape)
             break
 
         return train_loader, test_loader, valid_loader
@@ -205,7 +215,13 @@ class AttentionLstm:
         
 
     def forecast_seq(self, sequences):
-        return sequences
+        self.model.eval()
+         
+        output = self.model(sequences)
+
+        p = []
+        p.append(output[0][0].item())
+        return p
 
 
 class Attention(nn.Module):

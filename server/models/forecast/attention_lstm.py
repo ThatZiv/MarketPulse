@@ -47,7 +47,9 @@ class AttentionLSTM(ForecastModel):
         self.save()
     
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
-        return 0
+        data, _, _, multiple, minimum = self.my_model.format_data(input_data)
+        data = self.my_model.create_prediction_sequence(data, 20)
+        return self.my_model.forecast_seq(data)
 
 if __name__ == "__main__":
     
@@ -88,4 +90,5 @@ if __name__ == "__main__":
     
 
     model.train(data)
-    model.run(data, 30)
+
+    print(model.run(data, 30))
