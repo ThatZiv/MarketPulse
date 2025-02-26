@@ -24,50 +24,56 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
   const api = useApi();
   const [open, setOpen] = React.useState(false);
   const streamingDiv = React.useRef<HTMLDivElement | null>(null);
-  const [isStreaming, setIsStreaming] = React.useState(false);
+  const [status, setStatus] = React.useState<
+    "streaming" | "done" | "error" | "idle" | "loading"
+  >("idle");
   const [streamData, setStreamData] = React.useState<string>("");
   const formattedStreamData = React.useMemo(
     () => markdown.parse(streamData),
     [streamData]
   );
-
+  const dontRegenerateStates = ["done", "streaming", "loading"];
   React.useEffect(() => {
     async function generateAIOutput() {
       if (ticker && open) {
+        if (dontRegenerateStates.includes(status)) {
+          // dont let it run > 1
+          return;
+        }
+        if (status === "error") {
+          setStreamData("");
+        }
         try {
-          if (isStreaming) {
-            // dont let it run > 1
-            // FIXME: still will run twice/continue running when drawer closes
-            return;
-          }
-          setIsStreaming(true);
+          setStatus("loading");
           await api?.getStockLlmOutput(ticker, (chunk: string) => {
-            setIsStreaming(true);
+            setStatus("streaming");
             setStreamData((prev) => prev + chunk);
             if (streamingDiv.current) {
               // auto scroll bottom
               streamingDiv.current.scrollTop =
                 streamingDiv.current.scrollHeight;
             }
-            setIsStreaming(false);
           });
         } catch (error) {
           console.error(error);
           setStreamData("Error generating AI output");
+          setStatus("error");
         } finally {
-          setIsStreaming(false);
+          setStatus("done");
         }
       }
     }
 
     generateAIOutput();
-
-    return () => {
-      // setStreamData("");
-      setIsStreaming(false);
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
+  React.useEffect(() => {
+    if (!dontRegenerateStates.includes(status)) {
+      // dont reset if its still running
+      setStreamData("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
   return (
     <Drawer open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
       <DrawerTrigger asChild>
@@ -76,7 +82,7 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
         </Button>
       </DrawerTrigger>
       <DrawerContent>
-        <div className="mx-auto w-full max-w-lg">
+        <div className="mx-auto w-full max-w-xl">
           <DrawerHeader>
             <DrawerTitle>MarketPulse AI</DrawerTitle>
             <DrawerDescription>
@@ -98,7 +104,7 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
                   // TODO: figure out how to animate each individual token coming in
                   dangerouslySetInnerHTML={{ __html: formattedStreamData }}
                 />
-                {isStreaming && <Spinner />}
+                {status === "loading" && <Spinner />}
               </div>
             </div>
           </div>

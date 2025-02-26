@@ -23,8 +23,8 @@ financial decisions based on the latest news and trends. \
 The app provides real-time updates on stock prices, market trends, and financial news to help users make informed decisions \
 about their investments and trades. \
 Your role is simply provide the user with a summarization about the stock they requested \
-with the following provided and recommend them to either, buy, sell, or hold based on the current context.  \
-"
+with the following provided and recommend them to either, buy, sell, or hold based on the current context. \
+<think>"
 
 # for phi-3.5
 # template = """<|system|>{system_prompt}<|end|>
