@@ -15,7 +15,7 @@ from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_erro
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 32, num_layers = 1, output_size = 1, batch_size = 10, learning_rate = 0.005):
+    def __init__(self, input_size = 4, hidden_size = 64, num_layers = 1, output_size = 1, batch_size = 10, learning_rate = 0.01):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = num_layers
@@ -267,13 +267,15 @@ class AttentionLstm:
         output = self.model(sequences)
 
         p = []
-        p.append(output[0][0].item())
-        p.append(output[0][1].item())
-        p.append(output[0][2].item())
-        p.append(output[0][3].item())
-        p.append(output[0][4].item())
-        p.append(output[0][5].item())
-        p.append(output[0][6].item())
+        print(output)
+        p.append(output[-1][0].item())
+        p.append(output[-1][1].item())
+        p.append(output[-1][2].item())
+        p.append(output[-1][3].item())
+        p.append(output[-1][4].item())
+        p.append(output[-1][5].item())
+        p.append(output[-1][6].item())
+
         return p
 
 
@@ -321,7 +323,7 @@ class LSTMAttentionModel(nn.Module):
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
-    threshold = .001
+    threshold = .002
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)
 

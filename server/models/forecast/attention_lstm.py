@@ -5,7 +5,7 @@ LSTM for price forecasting
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import copy
 
 from dotenv import load_dotenv
 import os
@@ -49,7 +49,10 @@ class AttentionLSTM(ForecastModel):
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
         data, _, _, multiple, minimum = self.my_model.format_data(input_data)
         data = self.my_model.create_prediction_sequence(data, 20)
-        return self.my_model.forecast_seq(data)
+        output = self.my_model.forecast_seq(data)
+        print(output)
+        output = [x * multiple + minimum for x in output]
+        return output
 
 if __name__ == "__main__":
     
@@ -87,8 +90,8 @@ if __name__ == "__main__":
         s_volume.append(row[2])
     data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
     data = pd.DataFrame(data) 
-    
+    data_copy = copy.deepcopy(data)    
 
     model.train(data)
-
-    print(model.run(data, 30))
+    
+    print(model.run(data_copy, 30))

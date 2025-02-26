@@ -218,9 +218,8 @@ class AttentionLstm:
         self.model.eval()
          
         output = self.model(sequences)
-
         p = []
-        p.append(output[0][0].item())
+        p.append(output[-1][0].item())
         return p
 
 
