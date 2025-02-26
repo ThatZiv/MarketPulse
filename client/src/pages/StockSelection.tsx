@@ -68,7 +68,13 @@ export default function StockPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { error } = formSchema.safeParse(formData);
+    // Ensure sharesOwned is set to 0 if hasStocks is "no"
+    const formDataToValidate = {
+      ...formData,
+      sharesOwned: formData.hasStocks === "no" ? 0 : formData.sharesOwned,
+    };
+
+    const { error } = formSchema.safeParse(formDataToValidate);
     if (error) {
       error.errors.reverse().forEach((err) => setError(err.message));
       return;
