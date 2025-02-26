@@ -1,6 +1,6 @@
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
-import Pie_Chart from "@/components/pie-chart";
+import {Pie_Chart }from "@/components/pie-chart";
 import { Progress } from "@/components/ui/progress";
 import {
   IoMdInformationCircleOutline,
@@ -106,36 +106,37 @@ export default function Stocks() {
       </div>
     );
   }
-
-  const hype_meter_labels = ["Positive", "Neutral", "Negative"];
-  const hype_meter_dataset = [
-    {
-      data: [50, 20, 30],
-      backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-    },
-  ];
-  const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52";
   const impact_factor = 10;
   const disruption_score = 40;
-  const hype_meter_options = {
-    responsive: true,
-    animation: {
-      animateScale: true,
-    },
-    maintainAspectRatio: false,
-    cutout: "50%",
-    rotation: -90,
-    circumference: 180,
-    plugins: {
-      legend: {
-        display: true,
-        labels: {
-          color: "red", //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
-          //For now, chose a color that works with both light and dark mode.
-        },
-      },
-    },
-  };
+  const hype_meter = 50;
+  // const hype_meter_labels = ["Positive", "Neutral", "Negative"];
+  // const hype_meter_dataset = [
+  //   {
+  //     data: [50, 20, 30],
+  //     backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+  //   },
+  // ];
+  // const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52";
+
+  // const hype_meter_options = {
+  //   responsive: true,
+  //   animation: {
+  //     animateScale: true,
+  //   },
+  //   maintainAspectRatio: false,
+  //   cutout: "50%",
+  //   rotation: -90,
+  //   circumference: 180,
+  //   plugins: {
+  //     legend: {
+  //       display: true,
+  //       labels: {
+  //         color: "red", //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
+  //         //For now, chose a color that works with both light and dark mode.
+  //       },
+  //     },
+  //   },
+  // };
 
   const buyScore = 35; // Future: can change this dynamically
   const sellScore = 100 - buyScore;
@@ -182,10 +183,18 @@ export default function Stocks() {
         </div>
       </div>
       <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-primary rounded-md mt-4">
-        <h2 className="font-semibold text-xl pb-2">
+        <h2 className="font-semibold text-xl pb-2">Stock Analysis</h2>
+        {/* <h2 className="font-semibold text-xl pb-2">
           Buy: {buyScore}% Sell: {sellScore}%
         </h2>
-        <Progress value={buyScore} />
+        <Progress value={buyScore} /> */}
+        <div className="flex flex-col justify-start gap-4">
+          <h3>Time Frame Selection:</h3>
+          <div className="w-2/5 h-1/2">
+          <Pie_Chart/>
+          </div>
+        </div>
+
       </div>
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
@@ -205,13 +214,48 @@ export default function Stocks() {
             </HoverCard>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-center gap-5">
-            <Pie_Chart
+            {/* <Pie_Chart
               labels={hype_meter_labels}
               datasets={hype_meter_dataset}
               options={hype_meter_options}
               className={hype_meter_design}
-            />
-            <div className="flex flex-col gap-2">
+            /> */}
+            <GaugeComponent
+                style={{ width: "100%", height: "100%" }}
+                value={hype_meter}
+                type={"radial"}
+                labels={{
+                  valueLabel: {
+                    style: { fill: "var(--tick-label-color)" },
+                  },
+                  tickLabels: {
+                    type: "inner",
+                    ticks: [
+                      { value: 20 },
+                      { value: 40 },
+                      { value: 60 },
+                      { value: 80 },
+                      { value: 100 },
+                    ],
+
+                    defaultTickValueConfig: {
+                      style: { fill: "var(--tick-label-color)" },
+                    },
+                  },
+                }}
+                arc={{
+                  colorArray: ["#5BE12C", "#EA4228"],
+                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
+                  padding: 0.02,
+                  width: 0.2,
+                }}
+                pointer={{
+                  elastic: true,
+                  animationDelay: 0,
+                  color: "#000000",
+                }}
+              />
+            {/* <div className="flex flex-col gap-2">
               <h3 className="text-center sm:text-md lg:text-lg font-semibold">
                 Overall: {"  "}
                 <span className="sm:text-xl lg:text-3xl text-lg">50/100</span>
@@ -238,7 +282,7 @@ export default function Stocks() {
                   : 30
                 </h4>
               </div>
-            </div>
+            </div> */}
           </div>         
         </div>
         <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
