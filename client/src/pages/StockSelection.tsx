@@ -65,11 +65,11 @@ export default function StockPage() {
     cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
   }).refine(data => {
     if (data.hasStocks === "yes") {
-      return data.sharesOwned !== undefined && data.sharesOwned >= 1;
+      return data.sharesOwned !== undefined && data.sharesOwned > 0;
     }
     return true;
   }, {
-    message: "Shares owned must be at least 1 if you own stocks",
+    message: "Shares owned must be more than 0 if you own stocks",
     path: ["sharesOwned"]
   });
 
