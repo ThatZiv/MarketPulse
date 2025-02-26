@@ -28,11 +28,6 @@ sys.path.append(parent)
 
 from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
 
-
-
-
-
-
 class AttentionLSTM(ForecastModel):
 
     def __init__(self, my_model: AttentionLstm, name: str, ticker: str = None):
