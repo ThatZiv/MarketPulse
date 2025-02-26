@@ -21,7 +21,7 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 
-from lstm_attention_2 import AttentionLstm
+from lstm_attention_7 import AttentionLstm
 
 parent = os.path.dirname(parent)
 sys.path.append(parent)

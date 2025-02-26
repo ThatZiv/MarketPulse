@@ -65,10 +65,10 @@ class AttentionLstm:
         minimum =  data['Close'].min()
         data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min())
         valid_answer = data['Close']
-        data['Close'] = wavelet(data['Close'])
-        data['Low'] = wavelet(data['Low'])
-        data['High'] = wavelet(data['High'])
-        data['Open'] = wavelet(data['Open'])
+        data['Close'] = wavelet(data['Close'])[:len(data['Close'])]
+        data['Low'] = wavelet(data['Low'])[:len(data['Close'])]
+        data['High'] = wavelet(data['High'])[:len(data['Close'])]
+        data['Open'] = wavelet(data['Open'])[:len(data['Close'])]
         for i in range(1, len(data['High'])):
             data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
             data.loc[i, 'High'] = 1-(data.loc[i, 'Close']-data.loc[i-1,'Close'])
@@ -268,7 +268,7 @@ class LSTMAttentionModel(nn.Module):
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
-    threshold = .01
+    threshold = .001
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)
 

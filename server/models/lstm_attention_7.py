@@ -29,7 +29,7 @@ class AttentionLstm:
         self.device = "cpu"
         self.model_dir = "checkpoints"
         self.use_spec_model = False
-        self.file_name = f"attention_lstm_2{'-' + self.ticker if self.use_spec_model else '' }.pth"
+        self.file_name = f"attention_lstm_7{'-' + self.ticker if self.use_spec_model else '' }.pth"
         self.model_loc = f"{self.model_dir}/{self.file_name}"
         self.model_path = os.path.join(os.path.dirname(__file__), self.model_loc)
         self.loss_function = nn.MSELoss()
@@ -48,6 +48,12 @@ class AttentionLstm:
             y.append(label)
         return np.array(x), np.array(y)
 
+    def create_prediction_sequence(self, input_data, shift):
+        p = [r for r in input_data[len(input_data)-shift+1:len(input_data)+1]]       
+        
+
+        return torch.tensor(np.array(p)).float() 
+        
     # Normalize smooth and format the data frame for predictions
     def format_data(self, data):
         
@@ -56,16 +62,18 @@ class AttentionLstm:
         minimum =  data['Close'].min()
         data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min())
         valid_answer = data['Close']
-        data['Close'] = wavelet(data['Close'])
-        data['Low'] = wavelet(data['Low'])
-        data['High'] = wavelet(data['High'])
-        data['Open'] = wavelet(data['Open'])
-        for i in range(1, len(data['High'])):
-            data['Low'][i] = data['High'][i]-data['Low'][i]
-            data['High'][i] = 1-(data['Close'][i]-data['Close'][i-1])
 
-        data['High'][0] = 0
-        data['Low'][0] = 0
+        # ensure that output is the same lemgth as input
+        data['Close'] = wavelet(data['Close'])[:len(data['Close'])]
+        data['Low'] = wavelet(data['Low'])[:len(data['Close'])]
+        data['High'] = wavelet(data['High'])[:len(data['Close'])]
+        data['Open'] = wavelet(data['Open'])[:len(data['Close'])]
+        for i in range(1, len(data['High'])):
+            data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
+            data.loc[i, 'High'] = 1-(data.loc[i, 'Close']-data.loc[i-1,'Close'])
+
+        data.loc[0, 'High'] = 0
+        data.loc[0, 'Low'] = 0
 
         #data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
@@ -73,7 +81,7 @@ class AttentionLstm:
     
         data = data.drop(columns=['Open'])
         answer = data['Close']
-        print(data)
+        #print(data)
 
         data2, answer = self.create_inout_sequences(data, 20, answer)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
@@ -254,7 +262,19 @@ class AttentionLstm:
         
 
     def forecast_seq(self, sequences):
-        return sequences
+        self.model.eval()
+         
+        output = self.model(sequences)
+
+        p = []
+        p.append(output[0][0].item())
+        p.append(output[0][1].item())
+        p.append(output[0][2].item())
+        p.append(output[0][3].item())
+        p.append(output[0][4].item())
+        p.append(output[0][5].item())
+        p.append(output[0][6].item())
+        return p
 
 
 class Attention(nn.Module):
@@ -301,7 +321,7 @@ class LSTMAttentionModel(nn.Module):
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
-    threshold = .01
+    threshold = .001
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)
 
