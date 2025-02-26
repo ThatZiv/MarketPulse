@@ -4,6 +4,7 @@ import flask_jwt_extended as jw
 from langchain_community.llms import LlamaCpp
 from flask_cors import cross_origin
 from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
+from langchain.prompts import PromptTemplate
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
 
@@ -13,20 +14,35 @@ LLM_MODEL_PATH = os.getenv("LLM_MODEL_PATH")
 # OR https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q8_0-GGUF/tree/main
 
 
-background = "\
-You are an expert financial assistant for an website called MarketPulse. \
-You are to only speak directly to the user and never address them in the third person. \
-Avoid using jargon, technical terms, and markdown in your responses. \
-Keep your responses short and concise and avoid rambling. Only answer in text, no need for lists or headings. \
-You are to present to user the options to either, buy, sell, or hold based on current data \
+system_prompt = "\
+You are an expert financial assistant for website called MarketPulse. Make sure to greet them. \
+Avoid using jargon, technical terms, and markdown in your responses. You must only speak in english. \
+Keep your responses short, concise, and avoid rambling. Only answer in clear text, no need for lists or headings. \
 MarketPulse is a stock trading application that gives users the ability to make \
 financial decisions based on the latest news and trends. \
 The app provides real-time updates on stock prices, market trends, and financial news to help users make informed decisions \
 about their investments and trades. \
 Your role is simply provide the user with a summarization about the stock they requested \
-with the following information. \
+with the following provided and recommend them to either, buy, sell, or hold based on the current context.  \
 "
 
+# for phi-3.5
+# template = """<|system|>{system_prompt}<|end|>
+# <|user|>
+# {query}<|end|>
+# <|assistant|>
+# """
+# for llama:
+# template = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\
+# {system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\
+# {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
+
+# for deepseek
+template = system_prompt + "\n{query}"
+
+prompt = PromptTemplate(template=template, \
+    input_variables=['query'], \
+    partial_variables={"system_prompt": system_prompt})
 @llm_bp.route('/stock', methods=['GET'])
 @jw.jwt_required()
 def llm__stock_route():
@@ -44,10 +60,9 @@ def llm__stock_route():
     ticker = request.args.get('ticker')
     if not ticker:
         return "Ticker parameter is required", 400
-    # TODO: use these params
     llm = LlamaCpp(
         model_path=LLM_MODEL_PATH,
-        n_gpu_layers=1,
+        n_gpu_layers=4,
         temperature=0.75,
         max_tokens=4096,
         top_p=0.95,
@@ -62,19 +77,19 @@ def llm__stock_route():
 
     def generate_response():
         # FIXME: make this prompt integration better
-        for chunk in llm.stream(background + \
-            " User currently has 250 shares of Apple stock. Current sentiment shows that it's forecasting to decrease in value. What should the user do?"):
+        for chunk in llm.stream(prompt.format(query=f"Hello, I currently have 250 shares of {ticker} stock. What should I do?")):
+            if "</think>" in chunk:
+                yield "**Thinking complete.**\n"
             yield chunk
     # def generate_response():
-        # is_thinking = True # needed in deepseek models :(
-        # for chunk in llm.stream(background + \
-        #     " User currently has 250 shares of Apple stock. Current sentiment shows that it's forecasting to decrease in value. What should the user do?"):
-        #     print(chunk)
-        #     # FIXME: break when request is cancelled
-        #     if not is_thinking:
-        #         # we dont'w want to show our thinking
-        #         yield chunk
-        #     if is_thinking and "</think>" in chunk:
-        #         is_thinking = False
+    #     is_thinking = True # needed in deepseek models :(
+    #     yield "Thinking about it...\n"
+    #     for chunk in llm.stream(prompt.format(query=f"Hello, I currently have 250 shares of {ticker} stock. What should I do?")):
+    #         # FIXME: break when request is cancelled
+    #         if not is_thinking:
+    #             # we dont'w want to show our thinking
+    #             yield chunk
+    #         if is_thinking and "</think>" in chunk:
+    #             is_thinking = False
 
     return Response(generate_response(), content_type='text/event-stream')
