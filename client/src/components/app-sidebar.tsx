@@ -86,7 +86,7 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "#",
+      url: "mailto:support@gmail.com",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
