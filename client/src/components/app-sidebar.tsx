@@ -4,7 +4,6 @@ import {
   BookOpen,
   Command,
   LifeBuoy,
-  Send,
   Settings2,
   Gauge,
   CirclePlus,
