@@ -1,6 +1,6 @@
 from typing import *
-from model import ForecastModel
-from forecast_types import DatasetType, ForecastSeriesType
+from models.forecast.model import ForecastModel
+from models.forecast.forecast_types import DatasetType, ForecastSeriesType
 
 class ForecastModels:
     """

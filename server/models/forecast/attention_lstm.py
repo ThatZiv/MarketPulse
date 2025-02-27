@@ -2,34 +2,24 @@
 LSTM for price forecasting
 """
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=line-too-long
+
+
+
 import copy
-
+import os
 from dotenv import load_dotenv
-import os
-from sqlalchemy import create_engine, select, func
+import pandas as pd
+import numpy as np
+from sqlalchemy import create_engine, select, exc
 from sqlalchemy.orm import sessionmaker
-from forecast_types import DataForecastType, DatasetType
-from model import ForecastModel
-
-import sys
-import os
-
-current = os.path.dirname(os.path.realpath(__file__))
-parent = os.path.dirname(current)
-sys.path.append(parent)
-
-from lstm_attention_2 import AttentionLstm
-
-parent = os.path.dirname(parent)
-sys.path.append(parent)
-
-from database.tables import Base, Account, User_Stocks, Stocks, Stock_Info
-
-
-
+from models.forecast.forecast_types import DataForecastType, DatasetType
+from models.forecast.model import ForecastModel
+from models.lstm_attention_7 import AttentionLstm
+from database.tables import Stock_Info
 
 
 
@@ -40,22 +30,22 @@ class AttentionLSTM(ForecastModel):
         self.my_model = my_model
 
     def train(self, data_set):
-        model_input, testing_out, validation_out, scale, minimum = self.my_model.format_data(data_set)
+        model_input, testing_out, validation_out, _, _ = self.my_model.format_data(data_set)
         train_data, test_data, validation_data = self.my_model.get_data(model_input,  validation_out, testing_out, 0.1)
         self.my_model.model_training(train_data, test_data, 15)
-        self.my_model.evaluate(self.my_model, validation_data)
+        self.my_model.evaluate(validation_data)
         self.save()
-    
+
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
         data, _, _, multiple, minimum = self.my_model.format_data(input_data)
         data = self.my_model.create_prediction_sequence(data, 20)
         output = self.my_model.forecast_seq(data)
         print(output)
         output = [x * multiple + minimum for x in output]
-        return output
+        return np.array(output, dtype = float)
 
 if __name__ == "__main__":
-    
+
     model = AttentionLSTM(AttentionLstm(), "attention_lstm", "TSLA")
     load_dotenv()
     USER = os.getenv("user")
@@ -70,9 +60,11 @@ if __name__ == "__main__":
     try:
         with engine.connect() as connection:
             print("Connection successful!")
-    except Exception as e:
-        print(f"Failed to connect: {e}")
-    
+    except exc.OperationalError as e:
+        print(e)
+    except exc.TimeoutError as e:
+        print(e)
+
     stock_q= select(Stock_Info).where(Stock_Info.stock_id == 1)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -88,10 +80,10 @@ if __name__ == "__main__":
         s_high.append(row[4])
         s_low.append(row[5])
         s_volume.append(row[2])
-    data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
-    data = pd.DataFrame(data) 
-    data_copy = copy.deepcopy(data)    
+    data2 = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
+    data2 = pd.DataFrame(data2)
+    data_copy = copy.deepcopy(data2)
 
-    model.train(data)
-    
+    model.train(data2)
+
     print(model.run(data_copy, 30))

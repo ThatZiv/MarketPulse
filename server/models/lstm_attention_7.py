@@ -1,28 +1,33 @@
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=line-too-long
+
+
 import math
 import os
+import numpy as np
 import torch
 from torch import nn
-import pandas as pd
-import numpy as np
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import pywt
-import matplotlib.pyplot as plt
-from sklearn.metrics import r2_score, mean_squared_error, root_mean_squared_error
+#import matplotlib.pyplot as plt
+from sklearn.metrics import r2_score, mean_squared_error
 
 
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 64, num_layers = 1, output_size = 1, batch_size = 10, learning_rate = 0.01):
+    def __init__(self, input_size = 4, hidden_size = 64, batch_size = 10, learning_rate = 0.01):
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.num_layers = num_layers
-        self.output_size = output_size
+        self.num_layers = 1
+        self.output_size = 1
         self.batch_size = batch_size
         self.learning_rate = learning_rate
-        self.model = LSTMAttentionModel(input_size, hidden_size, num_layers)
+        self.model = LSTMAttentionModel(self.input_size, self.hidden_size, self.num_layers)
         self.criterion = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
         self.ticker = "TSLA".upper()
@@ -40,7 +45,7 @@ class AttentionLstm:
         x = []
         y = []
         for i in range(len(input_data)-shift-6):
-            row = [r for r in input_data[i:i+shift]]
+            row = list(input_data[i:i + shift])
             x.append(row)
             #We are only predicting precent price change
             label = answer[i+shift:i+shift+7]
@@ -49,14 +54,11 @@ class AttentionLstm:
         return np.array(x), np.array(y)
 
     def create_prediction_sequence(self, input_data, shift):
-        p = [r for r in input_data[len(input_data)-shift+1:len(input_data)+1]]       
-        
+        p = list(input_data[len(input_data) - shift + 1:len(input_data) + 1])
+        return torch.tensor(np.array(p)).float()
 
-        return torch.tensor(np.array(p)).float() 
-        
     # Normalize smooth and format the data frame for predictions
     def format_data(self, data):
-        
         data['Volume'] = (data['Volume'] - data['Volume'].min())/(data['Volume'].max() - data['Volume'].min())
         multiple = (data['Close'].max() - data['Close'].min())
         minimum =  data['Close'].min()
@@ -77,19 +79,19 @@ class AttentionLstm:
 
         #data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
-        data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min()) 
-    
+        data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min())
+
         data = data.drop(columns=['Open'])
         answer = data['Close']
         #print(data)
 
         data2, answer = self.create_inout_sequences(data, 20, answer)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
-        
-        return data2, answer, valid_answer, multiple, minimum
-        
 
-    def get_data(self, data, answer, train_answer, split, lookback = 20):
+        return data2, answer, valid_answer, multiple, minimum
+
+
+    def get_data(self, data, answer, train_answer, split):
         split_index = int(len(data)*(1-split))
         split_index2 = int(len(data)*(1-split*2))
 
@@ -154,13 +156,13 @@ class AttentionLstm:
 
                 if batch_index % 25 == 24:
                     avg_loss_across_batches = running_loss / 25
-                    print('Batch {0}, Loss {1:.4f}'.format(batch_index+1,avg_loss_across_batches))
+                    print(f'Batch {batch_index+1}, Loss {avg_loss_across_batches}')
                     running_loss = 0.0
 
         def test():
             self.model.eval()
             running_loss = 0.0
-            for batch_index, batch in enumerate(test_loader):
+            for _, batch in enumerate(test_loader):
                 x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
 
                 with torch.no_grad():
@@ -171,24 +173,24 @@ class AttentionLstm:
             avg_loss_across_batches = running_loss / len(test_loader)
 
 
-            print('AVG Loss: {0: .4f}'.format(avg_loss_across_batches))
+            print(f'AVG Loss: {avg_loss_across_batches}')
             print()
-        
+
         self.model.to(self.device)
         for epoch in range(epochs):
             train(train_loader)
             test()
 
-    def evaluate(self, eval_model, data_source):
+    def evaluate(self, data_source):
         self.model.eval()
-        print(data_source.__len__())
+        print(len(data_source))
         value = 0
-       
-        val =  [[value for _ in range(data_source.__len__())] for _ in range(7)]
-        anws =  [[value for _ in range(data_source.__len__())] for _ in range(7)]
+
+        val =  [[value for _ in range(len(data_source))] for _ in range(7)]
+        anws =  [[value for _ in range(len(data_source))] for _ in range(7)]
         running_loss = 0.0
         count = 0
-        for batch_index, batch in enumerate(data_source):
+        for _, batch in enumerate(data_source):
             x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
 
             with torch.no_grad():
@@ -196,7 +198,7 @@ class AttentionLstm:
                 loss = self.loss_function(output, y_batch)
                 running_loss += loss.item()
                 #print(output, y_batch)
-        
+
                 val[0][count] = output[0][0].item()
                 anws[0][count] = y_batch[0][0].item()
                 val[1][count] = output[0][1].item()
@@ -211,11 +213,6 @@ class AttentionLstm:
                 anws[5][count] = y_batch[0][5].item()
                 val[6][count] = output[0][6].item()
                 anws[6][count] = y_batch[0][6].item()
-                print(output[0][0].item(), output[0][1].item(), output[0][2].item(), output[0][3].item(), output[0][4].item(), output[0][5].item(), output[0][6].item())
-                print(val[0][count],val[1][count],val[2][count],val[3][count],val[4][count],val[5][count],val[6][count])
-                print(y_batch[0][0].item(), y_batch[0][1].item(), y_batch[0][2].item(), y_batch[0][3].item(), y_batch[0][4].item(), y_batch[0][5].item(), y_batch[0][6].item())
-                print(anws[0][count],anws[1][count],anws[2][count],anws[3][count],anws[4][count],anws[5][count],anws[6][count])
-                print()
                 count += 1
 
         for i in range(7):
@@ -229,41 +226,17 @@ class AttentionLstm:
             print("MSE: " + str(mse))
             print("RMSE: " + str(math.sqrt(mse)))
             print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
-            
 
-        plt.plot(anws[0])
-        plt.plot(val[0], color = 'red')
-            
-        plt.show()
-        plt.plot(anws[1])
-        plt.plot(val[1], color = 'red')
-            
-        plt.show()
-        plt.plot(anws[2])
-        plt.plot(val[2], color = 'red')
-            
-        plt.show()
-        plt.plot(anws[3])
-        plt.plot(val[3], color = 'red')
-            
-        plt.show()
-        plt.plot(anws[4])
-        plt.plot(val[4], color = 'red')
-            
-        plt.show()
-        plt.plot(anws[5])
-        plt.plot(val[5], color = 'red')
-            
-        plt.show()
-        plt.plot(anws[6])
-        plt.plot(val[6], color = 'red')
-            
-        plt.show()
-        
+        #plt.plot(anws[6])
+        #plt.plot(val[6], color = 'red')
+
+        #plt.show()
+
+
 
     def forecast_seq(self, sequences):
         self.model.eval()
-         
+
         output = self.model(sequences)
 
         p = []
