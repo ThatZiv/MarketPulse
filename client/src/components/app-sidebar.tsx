@@ -93,8 +93,8 @@ const data = {
     },
     {
       title: "Feedback",
-      url: "#",
-      icon: Send,
+      url: "mailto:feedback@gmail.com",
+      icon: LifeBuoy,
       isActive: undefined,
       items: [],
     },
