@@ -15,6 +15,15 @@ import { Link } from "react-router";
 import { useApi } from "@/lib/ApiProvider";
 import { Spinner } from "../ui/spinner";
 import markdown from "@/lib/markdown";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+const dialogStyle =
+  "w-full dark:text-black max-h-[300px] overflow-y-auto bg-slate-300 p-2 rounded-sm";
 
 interface IGenerateStockLLM {
   ticker?: string;
@@ -27,9 +36,13 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
   const [status, setStatus] = React.useState<
     "streaming" | "done" | "error" | "idle" | "loading"
   >("idle");
+  const [isThinking, setIsThinking] = React.useState<null | boolean>(null);
   const [streamData, setStreamData] = React.useState<string>("");
-  const formattedStreamData = React.useMemo(
-    () => markdown.parse(streamData),
+  const formattedStreamData = React.useMemo<string[]>(
+    () =>
+      streamData
+        .split("</think>")
+        .map((data) => markdown.parse(data)) as string[],
     [streamData]
   );
   const dontRegenerateStates = ["done", "streaming", "loading"];
@@ -45,8 +58,12 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
         }
         try {
           setStatus("loading");
+          setIsThinking(true); // for deepseek model
           await api?.getStockLlmOutput(ticker, (chunk: string) => {
             setStatus("streaming");
+            if (chunk.includes("</think>")) {
+              setIsThinking(false);
+            }
             setStreamData((prev) => prev + chunk);
             if (streamingDiv.current) {
               // auto scroll bottom
@@ -95,17 +112,35 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
           <div className="p-4 pb-0">
             <div className="flex items-center justify-center space-x-2"></div>
             <div className="mt-1 min-h-[120px]">
-              <div
-                ref={streamingDiv}
-                className="w-full dark:text-black max-h-[300px] overflow-y-auto bg-slate-300 p-2 rounded-sm"
-              >
-                <p
-                  // className={` ${isStreaming ? "animate-slide-in-right" : ""}`}
-                  // TODO: figure out how to animate each individual token coming in
-                  dangerouslySetInnerHTML={{ __html: formattedStreamData }}
-                />
-                {status === "loading" && <Spinner />}
-              </div>
+              {isThinking ? (
+                <Accordion type="single" collapsible>
+                  <AccordionItem
+                    value="item-1"
+                    className="bg-slate-200 rounded-sm"
+                  >
+                    <AccordionTrigger className="flex text-dark  items-center justify-between px-2 animate-pulse">
+                      Thinking...
+                    </AccordionTrigger>
+                    <AccordionContent className="w-full dark:text-black max-h-[300px] overflow-y-auto bg-slate-300 p-2 rounded-sm">
+                      <p
+                        dangerouslySetInnerHTML={{
+                          __html: formattedStreamData[0],
+                        }}
+                      />
+                      {isThinking && <Spinner />}
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              ) : (
+                <div ref={streamingDiv} className={dialogStyle}>
+                  <p
+                    // className={` ${isStreaming ? "animate-slide-in-right" : ""}`}
+                    // TODO: figure out how to animate each individual token coming in
+                    dangerouslySetInnerHTML={{ __html: formattedStreamData[1] }}
+                  />
+                  {status === "loading" && <Spinner />}
+                </div>
+              )}
             </div>
           </div>
           <DrawerFooter>
