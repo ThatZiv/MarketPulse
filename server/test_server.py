@@ -2,7 +2,9 @@
 from models.lstm_attention import attention_lstm
 from dotenv import load_dotenv
 import os
+
 from sqlalchemy import create_engine, select, func
+
 load_dotenv()
 
 
@@ -14,6 +16,7 @@ PORT = os.getenv("port")
 DBNAME = os.getenv("dbname")
 
 DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
+
 
 engine = create_engine(DATABASE_URL)
 try:
