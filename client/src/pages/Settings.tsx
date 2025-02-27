@@ -55,6 +55,7 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [fontSize, setFontSize] = useState(localStorage.getItem("fontSize") || "medium");
 
   const accountFormSchema = z.object({
     first_name: z.string().min(2).max(50),
@@ -119,7 +120,6 @@ export default function SettingsPage() {
       setState("done");
     };
     getAccount();
-
   }, []);
 
   type AccountFormValues = z.infer<typeof accountFormSchema>;
@@ -189,6 +189,12 @@ export default function SettingsPage() {
     { text: "At least 1 number", isValid: /[0-9]/.test(password) },
     { text: "At least 1 special character", isValid: /[\W_]/.test(password) },
   ];
+
+  const handleFontSizeChange = (value: string) => {
+    setFontSize(value);
+    localStorage.setItem("fontSize", value);
+    document.documentElement.style.fontSize = value === "small" ? "14px" : value === "large" ? "18px" : "16px";
+  };
 
   return (
     <div className="h-screen text-left">
@@ -413,7 +419,6 @@ export default function SettingsPage() {
                                   </button>
                                 </div>
                               </FormControl>
-                           
                               <FormMessage />
                             </FormItem>
                           )}
@@ -459,6 +464,27 @@ export default function SettingsPage() {
                               <SelectItem value="system">System</SelectItem>
                               <SelectItem value="dark">Dark</SelectItem>
                               <SelectItem value="light">Light</SelectItem>
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-4">
+                      <p className="text-left">Font Size</p>
+                      <div>
+                        <Select
+                          onValueChange={handleFontSizeChange}
+                          defaultValue={fontSize}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select a font size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Font Size</SelectLabel>
+                              <SelectItem value="small">Small</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="large">Large</SelectItem>
                             </SelectGroup>
                           </SelectContent>
                         </Select>
