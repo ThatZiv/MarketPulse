@@ -85,14 +85,14 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "mailto:support@gmail.com",
+      url: "mailto:zavaar.shah@wayne.edu",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
     },
     {
       title: "Feedback",
-      url: "mailto:feedback@gmail.com",
+      url: "mailto:zavaar.shah@wayne.edu",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
