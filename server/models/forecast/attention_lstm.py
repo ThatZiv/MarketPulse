@@ -6,6 +6,7 @@ LSTM for price forecasting
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=line-too-long
+# pylint: duplicate-code
 
 
 
