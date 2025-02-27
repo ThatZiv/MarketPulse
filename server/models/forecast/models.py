@@ -2,6 +2,7 @@ from typing import *
 from .model import ForecastModel
 from .forecast_types import DatasetType, ForecastSeriesType
 
+
 class ForecastModels:
     """
     class used to manage all forecast models
