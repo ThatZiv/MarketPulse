@@ -63,6 +63,14 @@ export default function StockPage() {
       .nonempty("Please specify if you own shares for this stock"),
     sharesOwned: z.number().min(0).optional(),
     cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
+  }).refine(data => {
+    if (data.hasStocks === "yes") {
+      return data.sharesOwned !== undefined && data.sharesOwned > 0;
+    }
+    return true;
+  }, {
+    message: "Shares owned must be more than 0 if you own stocks",
+    path: ["sharesOwned"]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,7 +142,7 @@ export default function StockPage() {
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
         <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
-          Stock Details
+          Add New Stock
         </h1>
       </header>
 
