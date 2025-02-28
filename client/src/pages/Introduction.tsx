@@ -14,7 +14,7 @@ export default function Introduction() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6">
-      <Card className="max-w-3xl text-center shadow-xl bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-8">
+      <Card className="max-w-3xl text-center shadow-xl bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-8">
         <CardHeader>
           <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             Welcome to <span className="text-blue-500 dark:text-blue-400">MarketPulse</span>
@@ -84,7 +84,7 @@ interface FeatureCardProps {
 
 const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description }) => {
   return (
-    <div className="flex flex-col items-center text-center p-4 bg-black rounded-xl shadow-md border border-gray-300 dark:border-gray-600">
+    <div className="flex flex-col items-center text-center p-4 bg-white dark:bg-black rounded-xl shadow-md border border-gray-300 dark:border-gray-600">
       <div className="mb-3">{icon}</div>
       <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>
       <p className="text-gray-700 dark:text-gray-400 text-sm mt-2">{description}</p>

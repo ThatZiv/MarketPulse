@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export default function Tutorials() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
-      <Card className="max-w-4xl w-full shadow-lg bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
+      <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
         <CardHeader className="text-center mb-8">
           <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             How to Use MarketPulse
@@ -40,7 +40,7 @@ export default function Tutorials() {
               },
             ].map((step, index) => (
               <div key={index} className="flex items-center gap-4 w-full">
-                <Avatar className="w-24 h-24">
+                <Avatar className="w-24 h-24 bg-white dark:bg-black border border-gray-300 dark:border-gray-700">
                   <AvatarFallback>{step.fallback}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
