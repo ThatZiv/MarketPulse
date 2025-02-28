@@ -2,7 +2,9 @@ import os
 from abc import ABC, abstractmethod
 from typing import *
 import torch
-from .forecast_types import DatasetType, DataForecastType
+
+from models.forecast.forecast_types import DatasetType, DataForecastType
+
 
 class ForecastModel(ABC):
     """
