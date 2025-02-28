@@ -1,7 +1,6 @@
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
 import {Pie_Chart }from "@/components/pie-chart";
-import { Progress } from "@/components/ui/progress";
 import {
   IoMdInformationCircleOutline,
   IoMdInformationCircle,
@@ -109,38 +108,6 @@ export default function Stocks() {
   const impact_factor = 10;
   const disruption_score = 40;
   const hype_meter = 50;
-  // const hype_meter_labels = ["Positive", "Neutral", "Negative"];
-  // const hype_meter_dataset = [
-  //   {
-  //     data: [50, 20, 30],
-  //     backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-  //   },
-  // ];
-  // const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52";
-
-  // const hype_meter_options = {
-  //   responsive: true,
-  //   animation: {
-  //     animateScale: true,
-  //   },
-  //   maintainAspectRatio: false,
-  //   cutout: "50%",
-  //   rotation: -90,
-  //   circumference: 180,
-  //   plugins: {
-  //     legend: {
-  //       display: true,
-  //       labels: {
-  //         color: "red", //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
-  //         //For now, chose a color that works with both light and dark mode.
-  //       },
-  //     },
-  //   },
-  // };
-
-  const buyScore = 35; // Future: can change this dynamically
-  const sellScore = 100 - buyScore;
-
   return (
     <div className="lg:p-4 md:w-10/12 w-xl mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
@@ -184,18 +151,7 @@ export default function Stocks() {
       </div>
       <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-primary rounded-md mt-4">
         <h2 className="font-semibold text-xl pb-2">Stock Analysis</h2>
-        {/* <h2 className="font-semibold text-xl pb-2">
-          Buy: {buyScore}% Sell: {sellScore}%
-        </h2>
-        <Progress value={buyScore} /> */}
-        <div className="flex flex-col justify-start gap-4">
-          <h3>Time Frame Selection:</h3>
-          <div className="w-2/5 h-1/2">
-          <Pie_Chart/>
-          </div>
-        </div>
-
-      </div>
+            </div>
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
