@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 import pywt
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error
 
 class AttentionLstm:
@@ -198,9 +198,9 @@ class AttentionLstm:
         print("MSE: " + str(mse))
         print("RMSE: " + str(math.sqrt(mse)))
         print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
-        plt.plot(anws)
-        plt.plot(val, color = 'red')
-        plt.show()
+        #plt.plot(anws)
+        #plt.plot(val, color = 'red')
+        #plt.show()
 
 
     def forecast_seq(self, sequences):
