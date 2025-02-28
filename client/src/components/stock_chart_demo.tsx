@@ -461,20 +461,7 @@ export default function Stock_Chart(props: props) {
                 />
               }
             />
-            {/* <Area
-              dataKey="high"
-              type="natural"
-              fill="url(#fillHigh)"
-              stroke="var(--color-high)"
-              stackId="a"
-            />
-            <Area
-              dataKey="open"
-              type="natural"
-              fill="url(#fillOpen)"
-              stroke="var(--color-open)"
-              stackId="a"
-            /> */}
+            {/* Will Add lines for open, high and low later */}
             <Area
               dataKey="close"
               type="natural"
@@ -483,13 +470,6 @@ export default function Stock_Chart(props: props) {
               stackId="a"
             />
             
-            {/* <Area
-              dataKey="low"
-              type="natural"
-              fill="url(#fillLow)"
-              stroke="var(--color-low)"
-              stackId="a"
-            /> */}
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
