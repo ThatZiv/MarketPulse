@@ -1,6 +1,5 @@
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
-import {Pie_Chart }from "@/components/pie-chart";
 import {
   IoMdInformationCircleOutline,
   IoMdInformationCircle,
