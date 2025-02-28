@@ -18,7 +18,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 16, batch_size = 10, learning_rate = 0.01):
+    def __init__(self, input_size = 4, hidden_size = 32, batch_size = 10, learning_rate = 0.01):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = 1
@@ -28,7 +28,7 @@ class AttentionLstm:
         self.model = LSTMAttentionModel(self.input_size, self.hidden_size, self.num_layers)
         self.criterion = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
-        self.ticker = "TSLA".upper()
+        self.ticker = "GM".upper()
         self.device = "cpu"
         self.model_dir = "checkpoints"
         self.use_spec_model = False
@@ -256,7 +256,7 @@ class LSTMAttentionModel(nn.Module):
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
-    threshold = .00001
+    threshold = .0005
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)
 

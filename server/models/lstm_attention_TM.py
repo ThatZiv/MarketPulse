@@ -18,10 +18,10 @@ from sklearn.metrics import r2_score, mean_squared_error
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 16, batch_size = 10, learning_rate = 0.01):
+    def __init__(self, input_size = 4, hidden_size = 24, batch_size = 10, learning_rate = 0.02):
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.num_layers = 1
+        self.num_layers = 2
         self.output_size = 1
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -256,7 +256,7 @@ class LSTMAttentionModel(nn.Module):
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
-    threshold = .00001
+    threshold = .012
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)
 
