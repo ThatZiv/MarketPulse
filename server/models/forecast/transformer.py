@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import yfinance as yf
-from ..zav2 import Transformer
+from models.zav2 import Transformer
 
-from .forecast_types import DataForecastType, DatasetType
-from .model import ForecastModel
+from  models.forecast.forecast_types import DataForecastType, DatasetType
+from models.forecast.model import ForecastModel
 
 
 class ZavTransformer(ForecastModel):
