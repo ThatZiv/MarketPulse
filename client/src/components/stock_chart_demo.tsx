@@ -1,14 +1,14 @@
-import React from "react"
-import { useQuery } from '@tanstack/react-query';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Label } from "recharts"
-import axios from "axios"
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Label } from "recharts";
+import { StockDataItem } from "@/types/stocks";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
@@ -16,23 +16,17 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-
-type StockDataItem = {
-  stock_close: number;
-  stock_high: number;
-  stock_id: number;
-  stock_low: number;
-  stock_open: number;
-  time_stamp: string[];
-};
+} from "@/components/ui/select";
+import { useApi } from "@/lib/ApiProvider";
+import { cache_keys } from "@/lib/constants";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const chartConfig = {
   close: {
@@ -51,61 +45,57 @@ const chartConfig = {
     label: "Low",
     color: "hsl(var(--chart-4))",
   },
-} satisfies ChartConfig
-
-const fetchStockData = async (ticker: string) => {
-  try {
-    const authToken = localStorage.getItem('sb-xskipmrkpwewdbttinhd-auth-token');
-    if (!authToken) throw new Error('Authentication token not found');
-
-    const token = JSON.parse(authToken);
-    const response = await axios.get(`http://127.0.0.1:5000/stockchart/?ticker=${ticker}`, {
-      method: "get",
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token.access_token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching stock data:", error);
-  }
-};
+} satisfies ChartConfig;
 
 type props = { ticker: string };
 export default function Stock_Chart({ ticker }: props) {
+  const api = useApi();
   const [timeRange, setTimeRange] = React.useState("14d");
+  // const timeRangeNum = React.useMemo(
+  //   () => Number(timeRange.match("[0-9]+")?.[0]),
+  //   [timeRange]
+  // );
   const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
-    queryKey: ['stockData', ticker],
-    queryFn: () => fetchStockData(ticker),
+    queryKey: [cache_keys.STOCK_DATA, ticker],
+    queryFn: async () => {
+      const data = await api?.getStockData(ticker);
+      if (!data) {
+        throw new Error("Failed to fetch stock data");
+      }
+      return data;
+    },
     enabled: !!ticker,
   });
-  console.log("Fetched Data:", data);
 
-  const validData = data ?? [] as StockDataItem[];
+  const validData = data ?? ([] as StockDataItem[]);
 
-  const labels = validData.length >= 15
-    ? validData.slice(-15).map(item => item.time_stamp[0])
-    : [];
-  const close_values = validData.length >= 15
-    ? validData.slice(-15).map(item => item.stock_close)
-    : [];
-  const open_values = validData.length >= 15
-    ? validData.slice(-15).map(item => item.stock_open)
-    : [];
-  const high_values = validData.length >= 15
-    ? validData.slice(-15).map(item => item.stock_high)
-    : [];
-  const low_values = validData.length >= 15
-    ? validData.slice(-15).map(item => item.stock_low)
-    : [];
+  const labels =
+    validData.length >= 15
+      ? validData.slice(-15).map((item) => item.time_stamp[0])
+      : [];
+  const close_values =
+    validData.length >= 15
+      ? validData.slice(-15).map((item) => item.stock_close)
+      : [];
+  const open_values =
+    validData.length >= 15
+      ? validData.slice(-15).map((item) => item.stock_open)
+      : [];
+  const high_values =
+    validData.length >= 15
+      ? validData.slice(-15).map((item) => item.stock_high)
+      : [];
+  const low_values =
+    validData.length >= 15
+      ? validData.slice(-15).map((item) => item.stock_low)
+      : [];
   const chartData = labels.map((label, index) => ({
     date: label,
     close: close_values[index],
     open: open_values[index],
     high: high_values[index],
     low: low_values[index],
-  }))
+  }));
 
   const filteredData = chartData.filter((item) => {
     if (timeRange === "14d") {
@@ -115,20 +105,28 @@ export default function Stock_Chart({ ticker }: props) {
       return chartData.length - 7 <= chartData.indexOf(item);
     }
   });
+
   return (
     <>
-      {(isLoading || isError) ? (
-        < Card className="w-full p-4">
-          {isLoading && <div>Loading data...</div>}
-          {isError && <div>Error fetching stock data. Please try again later...</div>}
-        </Card >
+      {isLoading || isError ? (
+        <Card className="w-full p-4">
+          {isLoading && <Skeleton className="h-52" />}
+          {isError && (
+            <div>Error fetching stock data. Please try again later...</div>
+          )}
+        </Card>
       ) : (
-        <Card className="w-full">
+        <Card className="w-full border border-black dark:border-white ">
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
-              <CardTitle>Historical Stock Data for {ticker}</CardTitle>
+              <CardTitle>{ticker}</CardTitle>
               <CardDescription>
-                {chartData[0]?.date} - {chartData[chartData.length - 1]?.date}
+                <div className="text-xs">
+                  Updated as of{" "}
+                  {new Date(
+                    chartData[chartData.length - 1]?.date
+                  ).toLocaleDateString()}
+                </div>
               </CardDescription>
             </div>
             <Select value={timeRange} onValueChange={setTimeRange}>
@@ -226,14 +224,13 @@ export default function Stock_Chart({ ticker }: props) {
                   axisLine={true}
                   tickMargin={9}
                   tickCount={9}
-                  domain={['auto', 'auto']}
+                  domain={["auto", "auto"]}
                 >
                   <Label
                     value="Stock Price"
                     angle={-90}
                     position="insideLeft"
                     style={{ textAnchor: "middle" }}
-
                   />
                 </YAxis>
 

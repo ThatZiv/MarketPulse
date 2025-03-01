@@ -155,7 +155,7 @@ export default function Stocks() {
           : "Stock not found"}
       </h1>
       <GenerateStockLLM ticker={ticker} />
-      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
+      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
@@ -188,9 +188,7 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-      <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-primary rounded-md mt-4">
-        <h2 className="font-semibold text-xl pb-2">Stock Analysis</h2>
-      </div>
+
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
