@@ -112,6 +112,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setUser(session?.user ?? null);
+        setSession(session ?? null);
       }
     );
 

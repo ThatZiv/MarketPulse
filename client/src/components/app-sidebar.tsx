@@ -4,7 +4,6 @@ import {
   BookOpen,
   Command,
   LifeBuoy,
-  Send,
   Settings2,
   Gauge,
   CirclePlus,
@@ -49,7 +48,6 @@ const data = {
         {
           title: "Introduction",
           url: "/documentation/introduction",
-
         },
 
         {
@@ -86,15 +84,15 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "#",
+      url: "mailto:zavaar.shah@wayne.edu",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
     },
     {
       title: "Feedback",
-      url: "#",
-      icon: Send,
+      url: "mailto:zavaar.shah@wayne.edu",
+      icon: LifeBuoy,
       isActive: undefined,
       items: [],
     },
@@ -107,7 +105,7 @@ interface NavItem {
     LucideProps & React.RefAttributes<SVGSVGElement>
   >;
   isActive: boolean | undefined;
-  items: { title: string; url: string }[] | [] | undefined; 
+  items: { title: string; url: string }[] | [] | undefined;
 }
 
 interface NavData {
