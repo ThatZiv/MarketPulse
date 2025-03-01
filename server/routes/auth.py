@@ -6,6 +6,7 @@
 
 import os
 import requests
+from routes.llm import llm_bp
 from flask import Blueprint, request, send_file, jsonify, Response
 import flask_jwt_extended as jw
 from sqlalchemy.orm import sessionmaker
@@ -17,11 +18,13 @@ from database.tables import Stocks, Stock_Info, Stock_Predictions
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
 
+auth_bp.register_blueprint(llm_bp)
 
 def dump_datetime(value):
     if value is None:
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
+
 
 @auth_bp.route('/private', methods=['GET', 'POST'])
 @jw.jwt_required()

@@ -17,6 +17,7 @@ import { MdEdit } from "react-icons/md";
 import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
+import { GenerateStockLLM } from "@/components/llm/stock-llm";
 
 const availableStocks = [
   { TSLA: "Tesla" },
@@ -75,7 +76,9 @@ export default function Stocks() {
     if (!ticker_name) {
       // Redirect
       navigate("/");
-      toast.error("Invalid ticker: The entered ticker is not found in our database.");
+      toast.error(
+        "Invalid ticker: The entered ticker is not found in our database."
+      );
       return;
     }
   });
@@ -87,10 +90,12 @@ export default function Stocks() {
     const stockExists = stocks?.some(
       (stock) => stock?.Stocks?.stock_name === tickerToCheck
     );
-    if (!stockExists){
+    if (!stockExists) {
       console.log(ticker_name?.[ticker as keyof typeof ticker_name]);
       navigate("/");
-      toast.warning("Restricted access: To view this page, please add this ticker to your account.");
+      toast.warning(
+        "Restricted access: To view this page, please add this ticker to your account."
+      );
       return;
     }
   }, [stocks]);
@@ -147,13 +152,13 @@ export default function Stocks() {
           ? ticker_name[ticker as keyof typeof ticker_name] || "Undefined"
           : "Stock not found"}
       </h1>
+      <GenerateStockLLM ticker={ticker} />
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
           </Link>
         </div>
-
         <h2 className="font-semibold md:text-lg text-xs">Hey {displayName},</h2>
         <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
         <h3 className="md:text-md text-xs">
@@ -239,7 +244,7 @@ export default function Stocks() {
                 </h4>
               </div>
             </div>
-          </div>         
+          </div>
         </div>
         <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
           <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-primary rounded-md">
