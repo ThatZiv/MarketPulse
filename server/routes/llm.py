@@ -1,4 +1,5 @@
 import os
+import json
 import flask_jwt_extended as jw
 from flask import Blueprint, Response, request
 # pylint: disable=no-name-in-module
@@ -6,6 +7,10 @@ from langchain_community.llms import LlamaCpp
 # pylint: enable=no-name-in-module
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
+from sqlalchemy import select, func, exc
+from sqlalchemy.orm import sessionmaker
+from database.tables import Stocks, Stock_Info, Stock_Predictions, User_Stock_Purchases
+from engine import get_engine
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
 
@@ -59,8 +64,9 @@ def llm__stock_route():
     current_user = jw.get_jwt_identity()
     if current_user is None:
         return Response(status=401)
-    print(current_user)
     ticker = request.args.get('ticker')
+    
+
     if not ticker:
         return "Ticker parameter is required", 400
     llm = LlamaCpp(
@@ -79,8 +85,43 @@ def llm__stock_route():
     )
     stocks = 250
     # TODO: get from database and refine the prompt iteself
-    query_template = "Hello, I currently have {stocks} shares of {ticker} stock. \
-        What should I do?\n<think>\n"
+
+    session = sessionmaker(bind=get_engine())
+    session = session()
+
+    s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
+    output_id = session.connection().execute(s_id).first()
+
+    if output_id :
+        stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id).order_by(Stock_Info.time_stamp.desc()).limit(1)
+        output = session.connection().execute(stock_data).first()
+        json_output = []
+
+        predictions = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at.desc()).limit(1)
+        pred_output = session.connection().execute(predictions).first()
+
+        user_info = select(User_Stock_Purchases).where(User_Stock_Purchases.stock_id == output.stock_id).where(User_Stock_Purchases.user_id == current_user)
+        user_output = session.connection().execute(user_info).all()
+        count = 0
+        stocks_owned = 0
+        average = 0
+        session.close()
+
+        if not output or not pred_output or not user_output:
+            return "Missing context for suggestion", 400
+        for row in user_output:
+            count+=1
+            stocks_owned += row.amount_purchased
+            average += row.amount_purchased*row.price_purchased
+        if stocks_owned > 0:
+            average = average/stocks_owned
+        closing = output.stock_close
+        closing_pred = json.loads(pred_output.model_1)
+        model_pred = closing_pred['forecast'][0]
+
+    query_template = f"Hello, I currently have shares of {ticker} stock. \
+        The current price is {closing} dollars.\
+        I predict that tomorows price will be {model_pred}. What should I do?\n<think>\n"
     query = query_template.format(stocks=stocks, ticker=ticker)
     def generate_response():
         """ stream llm response """
