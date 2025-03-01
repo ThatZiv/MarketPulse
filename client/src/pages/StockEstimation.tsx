@@ -15,14 +15,17 @@ import { MdEdit } from "react-icons/md";
 import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
+import { type Stock } from "@/types/stocks";
+import { useQuery } from '@tanstack/react-query';
 
-const availableStocks = [
-  { TSLA: "Tesla" },
-  { F: "Ford" },
-  { GM: "General Motors" },
-  { TM: "Toyota Motor Corporation" },
-  { RIVN: "Rivian Automotive" },
+const staticStockData = [
+  {stock_ticker: "TSLA", stock_name: "Tesla"},
+  {stock_ticker: "F", stock_name: "Ford"},
+  {stock_ticker: "GM", stock_name: "General Motors"},
+  {stock_ticker: "TM", stock_name: "Toyota Motor Corporation"},
+  {stock_ticker: "STLA", stock_name: "Stellantis N.V."},
 ];
+
 const meters = [
   {
     "Hype Meter":
@@ -48,6 +51,21 @@ export default function Stocks() {
   const { displayName, supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
   const navigate = useNavigate();
+  const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
+    queryKey: ["stocksFetch"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("Stocks").select("*");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+   const availableStocks = (stocksFetch?.map((stock) => ({
+    [stock.stock_ticker]: stock.stock_name,
+  }))) || staticStockData.map((stock) => ({
+    [stock.stock_ticker]: stock.stock_name,
+  }));
+
   const ticker_name = availableStocks.find(
     (stock) => stock[ticker as keyof typeof stock]
   );
@@ -77,6 +95,11 @@ export default function Stocks() {
       return;
     }
   });
+  useEffect(() => {
+    if (availableStocksError) {
+      toast.error(`Error: ${availableStocksError.message || "An unknown error occurred"}`);
+    }
+  }, [availableStocksError]);
   useEffect(() => {
     if (!stocks || stocks.length === 0) {
       return;

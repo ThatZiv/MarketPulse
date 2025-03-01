@@ -1,6 +1,5 @@
-"use client"
-
-import React, { useState, useEffect } from "react"
+import React from "react"
+import { useQuery } from '@tanstack/react-query';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Label  } from "recharts"
 import axios from "axios"
 import {
@@ -26,16 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-type stock_Data = {
-  sentiment_data: number;
+type StockDataItem  = {
   stock_close: number;
   stock_high: number;
   stock_id: number;
   stock_low: number;
   stock_open: number;
-  stock_volume: number;
   time_stamp: string[];
-}[];
+};
 
 const chartConfig = {
   close: {
@@ -55,96 +52,79 @@ const chartConfig = {
     color: "hsl(var(--chart-4))",
   },
 } satisfies ChartConfig
+
+const fetchStockData = async (ticker:string) =>{
+  const authToken = localStorage.getItem('sb-xskipmrkpwewdbttinhd-auth-token');
+if (!authToken) throw new Error('Authentication token not found');
+
+const token = JSON.parse(authToken);
+const response = await axios.get(`http://127.0.0.1:5000/stockchart/?ticker=${ticker}`, {
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token.access_token}`,
+  },
+});
+return response.data;
+};
+
 type props = { ticker: string };
-export default function Stock_Chart(props: props) {
-  const [stockData, setStockData] = useState<stock_Data>([]);
-
-  const [isDataFetched, setIsDataFetched] = useState(false);
+export default function Stock_Chart({ ticker }: props) {
   const [timeRange, setTimeRange] = React.useState("14d");
+  const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
+    queryKey: ['stockData', ticker],
+    queryFn: () => fetchStockData(ticker),
+    enabled: !!ticker,
+  });
+  
+  if (isLoading) {
+    return <div>Loading data...</div>
+  }
 
-  useEffect(() => {
-    const authToken = localStorage.getItem("sb-xskipmrkpwewdbttinhd-auth-token");
+  if (isError) {
+    return <div>Error fetching stock data...</div>
+  }
+  console.log("Fetched Data:", data);
 
-    if (authToken && !isDataFetched) {
-      const token = JSON.parse(authToken);
+  const validData = data ?? [] as StockDataItem[];
 
-      const chartData = async () => {
-        try {
-          const response = await axios.get(
-            `http://127.0.0.1:5000/stockchart/?ticker=${props.ticker}`,
-            {
-              method: "get",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token.access_token}`,
-              },
-            }
-          );
-
-          console.log("API Response:", response);
-          setStockData(response.data);
-          setIsDataFetched(true);
-        } catch (error) {
-          console.error("Error:", error);
-        }
-      };
-
-      chartData();
-    } else {
-      console.log("Failed to find auth token or data already fetched.");
-    }
-  }, [props.ticker, isDataFetched]);
-
-  useEffect(() => {
-    if (stockData.length > 0) {
-      console.log("Stock Data:", stockData);
-      console.log("Data Length:", stockData.length);
-      console.log("Time Stamp:", stockData[stockData.length - 15].time_stamp[0] || "");
-    }
-    else{
-      console.log("No stock data available.");
-    }
-  }, [stockData]);
-
-  const labels = stockData.length >= 15
-    ? stockData.slice(-15).map(item => item.time_stamp[0])
+  const labels = validData.length >= 15
+    ? validData.slice(-15).map(item => item.time_stamp[0])
     : [];
-  const close_values = stockData.length >= 15
-    ? stockData.slice(-15).map(item => item.stock_close)
+  const close_values = validData.length >= 15
+    ? validData.slice(-15).map(item => item.stock_close)
     : [];
-    const open_values = stockData.length >= 15
-    ? stockData.slice(-15).map(item => item.stock_open)
+  const open_values = validData.length >= 15
+    ? validData.slice(-15).map(item => item.stock_open)
     : [];
-    const high_values = stockData.length >= 15
-    ? stockData.slice(-15).map(item => item.stock_high)
+  const high_values = validData.length >= 15
+    ? validData.slice(-15).map(item => item.stock_high)
     : [];
-    const low_values = stockData.length >= 15
-    ? stockData.slice(-15).map(item => item.stock_low)
+  const low_values = validData.length >= 15
+    ? validData.slice(-15).map(item => item.stock_low)
     : [];
-  const data = labels.map((label, index) => ({
+  const chartData = labels.map((label, index) => ({
     date: label,
     close: close_values[index],
     open: open_values[index],
     high: high_values[index],
     low: low_values[index],
   }))
-  console.log("data: ", data);
 
-  const filteredData = data.filter((item) => {
+  const filteredData = chartData.filter((item) => {
     if (timeRange === "14d") {
-      return data.length - 14 <= data.indexOf(item);
+      return chartData.length - 14 <= chartData.indexOf(item);
     }
     if (timeRange === "7d") {
-      return data.length - 7 <= data.indexOf(item);
+      return chartData.length - 7 <= chartData.indexOf(item);
     }
   });
   return (
     <Card className="w-full">
       <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
         <div className="grid flex-1 gap-1 text-center sm:text-left">
-          <CardTitle>Historical Stock Data for {props.ticker}</CardTitle>
+          <CardTitle>Historical Stock Data for {ticker}</CardTitle>
           <CardDescription>
-            {data[0]?.date} - {data[data.length - 1]?.date}
+            {chartData[0]?.date} - {chartData[chartData.length - 1]?.date}
           </CardDescription>
         </div>
         <Select value={timeRange} onValueChange={setTimeRange}>
