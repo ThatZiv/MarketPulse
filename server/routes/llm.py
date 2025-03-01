@@ -1,6 +1,6 @@
 import os
-from flask import Blueprint, Response, request
 import flask_jwt_extended as jw
+from flask import Blueprint, Response, request
 from langchain_community.llms import LlamaCpp
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
@@ -13,7 +13,7 @@ LLM_MODEL_PATH = os.getenv("LLM_MODEL_PATH")
 # OR https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q8_0-GGUF/tree/main
 
 
-system_prompt = "\
+SYSTEM_PROMPT = "\
 You are an expert financial assistant for website called MarketPulse. Make sure to greet them. \
 Avoid using jargon, technical terms, and markdown in your responses. You must only speak in english. \
 Keep your responses short, concise, and avoid rambling. Only answer in clear text, no need for lists or headings. \
@@ -37,11 +37,11 @@ with the following provided and recommend them to either, buy, sell, or hold bas
 # {query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
 
 # for deepseek
-template = system_prompt + "\n{query}"
+TEMPLATE = SYSTEM_PROMPT + "\n{query}"
 
-prompt = PromptTemplate(template=template, \
+prompt = PromptTemplate(template=TEMPLATE, \
     input_variables=['query'], \
-    partial_variables={"system_prompt": system_prompt})
+    partial_variables={"system_prompt": SYSTEM_PROMPT})
 @llm_bp.route('/stock', methods=['GET'])
 @jw.jwt_required()
 def llm__stock_route():
@@ -86,15 +86,5 @@ def llm__stock_route():
             # if "</think>" in chunk:
             #     yield "**Thinking complete.**\n"
             yield chunk
-    # def generate_response():
-    #     is_thinking = True # needed in deepseek models :(
-    #     yield "Thinking about it...\n"
-    #     for chunk in llm.stream(prompt.format(query=f"Hello, I currently have 250 shares of {ticker} stock. What should I do?")):
-    #         # FIXME: break when request is cancelled
-    #         if not is_thinking:
-    #             # we dont'w want to show our thinking
-    #             yield chunk
-    #         if is_thinking and "</think>" in chunk:
-    #             is_thinking = False
 
     return Response(generate_response(), content_type='text/event-stream')
