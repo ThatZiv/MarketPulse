@@ -16,15 +16,15 @@ import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
 import { type Stock } from "@/types/stocks";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import RadialChart from "@/components/radial-chart";
+import { GenerateStockLLM } from "@/components/llm/stock-llm";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -69,11 +69,13 @@ export default function Stocks() {
     },
   });
 
-  const availableStocks = (stocksFetch?.map((stock) => ({
-    [stock.stock_ticker]: stock.stock_name,
-  }))) || staticStockData.map((stock) => ({
-    [stock.stock_ticker]: stock.stock_name,
-  }));
+  const availableStocks =
+    stocksFetch?.map((stock) => ({
+      [stock.stock_ticker]: stock.stock_name,
+    })) ||
+    staticStockData.map((stock) => ({
+      [stock.stock_ticker]: stock.stock_name,
+    }));
 
   const ticker_name = availableStocks.find(
     (stock) => stock[ticker as keyof typeof stock]
@@ -100,13 +102,17 @@ export default function Stocks() {
     if (!ticker_name) {
       // Redirect
       navigate("/");
-      toast.error("Invalid ticker: The entered ticker is not found in our database.");
+      toast.error(
+        "Invalid ticker: The entered ticker is not found in our database."
+      );
       return;
     }
   });
   useEffect(() => {
     if (availableStocksError) {
-      toast.error(`Error: ${availableStocksError.message || "An unknown error occurred"}`);
+      toast.error(
+        `Error: ${availableStocksError.message || "An unknown error occurred"}`
+      );
     }
   }, [availableStocksError]);
   useEffect(() => {
@@ -120,7 +126,9 @@ export default function Stocks() {
     if (!stockExists) {
       console.log(ticker_name?.[ticker as keyof typeof ticker_name]);
       navigate("/");
-      toast.warning("Restricted access: To view this page, please add this ticker to your account.");
+      toast.warning(
+        "Restricted access: To view this page, please add this ticker to your account."
+      );
       return;
     }
   }, [stocks]);
@@ -146,13 +154,13 @@ export default function Stocks() {
           ? ticker_name[ticker as keyof typeof ticker_name] || "Undefined"
           : "Stock not found"}
       </h1>
+      <GenerateStockLLM ticker={ticker} />
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
           </Link>
         </div>
-
         <h2 className="font-semibold md:text-lg text-xs">Hey {displayName},</h2>
         <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
         <h3 className="md:text-md text-xs">
@@ -197,9 +205,10 @@ export default function Stocks() {
             </div>
           </CardHeader>
           <div className="flex flex-col md:flex-row items-center justify-center gap-5">
-            <RadialChart score={hype_meter}/>
+            <RadialChart score={hype_meter} />
           </div>
         </Card>
+
         <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
           <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
             <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
@@ -207,7 +216,9 @@ export default function Stocks() {
                 <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
                   {Object.keys(meters[1])[0]}
                 </CardTitle>
-                <CardDescription>{meters[1]["Disruption Score"]}</CardDescription>
+                <CardDescription>
+                  {meters[1]["Disruption Score"]}
+                </CardDescription>
               </div>
             </CardHeader>
             <div className="lg:w-60 md:w-full w-96 h-full">
