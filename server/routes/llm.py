@@ -1,7 +1,9 @@
 import os
 import flask_jwt_extended as jw
 from flask import Blueprint, Response, request
+# pylint disable=no-name-in-module
 from langchain_community.llms import LlamaCpp
+# pylint enable=no-name-in-module
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
 
@@ -85,6 +87,6 @@ def llm__stock_route():
             # we handle thinking on the frontend
             # if "</think>" in chunk:
             #     yield "**Thinking complete.**\n"
-            yield chunk
+            yield from chunk
 
     return Response(generate_response(), content_type='text/event-stream')
