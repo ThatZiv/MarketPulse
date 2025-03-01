@@ -44,7 +44,8 @@ def create_app():
 if __name__ == '__main__':
 
     app = create_app()
-    CORS(app)
+    CORS(app, supports_credentials=True)
+
     jwt = jw.JWTManager()
     jwt.init_app(app)
     cache = Cache(app, config={'CACHE_TYPE': 'simple'})
