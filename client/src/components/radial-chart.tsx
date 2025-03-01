@@ -1,29 +1,16 @@
-import { TrendingUp } from "lucide-react"
-import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
+import { Label, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
+import { Card, CardContent } from "@/components/ui/card";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
-function chooseEmoji(score:number):string {
-    if (score <= -4) return "😡";
-    if (score <= -1) return "😞";
-    if (score === 0) return "😐";
-    if (score > 0 && score <= 1) return "🙂";
-    if (score > 1 && score <= 4) return "😊";
-    return "😀"; 
-  }
+function chooseEmoji(score: number): string {
+  if (score <= -4) return "😡";
+  if (score <= -1) return "😞";
+  if (score === 0) return "😐";
+  if (score > 0 && score <= 1) return "🙂";
+  if (score > 1 && score <= 4) return "😊";
+  return "😀";
+}
 const chartConfig = {
   negative: {
     label: "Negative",
@@ -33,25 +20,25 @@ const chartConfig = {
     label: "Positive",
     color: "hsl(var(--chart-2))",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 interface RadialChartProps {
-  score: number
+  score: number;
 }
-export default function RadialChart({score}: RadialChartProps) {
-    let chartData;
-    const emotion = chooseEmoji(score);
-if (score > 0) {
+export default function RadialChart({ score }: RadialChartProps) {
+  let chartData;
+  const emotion = chooseEmoji(score);
+  if (score > 0) {
     const pos = 6 + score;
     const neg = 12 - pos;
-    chartData = [{ positive:pos, negative:neg }];
-} else if (score < 0) {
+    chartData = [{ positive: pos, negative: neg }];
+  } else if (score < 0) {
     const neg = 6 - score;
     const pos = 12 - neg;
-    chartData = [{ positive:pos, negative:neg }];
-} else {
+    chartData = [{ positive: pos, negative: neg }];
+  } else {
     chartData = [{ positive: 0, negative: 0 }];
-}
+  }
 
   return (
     <Card className="flex flex-col w-full h-52">
@@ -87,19 +74,19 @@ if (score > 0) {
                           Hype
                         </tspan>
                       </text>
-                    )
+                    );
                   }
                 }}
               />
             </PolarRadiusAxis>
-            
+
             <RadialBar
               dataKey="negative"
               stackId="a"
               cornerRadius={5}
               fill="#EA4228"
               className="stroke-transparent stroke-2 hover:stroke-[#EA4228] hover:stroke-[0.3rem]"
-              style={{ transition: 'stroke 0.3s' }}
+              style={{ transition: "stroke 0.3s" }}
             />
             <RadialBar
               dataKey="positive"
@@ -107,11 +94,11 @@ if (score > 0) {
               stackId="a"
               cornerRadius={5}
               className="stroke-transparent stroke-2 hover:stroke-[#5BE12C] hover:stroke-[0.3rem]"
-              style={{ transition: 'stroke 0.3s' }}
+              style={{ transition: "stroke 0.3s" }}
             />
           </RadialBarChart>
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
