@@ -23,8 +23,8 @@ import { cache_keys } from "@/lib/constants";
 interface StockFormData {
   ticker: string;
   hasStocks: string;
-  sharesOwned: number;
-  cashToInvest: number;
+  sharesOwned: number | null;
+  cashToInvest: number | null;
 }
 
 export default function StockPage() {
@@ -35,8 +35,8 @@ export default function StockPage() {
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
-    sharesOwned: 0,
-    cashToInvest: 0,
+    sharesOwned: null,
+    cashToInvest: null,
   });
   const [error, setError] = useState<string>();
   const {
@@ -63,12 +63,26 @@ export default function StockPage() {
       .nonempty("Please specify if you own shares for this stock"),
     sharesOwned: z.number().min(0).optional(),
     cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
+  }).refine(data => {
+    if (data.hasStocks === "yes") {
+      return data.sharesOwned !== undefined && data.sharesOwned > 0;
+    }
+    return true;
+  }, {
+    message: "Shares owned must be more than 0 if you own stocks",
+    path: ["sharesOwned"]
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { error } = formSchema.safeParse(formData);
+    // Ensure sharesOwned is set to 0 if hasStocks is "no"
+    const formDataToValidate = {
+      ...formData,
+      sharesOwned: formData.hasStocks === "no" ? 0 : formData.sharesOwned,
+    };
+
+    const { error } = formSchema.safeParse(formDataToValidate);
     if (error) {
       error.errors.reverse().forEach((err) => setError(err.message));
       return;
@@ -128,7 +142,7 @@ export default function StockPage() {
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
         <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
-          Stock Details
+          Add New Stock
         </h1>
       </header>
 
@@ -219,7 +233,7 @@ export default function StockPage() {
                 step="any"
                 min="0"
                 className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                value={formData.sharesOwned}
+                value={formData.sharesOwned ?? ""}
                 onChange={handleInputChange}
                 required
               />
@@ -240,7 +254,7 @@ export default function StockPage() {
               min="0"
               step="any"
               className="w-full bg-white dark:bg-black dark:text-white border ring-offset-background rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              value={formData.cashToInvest}
+              value={formData.cashToInvest ?? ""}
               onChange={handleInputChange}
               required
             />
