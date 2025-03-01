@@ -24,8 +24,7 @@ financial decisions based on the latest news and trends. \
 The app provides real-time updates on stock prices, market trends, and financial news to help users make informed decisions \
 about their investments and trades. \
 Your role is simply provide the user with a summarization about the stock they requested \
-with the following provided and recommend them to either, buy, sell, or hold based on the current context. \
-<think>"
+with the following provided and recommend them to either, buy, sell, or hold based on the current context."
 
 # for phi-3.5
 # template = """<|system|>{system_prompt}<|end|>
@@ -79,14 +78,15 @@ def llm__stock_route():
     )
     stocks = 250
     # TODO: get from database and refine the prompt iteself
-    query_template = "Hello, I currently have {stocks} shares of {ticker} stock. What should I do?"
+    query_template = "Hello, I currently have {stocks} shares of {ticker} stock. What should I do?\n<think>\n"
     query = query_template.format(stocks=stocks, ticker=ticker)
     def generate_response():
         """ stream llm response """
+        #pylint disable=use-yield-from
         for chunk in llm.stream(prompt.format(query=query)):
             # we handle thinking on the frontend
             # if "</think>" in chunk:
             #     yield "**Thinking complete.**\n"
-            yield from chunk
+            yield chunk
 
     return Response(generate_response(), content_type='text/event-stream')
