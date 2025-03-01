@@ -48,7 +48,6 @@ const data = {
         {
           title: "Introduction",
           url: "/documentation/introduction",
-
         },
 
         {
@@ -85,14 +84,14 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "mailto:support@gmail.com",
+      url: "mailto:zavaar.shah@wayne.edu",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
     },
     {
       title: "Feedback",
-      url: "mailto:feedback@gmail.com",
+      url: "mailto:zavaar.shah@wayne.edu",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
@@ -106,7 +105,7 @@ interface NavItem {
     LucideProps & React.RefAttributes<SVGSVGElement>
   >;
   isActive: boolean | undefined;
-  items: { title: string; url: string }[] | [] | undefined; 
+  items: { title: string; url: string }[] | [] | undefined;
 }
 
 interface NavData {
