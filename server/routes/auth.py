@@ -18,6 +18,7 @@ from database.tables import Stocks, Stock_Info, Stock_Predictions
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
 
+auth_bp.register_blueprint(llm_bp)
 
 def dump_datetime(value):
     if value is None:

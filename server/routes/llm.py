@@ -2,8 +2,7 @@ import os
 from flask import Blueprint, Response, request
 import flask_jwt_extended as jw
 from langchain_community.llms import LlamaCpp
-from flask_cors import cross_origin
-from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
+# from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
@@ -46,12 +45,14 @@ prompt = PromptTemplate(template=template, \
 @llm_bp.route('/stock', methods=['GET'])
 @jw.jwt_required()
 def llm__stock_route():
+    """ Route for stock advice """
     if LLM_MODEL_PATH is None:
         print("LLM_MODEL_PATH is not set")
         return Response(status=500)
 
     if not os.path.exists(LLM_MODEL_PATH):
-        print("LLM_MODEL_PATH file does not exist. Please download a gguf model from https://huggingface.co/models")
+        print("LLM_MODEL_PATH file does not exist. \
+            Please download a gguf model from https://huggingface.co/models")
         return Response(status=500)
     current_user = jw.get_jwt_identity()
     if current_user is None:
@@ -74,12 +75,16 @@ def llm__stock_route():
         # callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
         verbose=False,
     )
-
+    stocks = 250
+    # TODO: get from database and refine the prompt iteself
+    query_template = "Hello, I currently have {stocks} shares of {ticker} stock. What should I do?"
+    query = query_template.format(stocks=stocks, ticker=ticker)
     def generate_response():
-        # FIXME: make this prompt integration better
-        for chunk in llm.stream(prompt.format(query=f"Hello, I currently have 250 shares of {ticker} stock. What should I do?")):
-            if "</think>" in chunk:
-                yield "**Thinking complete.**\n"
+        """ stream llm response """
+        for chunk in llm.stream(prompt.format(query=query)):
+            # we handle thinking on the frontend
+            # if "</think>" in chunk:
+            #     yield "**Thinking complete.**\n"
             yield chunk
     # def generate_response():
     #     is_thinking = True # needed in deepseek models :(
