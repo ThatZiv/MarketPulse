@@ -18,7 +18,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 
 class AttentionLstm:
 
-    def __init__(self, input_size = 4, hidden_size = 32, batch_size = 10, learning_rate = 0.01):
+    def __init__(self, input_size = 3, hidden_size = 32, batch_size = 10, learning_rate = 0.01):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = 2
@@ -64,26 +64,36 @@ class AttentionLstm:
         multiple = (data['Close'].max() - data['Close'].min())
         minimum =  data['Close'].min()
         data['Close'] = (data['Close'] - data['Close'].min())/ (data['Close'].max() - data['Close'].min())
-        valid_answer = data['Close']
+        valid_answer = data
         data['Close'] = wavelet(data['Close'])[:len(data['Close'])]
         data['Low'] = wavelet(data['Low'])[:len(data['Close'])]
         data['High'] = wavelet(data['High'])[:len(data['Close'])]
         data['Open'] = wavelet(data['Open'])[:len(data['Close'])]
         for i in range(1, len(data['High'])):
             data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
-            data.loc[i, 'High'] = 1-(data.loc[i, 'Close']-data.loc[i-1,'Close'])
+        #    data.loc[i, 'High'] = 1-(data.loc[i, 'Close']-data.loc[i-1,'Close'])
+            valid_answer.loc[i, 'Low'] = valid_answer.loc[i, 'High']-valid_answer.loc[i,'Low']
+        #    valid_answer.loc[i, 'High'] = 1-(valid_answer.loc[i, 'Close']-valid_answer.loc[i-1,'Close'])
 
-        data.loc[0, 'High'] = 0
-        data.loc[0, 'Low'] = 0
+        #data.loc[0, 'High'] = 0
+        #data.loc[0, 'Low'] = 0
 
-        #data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
+        #valid_answer.loc[0, 'High'] = 0
+        #valid_answer.loc[0, 'Low'] = 0
+    
+        data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
         data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min())
-        data = data.drop(columns=['Open'])
-        answer = data['Close']
+        data = data.drop(columns=['Open', 'Volume'])
+
+
+        valid_answer['Low'] = (valid_answer['Low'] - valid_answer['Low'].min())/ (valid_answer['Low'].max() - valid_answer['Low'].min())
+        valid_answer['Open'] = (valid_answer['Open'] - valid_answer['Open'].min())/ (valid_answer['Open'].max() - valid_answer['Open'].min())
+        valid_answer = valid_answer.drop(columns=['Open', 'Volume'])
+        answer = data
         #print(data)
 
-        data2, answer = self.create_inout_sequences(data, 20, answer)
+        data2, answer = self.create_inout_sequences(data, 20, data)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
         return data2, answer, valid_answer, multiple, minimum
 
@@ -104,13 +114,13 @@ class AttentionLstm:
         y_test = train_answer[split_index2:split_index]
         y_valid = answer[split_index:]
 
-        x_train = x_train.reshape(-1, lookback, 4)
-        x_test = x_test.reshape(-1, lookback, 4)
-        x_valid = x_valid.reshape(-1, lookback, 4)
+        x_train = x_train.reshape(-1, lookback, 3)
+        x_test = x_test.reshape(-1, lookback, 3)
+        x_valid = x_valid.reshape(-1, lookback, 3)
 
-        y_train = y_train.reshape(-1, 1)
-        y_test = y_test.reshape(-1, 1)
-        y_valid = y_valid.reshape(-1, 1)
+        y_train = y_train.reshape(-1, 3)
+        y_test = y_test.reshape(-1, 3)
+        y_valid = y_valid.reshape(-1, 3)
 
         x_train = torch.tensor(x_train).float()
         x_test = torch.tensor(x_test).float()
@@ -203,12 +213,19 @@ class AttentionLstm:
         #plt.show()
 
 
-    def forecast_seq(self, sequences):
+    def forecast_seq(self, sequences, period = 7):
         self.model.eval()
-
-        output = self.model(sequences)
+        print(sequences[-1])
+        
+        #print(output)
         p = []
-        p.append(output[-1][0].item())
+        for i in range(period):
+            output = self.model(sequences)
+            p.append(output[-1][0].item())
+            temp = sequences[-1]
+            temp = temp[1:]
+            sequences[-1] = torch.cat((temp, output[-1].unsqueeze(0)), dim = 0 )
+        print(p)
         return p
 
 
@@ -240,7 +257,7 @@ class LSTMAttentionModel(nn.Module):
         self.num_stacked_layers = num_stacked_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
         self.att = Attention(hidden_size, hidden_size)
-        self.fc = nn.Linear(hidden_size, 1, )
+        self.fc = nn.Linear(hidden_size, 3, )
         self.device =  "cpu"
 
     def forward(self, x):
