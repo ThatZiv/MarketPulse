@@ -1,9 +1,9 @@
 import os
 import flask_jwt_extended as jw
 from flask import Blueprint, Response, request
-# pylint disable=no-name-in-module
+# pylint: disable=no-name-in-module
 from langchain_community.llms import LlamaCpp
-# pylint enable=no-name-in-module
+# pylint: enable=no-name-in-module
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
 
@@ -24,7 +24,8 @@ financial decisions based on the latest news and trends. \
 The app provides real-time updates on stock prices, market trends, and financial news to help users make informed decisions \
 about their investments and trades. \
 Your role is simply provide the user with a summarization about the stock they requested \
-with the following provided and recommend them to either, buy, sell, or hold based on the current context."
+with the following provided and recommend them to either, buy, sell, \
+or hold based on the current context."
 
 # for phi-3.5
 # template = """<|system|>{system_prompt}<|end|>
@@ -78,11 +79,12 @@ def llm__stock_route():
     )
     stocks = 250
     # TODO: get from database and refine the prompt iteself
-    query_template = "Hello, I currently have {stocks} shares of {ticker} stock. What should I do?\n<think>\n"
+    query_template = "Hello, I currently have {stocks} shares of {ticker} stock. \
+        What should I do?\n<think>\n"
     query = query_template.format(stocks=stocks, ticker=ticker)
     def generate_response():
         """ stream llm response """
-        #pylint disable=use-yield-from
+        #pylint: disable=use-yield-from
         for chunk in llm.stream(prompt.format(query=query)):
             # we handle thinking on the frontend
             # if "</think>" in chunk:
