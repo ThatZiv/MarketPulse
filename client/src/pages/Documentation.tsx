@@ -29,6 +29,12 @@ export default function Documentation() {
             >
               FAQ
             </a>
+            <a
+              className="w-full text-lg font-semibold px-4 py-2 text-gray-900 dark:text-white bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-center hover:bg-gray-400 dark:hover:bg-gray-500"
+              href="/documentation/disclaimer"
+            >
+              Disclaimer
+            </a>
           </div>
         </CardContent>
       </Card>

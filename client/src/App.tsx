@@ -13,7 +13,7 @@ import Documentation from "@/pages/Documentation";
 
 import Tutorials from "@/pages/Tutorials";
 import FAQ from "@/pages/FAQ";
-
+import Disclaimer from "./pages/Disclaimers";
 
 function App() {
   const { status } = useSupabase();
@@ -45,10 +45,13 @@ function App() {
             <Route index element={<Settings />} />
           </Route>
           <Route path="/documentation" element={<Documentation />} />
-          <Route path="/documentation/introduction" element={<Introduction />} />
+          <Route
+            path="/documentation/introduction"
+            element={<Introduction />}
+          />
           <Route path="/documentation/faq" element={<FAQ />} />
           <Route path="/documentation/tutorials" element={<Tutorials />} />
-
+          <Route path="/documentation/disclaimer" element={<Disclaimer />} />
         </Route>
         <Route path="/auth" element={<UserAuth />} />
         <Route path="*" element={<h1>Not Found</h1>} />
