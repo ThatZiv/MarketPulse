@@ -94,7 +94,8 @@ def chart():
             print(e)
             return Response(status=500)
         finally:
-            if session: session.close()
+            if session:
+                session.close()
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
