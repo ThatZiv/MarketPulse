@@ -107,9 +107,9 @@ export function ResetPasswordForm() {
     >
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Create an Account</CardTitle>
+          <CardTitle className="text-2xl">Reset Password</CardTitle>
           <CardDescription>
-            Enter email and password for your account
+            Enter a new password for your account
           </CardDescription>
         </CardHeader>
         <CardContent>
