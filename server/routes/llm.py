@@ -118,11 +118,11 @@ def llm__stock_route():
         closing = output.stock_close
         closing_pred = json.loads(pred_output.model_1)
         model_pred = closing_pred['forecast'][0]
-
+        model_pred_2 = closing_pred['forecast'][6]
     query_template = f"Hello, I currently have shares of {ticker} stock. \
         I bought them for {average} dollars per share.\
         The current price is {closing} dollars.\
-        I predict that tomorows price will be {model_pred}. What should I do?\n<think>\n"
+        I predict that tomorows price will be {model_pred} and next weeks will be {model_pred_2}. What should I do?\n<think>\n"
     query = query_template.format(stocks=stocks, ticker=ticker)
     def generate_response():
         """ stream llm response """
