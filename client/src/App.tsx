@@ -10,7 +10,6 @@ import Settings from "@/pages/Settings";
 import Landing from "@/pages/Landing";
 import Introduction from "@/pages/Introduction";
 import Documentation from "@/pages/Documentation";
-
 import Tutorials from "@/pages/Tutorials";
 import FAQ from "@/pages/FAQ";
 import Disclaimer from "./pages/Disclaimers";
@@ -37,7 +36,7 @@ function App() {
   return (
     <div>
       <Routes>
-      <Route path="/reset" element={<ResetPasswordPage/>}/>
+        <Route path="/reset" element={<ResetPasswordPage />} />
         <Route path="/" element={<Dashboard />}>
           <Route index element={<Landing />} />
           <Route path="/stocks" element={<StockSelection />} />

@@ -22,16 +22,14 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { useNavigate} from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
-
 
 export function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
 
   const formSchema = z
     .object({
@@ -69,29 +67,28 @@ export function ResetPasswordForm() {
   });
 
   const navigate = useNavigate();
-  const {supabase} = useSupabase()
+  const { supabase } = useSupabase();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-          toast("Are you sure you want to reset your password?", {
-            action: {
-              label: "Confirm",
-              onClick: async () => {
-                const { error } = await supabase.auth.updateUser({
-                  password: values.password,
-                });
-      
-                if (error) {
-                  toast.error("Failed reseting your password", {
-                    description: error.message,
-                  });
-                } else {
-                  toast.success("Password reset successful!");
-                  navigate('/')
-                }
-              },
-            },
+    toast("Are you sure you want to reset your password?", {
+      action: {
+        label: "Confirm",
+        onClick: async () => {
+          const { error } = await supabase.auth.updateUser({
+            password: values.password,
           });
-        
+
+          if (error) {
+            toast.error("Failed reseting your password", {
+              description: error.message,
+            });
+          } else {
+            toast.success("Password reset successful!");
+            navigate("/");
+          }
+        },
+      },
+    });
   }
   const passwordValidations = [
     { text: "At least 8 characters", isValid: password.length >= 8 },
@@ -101,10 +98,7 @@ export function ResetPasswordForm() {
   ];
 
   return (
-    <div
-      className={cn("flex flex-col gap-6")}
-      
-    >
+    <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
