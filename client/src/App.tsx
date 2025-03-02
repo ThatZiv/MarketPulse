@@ -15,6 +15,7 @@ import Tutorials from "@/pages/Tutorials";
 import FAQ from "@/pages/FAQ";
 import Disclaimer from "./pages/Disclaimers";
 
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 function App() {
   const { status } = useSupabase();
   if (status == "loading")
@@ -36,6 +37,7 @@ function App() {
   return (
     <div>
       <Routes>
+      <Route path="/reset" element={<ResetPasswordPage/>}/>
         <Route path="/" element={<Dashboard />}>
           <Route index element={<Landing />} />
           <Route path="/stocks" element={<StockSelection />} />
