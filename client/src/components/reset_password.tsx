@@ -67,7 +67,7 @@ export function ResetPasswordForm() {
   });
 
   const navigate = useNavigate();
-  const { supabase } = useSupabase();
+  const { supabase, signOut } = useSupabase();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     toast("Are you sure you want to reset your password?", {
@@ -191,9 +191,14 @@ export function ResetPasswordForm() {
                   </FormItem>
                 )}
               />
-              <Button className="dark:text-white" type="submit">
+              <Button className="dark:text-white m-2" type="submit">
                 Reset
               </Button>
+              
+              <Button className="dark:text-white m-2" onClick = {() => signOut()} type="button">
+                Back
+              </Button>
+              
             </form>
           </Form>
         </CardContent>

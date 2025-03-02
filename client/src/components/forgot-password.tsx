@@ -81,9 +81,14 @@ export function ResetPassword({
                   </FormItem>
                 )}
               />
+              <span>
               <Button type="submit" className="mt-3">
                 Recover Password
               </Button>
+              <Button type="button" onClick = {() => resetPasswordState(false)} className="mt-3">
+                 Back
+              </Button>
+              </span>
             </form>
           </Form>
         </CardContent>
