@@ -57,7 +57,7 @@ export function ResetPassword({
     <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Recovery Password</CardTitle>
+          <CardTitle className="text-2xl">Recover Password</CardTitle>
           <CardDescription>
             Enter your email below to recieve a recovery message
           </CardDescription>
