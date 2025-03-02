@@ -5,9 +5,10 @@ from flask import Blueprint, Response, request
 # pylint: disable=no-name-in-module
 from langchain_community.llms import LlamaCpp
 # pylint: enable=no-name-in-module
+# pylint: disable=line-too-long
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
-from sqlalchemy import select, func, exc
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from database.tables import Stocks, Stock_Info, Stock_Predictions, User_Stock_Purchases
 from engine import get_engine
@@ -62,10 +63,7 @@ def llm__stock_route():
             Please download a gguf model from https://huggingface.co/models")
         return Response(status=500)
     current_user = jw.get_jwt_identity()
-    if current_user is None:
-        return Response(status=401)
     ticker = request.args.get('ticker')
-    
 
     if not ticker:
         return "Ticker parameter is required", 400
@@ -91,11 +89,11 @@ def llm__stock_route():
 
     s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
     output_id = session.connection().execute(s_id).first()
-
+    model_pred = 0
+    model_pred_2 = 0
     if output_id :
         stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id).order_by(Stock_Info.time_stamp.desc()).limit(1)
         output = session.connection().execute(stock_data).first()
-        json_output = []
 
         predictions = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at.desc()).limit(1)
         pred_output = session.connection().execute(predictions).first()
@@ -119,6 +117,8 @@ def llm__stock_route():
         closing_pred = json.loads(pred_output.model_1)
         model_pred = closing_pred['forecast'][0]
         model_pred_2 = closing_pred['forecast'][6]
+    else :
+        return "Missing context for suggestion", 400
     query_template = f"Hello, I currently have shares of {ticker} stock. \
         I bought them for {average} dollars per share.\
         The current price is {closing} dollars.\
