@@ -8,9 +8,8 @@ from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from models.forecast.models import ForecastModels
 from models.forecast.attention_lstm import AttentionLSTM
-from models.forecast.attention_lstm_7 import AttentionLSTM as AttentionLSTM_7
+from models.forecast.cnn_lstm import CNNLSTMTransformer
 from models.lstm_attention import AttentionLstm
-from models.lstm_attention_7 import AttentionLstm as AttentionLstm_7
 from database.tables import Stock_Info, Stock_Predictions
 
 
@@ -38,7 +37,7 @@ def run_models():
    
 
     one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", "TSLA"))
-
+    one_day.append(CNNLSTMTransformer("cnn-lstm-transformer", "TSLA"))
     prediction = ForecastModels(one_day)
  
     prediction.train_all(copy.deepcopy(data))
@@ -46,7 +45,7 @@ def run_models():
     pred = prediction.run_all(copy.deepcopy(data), 7)
 
     model_1 = pred[0]
-    model_2 = pred[0]
+    model_2 = pred[1]
     model_3 = pred[0]
     model_4 = pred[0]
     model_5 = pred[0]
