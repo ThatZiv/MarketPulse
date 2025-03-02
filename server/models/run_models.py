@@ -1,9 +1,15 @@
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=line-too-long
+# pylint: disable=duplicate-code
+
 import threading
 import copy
 import json
-from datetime import date, datetime
+from datetime import date
 from engine import get_engine
-from sqlalchemy import select, func, exc
+from sqlalchemy import select, exc
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from models.forecast.models import ForecastModels
@@ -16,8 +22,8 @@ from database.tables import Stock_Info, Stock_Predictions
 def run_models():
 
     stock_q= select(Stock_Info).where(Stock_Info.stock_id == 1)
-    Session = sessionmaker(bind=get_engine())
-    session = Session()
+    session = sessionmaker(bind=get_engine())
+    session = session()
     output = session.connection().execute(stock_q).all()
     s_open = []
     s_close = []
@@ -32,14 +38,13 @@ def run_models():
         s_volume.append(row[2])
     data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
     data = pd.DataFrame(data)
-    data_copy = copy.deepcopy(data)
     one_day = []
-   
+
 
     one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", "TSLA"))
     one_day.append(CNNLSTMTransformer("cnn-lstm-transformer", "TSLA"))
     prediction = ForecastModels(one_day)
- 
+
     prediction.train_all(copy.deepcopy(data))
 
     pred = prediction.run_all(copy.deepcopy(data), 7)

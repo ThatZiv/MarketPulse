@@ -80,7 +80,7 @@ class AttentionLstm:
 
         #valid_answer.loc[0, 'High'] = 0
         #valid_answer.loc[0, 'Low'] = 0
-    
+
         data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
         data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min())
@@ -216,10 +216,10 @@ class AttentionLstm:
     def forecast_seq(self, sequences, period = 7):
         self.model.eval()
         print(sequences[-1])
-        
+
         #print(output)
         p = []
-        for i in range(period):
+        for _ in range(period):
             output = self.model(sequences)
             p.append(output[-1][0].item())
             temp = sequences[-1]
