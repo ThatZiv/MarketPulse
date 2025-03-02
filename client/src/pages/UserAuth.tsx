@@ -28,13 +28,19 @@ export default function UserAuth() {
         }}
       >
         {passwordState ? (
-          <ResetPassword  resetPasswordState={resetPasswordState}/>
-        ): ( <div>
-        {pageState === "login" ? (
-          <LoginForm togglePageState={togglePageState} resetPasswordState={resetPasswordState}/>
+          <ResetPassword resetPasswordState={resetPasswordState} />
         ) : (
-          <CreateForm togglePageState={togglePageState} />
-        )} </div>)}
+          <div>
+            {pageState === "login" ? (
+              <LoginForm
+                togglePageState={togglePageState}
+                resetPasswordState={resetPasswordState}
+              />
+            ) : (
+              <CreateForm togglePageState={togglePageState} />
+            )}{" "}
+          </div>
+        )}
       </div>
       {/* <Footer /> */}
     </div>
