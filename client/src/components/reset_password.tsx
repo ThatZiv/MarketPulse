@@ -118,7 +118,7 @@ export function ResetPasswordForm() {
                     <FormControl>
                       <div className="relative">
                         <Input
-                          placeholder="Password"
+                          placeholder=""
                           type={showPassword ? "text" : "password"}
                           {...field}
                           onChange={(e) => {
@@ -164,7 +164,7 @@ export function ResetPasswordForm() {
                     <FormControl>
                       <div className="relative">
                         <Input
-                          placeholder="Confirm Password"
+                          placeholder=""
                           type={showConfirmPassword ? "text" : "password"}
                           {...field}
                           onChange={(e) => {

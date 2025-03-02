@@ -75,7 +75,7 @@ export function ResetPassword({
                   <FormItem>
                     <FormLabel className="text-left">Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="Email Address" required {...field} />
+                      <Input placeholder="" required {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
