@@ -120,6 +120,7 @@ def llm__stock_route():
         model_pred = closing_pred['forecast'][0]
 
     query_template = f"Hello, I currently have shares of {ticker} stock. \
+        I bought them for {average} dollars per share.\
         The current price is {closing} dollars.\
         I predict that tomorows price will be {model_pred}. What should I do?\n<think>\n"
     query = query_template.format(stocks=stocks, ticker=ticker)
