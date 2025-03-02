@@ -27,7 +27,7 @@ interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
   resetPasswordState: (arg:boolean) => void;
 }
 export function ResetPassword( {resetPasswordState,
-  ...props
+
 }: LoginFormProps)
 {   const {supabase} = useSupabase()
     const formSchema = z.object({
