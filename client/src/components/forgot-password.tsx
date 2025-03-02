@@ -59,7 +59,7 @@ export function ResetPassword({
         <CardHeader>
           <CardTitle className="text-2xl">Recover Password</CardTitle>
           <CardDescription>
-            Enter your email below to recieve a recovery message
+            Enter your email below to receive a recovery message
           </CardDescription>
         </CardHeader>
         <CardContent>
