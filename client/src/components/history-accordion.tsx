@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react"
 import {
     Accordion,
     AccordionContent,
@@ -11,7 +10,6 @@ import {
     TableBody,
     TableCaption,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
@@ -20,50 +18,6 @@ import { useSupabase } from "@/database/SupabaseProvider";
 import useAsync from "@/hooks/useAsync";
 import { Button } from "./ui/button";
 
-const invoices = [
-    {
-        invoice: "INV001",
-        paymentStatus: "Paid",
-        totalAmount: "$250.00",
-        paymentMethod: "Credit Card",
-    },
-    {
-        invoice: "INV002",
-        paymentStatus: "Pending",
-        totalAmount: "$150.00",
-        paymentMethod: "PayPal",
-    },
-    {
-        invoice: "INV003",
-        paymentStatus: "Unpaid",
-        totalAmount: "$350.00",
-        paymentMethod: "Bank Transfer",
-    },
-    {
-        invoice: "INV004",
-        paymentStatus: "Paid",
-        totalAmount: "$450.00",
-        paymentMethod: "Credit Card",
-    },
-    {
-        invoice: "INV005",
-        paymentStatus: "Paid",
-        totalAmount: "$550.00",
-        paymentMethod: "PayPal",
-    },
-    {
-        invoice: "INV006",
-        paymentStatus: "Pending",
-        totalAmount: "$200.00",
-        paymentMethod: "Bank Transfer",
-    },
-    {
-        invoice: "INV007",
-        paymentStatus: "Unpaid",
-        totalAmount: "$300.00",
-        paymentMethod: "Credit Card",
-    },
-]
 interface PurchaseHistoryResponse {
     date: string;
     price_purchased: number;
@@ -78,7 +32,6 @@ export default function TransactionHistory({ticker}:props) {
     const {
         value: stocks,
         error: stocksError,
-        loading: stocksLoading,
       } = useAsync<Stock[]>(
         () =>
           new Promise((resolve, reject) => {
@@ -92,9 +45,8 @@ export default function TransactionHistory({ticker}:props) {
           }),
         [supabase]
       );
-      const stockid = stocks?.filter(stock => stock.stock_ticker === ticker).map(stock => stock.stock_id);
+    const stockid = stocks?.filter(stock => stock.stock_ticker === ticker).map(stock => stock.stock_id);
     
-      console.log(Number(stockid));
     
     const { value: history, error: historyError } = useAsync<PurchaseHistoryResponse[]>(
         () =>
@@ -103,7 +55,7 @@ export default function TransactionHistory({ticker}:props) {
               .from("User_Stock_Purchases")
               .select("date, price_purchased, amount_purchased")
               .eq("user_id", user?.id)
-              .eq("stock_id", 5)
+              .eq("stock_id", Number(stockid))
               .limit(10)
               .then(({ data, error }) => {
                 if (error) reject(error);
@@ -112,8 +64,28 @@ export default function TransactionHistory({ticker}:props) {
           }),
         [user, supabase]
       );
-      console.log(history);
-
+      if (stocksError) {
+        return (
+          <div className="flex flex-col justify-center items-center h-screen">
+            <h1 className="text-3xl">Error</h1>
+            <p className="text-primary">
+              Unfortunately, we encountered an error fetching the stocks. Please
+              refresh the page or try again later.
+            </p>
+          </div>
+        );
+      }
+      if (historyError) {
+        return (
+          <div className="flex flex-col justify-center items-center h-screen">
+            <h1 className="text-3xl">Error Retrieving History</h1>
+            <p className="text-primary">
+              Unfortunately, we encountered an error fetching your history. Please
+              refresh the page or try again later.
+            </p>
+          </div>
+        );
+      }
     return (
         <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
