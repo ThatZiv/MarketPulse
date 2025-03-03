@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/form";
 import { Eye, EyeOff } from "lucide-react";
 
-import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 
@@ -34,11 +33,13 @@ type googleResponse = {
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
   togglePageState: () => void;
+  resetPasswordState: (arg: boolean) => void;
 }
 
 export function LoginForm({
   className,
   togglePageState,
+  resetPasswordState,
   ...props
 }: LoginFormProps) {
   const { signInWithEmail, signInWithGoogle } = useSupabase();
@@ -149,11 +150,12 @@ export function LoginForm({
               <div className="text-center text-sm">
                 Forgot your{" "}
                 <span className="link">
-                  <Link to="/">username</Link>
-                </span>{" "}
-                or{" "}
-                <span className="link">
-                  <Link to="/">password</Link>
+                  <button
+                    type="button"
+                    onClick={() => resetPasswordState(true)}
+                  >
+                    password
+                  </button>
                 </span>{" "}
                 ?
               </div>

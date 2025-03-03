@@ -3,9 +3,11 @@ import { LoginForm } from "@/components/login-form";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { useState } from "react";
 import { CreateForm } from "@/components/create_user_form";
+import { ResetPassword } from "@/components/forgot-password";
+
 export default function UserAuth() {
   const [pageState, setPageState] = useState("login"); // "login" or "signup"
-
+  const [passwordState, resetPasswordState] = useState(false);
   const togglePageState = () => {
     setPageState((prevMode) => (prevMode === "login" ? "signup" : "login"));
   };
@@ -25,10 +27,19 @@ export default function UserAuth() {
           transformStyle: "preserve-3d",
         }}
       >
-        {pageState === "login" ? (
-          <LoginForm togglePageState={togglePageState} />
+        {passwordState ? (
+          <ResetPassword resetPasswordState={resetPasswordState} />
         ) : (
-          <CreateForm togglePageState={togglePageState} />
+          <div>
+            {pageState === "login" ? (
+              <LoginForm
+                togglePageState={togglePageState}
+                resetPasswordState={resetPasswordState}
+              />
+            ) : (
+              <CreateForm togglePageState={togglePageState} />
+            )}{" "}
+          </div>
         )}
       </div>
       {/* <Footer /> */}

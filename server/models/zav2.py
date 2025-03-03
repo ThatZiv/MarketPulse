@@ -57,7 +57,7 @@ class Transformer:
         self.model = TransformerModel()
         self.model.to(self.device)
         self.criterion = nn.MSELoss() # Loss function
-
+        self.s_split = None
 
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1.0, gamma=0.95)
@@ -90,7 +90,7 @@ class Transformer:
     #     plt.xlabel('Time Steps')
     #     plt.show()
 
-    def training_seq(self, train_data, val_data, epochs=150):
+    def training_seq(self, train_data, val_data, epochs=200):
         """ train model on epoch """
         for epoch in range(1, epochs + 1):
             epoch_start_time = time.time()
@@ -108,16 +108,16 @@ class Transformer:
     def get_data(self, data, split):
         """split data into train and test set"""
 
-        # normalize data
         series = np.diff(np.log(data), axis=0)
-        split = round(split*len(series))
-        train_data = series[:split]
-        test_data = series[split:]
+        split_point = round(split * len(series))
+        train_data = series[:split_point]
+        test_data = series[split_point:]
+
+        # Store initial price of test data (S_split)
+        self.s_split = data[split_point]  # data is original price series
 
         train_data = train_data.cumsum()
-        train_data = 2*train_data # Training data augmentation, increase amplitude for the model to better generalize.(Scaling by 2 is aribitrary)
-                                # Similar to image transformation to allow model to train on wider data sets
-
+        train_data = 2 * train_data  # Training data augmentation
         test_data = test_data.cumsum()
 
         train_sequence = self.create_inout_sequences(train_data,self.input_window)
@@ -193,8 +193,7 @@ class Transformer:
         return total_loss / len(data_source)
 
     def forecast_seq(self, sequences):
-        """Sequences data has to been windowed and passed through device"""
-        start_timer = time.time()
+        """ forecast sequence of data """
         self.model.eval()
         forecast_seq = torch.Tensor(0)
         actual = torch.Tensor(0)
@@ -204,11 +203,78 @@ class Transformer:
                 output = self.model(data)
                 forecast_seq = torch.cat((forecast_seq, output[-1].view(-1).cpu()), 0)
                 actual = torch.cat((actual, target[-1].view(-1).cpu()), 0)
-        timed = time.time()-start_timer
-        print(f"{timed} sec")
 
-        return forecast_seq, actual
+        # de-normalize the forecast to actual stock price values
+        forecast_prices = self.s_split * np.exp(forecast_seq.numpy())
+        actual_prices = self.s_split * np.exp(actual.numpy())
 
+        return forecast_prices, actual_prices
+
+    def predict_future(self, current_data, days_ahead, use_true_as_input=False):
+        """
+        predict stock prices for 'days_ahead' days into the future
+        """
+        self.model.eval()
+
+        if len(current_data) < self.input_window:
+            raise ValueError("not enough data to predict future")
+
+        last_price = current_data[-1]
+
+        log_returns = np.diff(np.log(current_data), axis=0)
+
+        input_seq = log_returns[-self.input_window:].cumsum()
+
+        input_seq = torch.FloatTensor(input_seq).unsqueeze(0).to(self.device)
+
+        predicted_returns = []
+
+        with torch.no_grad():
+            for i in range(days_ahead):
+                x = input_seq.unsqueeze(2).transpose(0, 1)
+
+                output = self.model(x)
+                next_return = output[-1].item()
+                predicted_returns.append(next_return)
+
+                if i < days_ahead - 1:
+                    if use_true_as_input and i + self.input_window < len(log_returns):
+                        # use actual data (for backtesting only)
+                        next_true_return = log_returns[self.input_window + i]
+                        input_seq = torch.cat([input_seq[:, 1:],
+                                            torch.FloatTensor([[next_true_return]]).to(self.device)], dim=1)
+                    else:
+                        input_seq = torch.cat([input_seq[:, 1:],
+                                            torch.FloatTensor([[next_return]]).to(self.device)], dim=1)
+
+        # Convert cumulative log returns to prices
+        predicted_returns = np.array(predicted_returns)
+        predicted_prices = last_price * np.exp(predicted_returns)
+
+        return predicted_prices
+
+
+    def predict_with_confidence(self, current_data, days_ahead, num_samples=100, confidence_level=0.95):
+        """
+        predict stock prices with confidence intervals - adding random noise
+
+        """
+        all_predictions = []
+
+        for _ in range(num_samples):
+            noise_level = 0.001  # sensitivity to noise
+            noisy_data = current_data * (1 + np.random.normal(0, noise_level, size=current_data.shape))
+
+            preds = self.predict_future(noisy_data, days_ahead)
+            all_predictions.append(preds)
+
+        all_predictions = np.array(all_predictions)
+
+        mean_predictions = np.mean(all_predictions, axis=0)
+        lower_bound = np.percentile(all_predictions, (1 - confidence_level) / 2 * 100, axis=0)
+        upper_bound = np.percentile(all_predictions, (1 + confidence_level) / 2 * 100, axis=0)
+
+        return mean_predictions, lower_bound, upper_bound
 class PositionalEncoding(nn.Module):
     """positional encoding for variable sequences"""
     def __init__(self, d_model, max_len=5000):

@@ -37,9 +37,10 @@ class ForecastModel(ABC):
 
     def save(self):
         """ method used to save a model to a given path """
-        torch.save(self.model.state_dict(), os.path.join(self.model_dir, \
-        self.model_path))
-        print(f"Saved model to {self.model_dir} for {self.name}")
+        if self.model:
+            torch.save(self.model.state_dict(), os.path.join(self.model_dir, \
+            self.model_path))
+            print(f"Saved model to {self.model_dir} for {self.name}")
 
     def load(self):
         """ method used to load a model from a given path """
