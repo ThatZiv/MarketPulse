@@ -118,7 +118,7 @@ def llm__stock_route():
         model_pred = closing_pred['forecast'][0]
         model_pred_2 = closing_pred['forecast'][6]
     else :
-        return "Missing context for suggestion", 400
+        return "</think>\nMissing context for suggestion"
     query_template = f"Hello, I currently have shares of {ticker} stock. \
         I bought them for {average} dollars per share.\
         The current price is {closing} dollars.\
