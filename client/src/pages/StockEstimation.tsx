@@ -1,31 +1,39 @@
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
-import Pie_Chart from "@/components/pie-chart";
-import { Progress } from "@/components/ui/progress";
-import {
-  IoMdInformationCircleOutline,
-  IoMdInformationCircle,
-} from "react-icons/io";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+// import {
+//   IoMdInformationCircleOutline,
+//   IoMdInformationCircle,
+// } from "react-icons/io";
+// import {
+//   HoverCard,
+//   HoverCardContent,
+//   HoverCardTrigger,
+// } from "@/components/ui/hover-card";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { MdEdit } from "react-icons/md";
 import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
+import { type Stock } from "@/types/stocks";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import RadialChart from "@/components/radial-chart";
 import { GenerateStockLLM } from "@/components/llm/stock-llm";
 
-const availableStocks = [
-  { TSLA: "Tesla" },
-  { F: "Ford" },
-  { GM: "General Motors" },
-  { TM: "Toyota Motor Corporation" },
-  { RIVN: "Rivian Automotive" },
+const staticStockData = [
+  { stock_ticker: "TSLA", stock_name: "Tesla" },
+  { stock_ticker: "F", stock_name: "Ford" },
+  { stock_ticker: "GM", stock_name: "General Motors" },
+  { stock_ticker: "TM", stock_name: "Toyota Motor Corporation" },
+  { stock_ticker: "STLA", stock_name: "Stellantis N.V." },
 ];
+
 const meters = [
   {
     "Hype Meter":
@@ -47,10 +55,28 @@ interface StockResponse {
   shares_owned: number;
   desired_investiture: number;
 }
+
 export default function Stocks() {
   const { displayName, supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
   const navigate = useNavigate();
+  const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
+    queryKey: ["stocksFetch"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("Stocks").select("*");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const availableStocks =
+    stocksFetch?.map((stock) => ({
+      [stock.stock_ticker]: stock.stock_name,
+    })) ||
+    staticStockData.map((stock) => ({
+      [stock.stock_ticker]: stock.stock_name,
+    }));
+
   const ticker_name = availableStocks.find(
     (stock) => stock[ticker as keyof typeof stock]
   );
@@ -83,6 +109,13 @@ export default function Stocks() {
     }
   });
   useEffect(() => {
+    if (availableStocksError) {
+      toast.error(
+        `Error: ${availableStocksError.message || "An unknown error occurred"}`
+      );
+    }
+  }, [availableStocksError]);
+  useEffect(() => {
     if (!stocks || stocks.length === 0) {
       return;
     }
@@ -111,40 +144,9 @@ export default function Stocks() {
       </div>
     );
   }
-
-  const hype_meter_labels = ["Positive", "Neutral", "Negative"];
-  const hype_meter_dataset = [
-    {
-      data: [50, 20, 30],
-      backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-    },
-  ];
-  const hype_meter_design = "!lg:w-72 !lg:h-27 w-52 h-52";
   const impact_factor = 10;
   const disruption_score = 40;
-  const hype_meter_options = {
-    responsive: true,
-    animation: {
-      animateScale: true,
-    },
-    maintainAspectRatio: false,
-    cutout: "50%",
-    rotation: -90,
-    circumference: 180,
-    plugins: {
-      legend: {
-        display: true,
-        labels: {
-          color: "red", //no dark mode in chartjs. Future: Make this part of the doughnut work with darkmode.
-          //For now, chose a color that works with both light and dark mode.
-        },
-      },
-    },
-  };
-
-  const buyScore = 35; // Future: can change this dynamically
-  const sellScore = 100 - buyScore;
-
+  const hype_meter = 0.365913391113281;
   return (
     <div className="lg:p-4 md:w-10/12 w-xl mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
@@ -153,7 +155,7 @@ export default function Stocks() {
           : "Stock not found"}
       </h1>
       <GenerateStockLLM ticker={ticker} />
-      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-primary rounded-md w-full">
+      <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
         <div className="relative">
           <Link to="/stocks">
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
@@ -186,83 +188,38 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-      <div className="border border-black dark:border-white p-6 bg-secondary dark:bg-primary rounded-md mt-4">
-        <h2 className="font-semibold text-xl pb-2">
-          Buy: {buyScore}% Sell: {sellScore}%
-        </h2>
-        <Progress value={buyScore} />
-      </div>
+
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
-      <div className="flex flex-col md:items-center gap-4 mt-4 w-full ">
-        <div className="border border-black dark:border-white bg-secondary rounded-md dark:bg-primary md:p-4">
-          <div className="flex flex-row justify-center gap-2 pt-2">
-            <h3 className="text-center font-semibold text-xl">
-              {Object.keys(meters[0])[0]}
-            </h3>
-            <HoverCard>
-              <HoverCardTrigger>
-                <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
-                <IoMdInformationCircle className="mt-[0.25rem] invisible dark:visible dark:block" />
-              </HoverCardTrigger>
-              <HoverCardContent>{meters[0]["Hype Meter"]}</HoverCardContent>
-            </HoverCard>
-          </div>
+      <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
+        <Card className="border border-black dark:border-white rounded-md md:p-4">
+          <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+            <div className="grid flex-1 gap-1 sm:text-left">
+              <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                {Object.keys(meters[0])[0]}
+              </CardTitle>
+              <CardDescription>{meters[0]["Hype Meter"]}</CardDescription>
+            </div>
+          </CardHeader>
           <div className="flex flex-col md:flex-row items-center justify-center gap-5">
-            <Pie_Chart
-              labels={hype_meter_labels}
-              datasets={hype_meter_dataset}
-              options={hype_meter_options}
-              className={hype_meter_design}
-            />
-            <div className="flex flex-col gap-2">
-              <h3 className="text-center sm:text-md lg:text-lg font-semibold">
-                Overall: {"  "}
-                <span className="sm:text-xl lg:text-3xl text-lg">50/100</span>
-              </h3>
-              <div className="sm:text-xl lg:text-2xl text-lg">
-                <h4>
-                  <span role="img" aria-label="grinning face">
-                    😀
-                  </span>{" "}
-                  : 50
-                </h4>
-                <h4>
-                  {" "}
-                  <span role="img" aria-label="grinning face">
-                    😣
-                  </span>{" "}
-                  : 20
-                </h4>
-                <h4>
-                  {" "}
-                  <span role="img" aria-label="grinning face">
-                    😐
-                  </span>{" "}
-                  : 30
-                </h4>
-              </div>
-            </div>
+            <RadialChart score={hype_meter} />
           </div>
-        </div>
+        </Card>
+
         <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
-          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-primary rounded-md">
-            <div className="flex flex-row gap-2 pt-2">
-              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                {Object.keys(meters[1])[0]}
-              </h3>
-              <HoverCard>
-                <HoverCardTrigger>
-                  <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
-                  <IoMdInformationCircle className="mt-[0.25rem] invisible dark:visible dark:block" />
-                </HoverCardTrigger>
-                <HoverCardContent>
+          <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
+            <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+              <div className="grid flex-1 gap-1 sm:text-left">
+                <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                  {Object.keys(meters[1])[0]}
+                </CardTitle>
+                <CardDescription>
                   {meters[1]["Disruption Score"]}
-                </HoverCardContent>
-              </HoverCard>
-            </div>
-            <div className="w-full h-full">
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <div className="lg:w-60 md:w-full w-96 h-full">
               <GaugeComponent
                 style={{ width: "100%", height: "100%" }}
                 value={disruption_score}
@@ -272,7 +229,7 @@ export default function Stocks() {
                     style: { fill: "var(--tick-label-color)" },
                   },
                   tickLabels: {
-                    type: "inner",
+                    type: "outer",
                     ticks: [
                       { value: 20 },
                       { value: 40 },
@@ -290,7 +247,7 @@ export default function Stocks() {
                   colorArray: ["#5BE12C", "#EA4228"],
                   subArcs: [{ limit: 20 }, {}, {}, {}, {}],
                   padding: 0.02,
-                  width: 0.2,
+                  width: 0.4,
                 }}
                 pointer={{
                   elastic: true,
@@ -299,23 +256,17 @@ export default function Stocks() {
                 }}
               />
             </div>
-          </div>
-          <div className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 bg-secondary dark:bg-primary rounded-md">
-            <div className="flex flex-row gap-2 pt-2">
-              <h3 className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                {Object.keys(meters[2])[0]}
-              </h3>
-              <HoverCard>
-                <HoverCardTrigger>
-                  <IoMdInformationCircleOutline className="mt-[0.25rem] dark:hidden" />
-                  <IoMdInformationCircle className="mt-[0.25rem] invisible dark:visible dark:block" />
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  {meters[2]["Impact Factor"]}
-                </HoverCardContent>
-              </HoverCard>
-            </div>
-            <div className="w-full h-full">
+          </Card>
+          <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
+            <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+              <div className="grid flex-1 gap-1 sm:text-left">
+                <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                  {Object.keys(meters[2])[0]}
+                </CardTitle>
+                <CardDescription>{meters[2]["Impact Factor"]}</CardDescription>
+              </div>
+            </CardHeader>
+            <div className="lg:w-60 md:w-full w-96 h-full">
               <GaugeComponent
                 style={{ width: "100%", height: "100%" }}
                 value={impact_factor}
@@ -325,7 +276,7 @@ export default function Stocks() {
                     style: { fill: "var(--tick-label-color)" },
                   },
                   tickLabels: {
-                    type: "inner",
+                    type: "outer",
                     ticks: [
                       { value: 20 },
                       { value: 40 },
@@ -343,7 +294,7 @@ export default function Stocks() {
                   colorArray: ["#5BE12C", "#EA4228"],
                   subArcs: [{ limit: 20 }, {}, {}, {}, {}],
                   padding: 0.02,
-                  width: 0.2,
+                  width: 0.4,
                 }}
                 pointer={{
                   elastic: true,
@@ -352,7 +303,7 @@ export default function Stocks() {
                 }}
               />
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>
