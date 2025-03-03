@@ -1,30 +1,25 @@
 #Created as a test server to allow for testing api's without adding them to the main server
-from models.lstm_attention import attention_lstm
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify, Response
 import os
 
 from sqlalchemy import create_engine, select, func
 
-load_dotenv()
+from models.run_models import run_models
+
+def create_app():
+
+    app_1 = Flask(__name__)
+
+    app_1.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
+
+    return app_1
 
 
+if __name__ == '__main__':
 
-USER = os.getenv("user")
-PASSWORD = os.getenv("password")
-HOST = os.getenv("host")
-PORT = os.getenv("port")
-DBNAME = os.getenv("dbname")
-
-DATABASE_URL = f"postgresql+psycopg2://{USER}:{PASSWORD}@{HOST}:{PORT}/{DBNAME}?sslmode=require"
-
-
-engine = create_engine(DATABASE_URL)
-try:
-    with engine.connect() as connection:
-        print("Connection successful!")
-except Exception as e:
-    print(f"Failed to connect: {e}")
-attention_lstm('TSLA', engine)
-
+    app = create_app()
+   
+    run_models()
 
 
