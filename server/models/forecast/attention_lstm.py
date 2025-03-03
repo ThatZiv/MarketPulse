@@ -33,17 +33,17 @@ class AttentionLSTM(ForecastModel):
     def train(self, data_set):
         model_input, testing_out, validation_out, _, _ = self.my_model.format_data(data_set)
         train_data, test_data, validation_data = self.my_model.get_data(model_input,  validation_out, testing_out, 0.1)
-        self.my_model.model_training(train_data, test_data, 15)
+        self.my_model.model_training(train_data, test_data, 20)
         self.my_model.evaluate(validation_data)
         self.save()
 
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
         data, _, _, multiple, minimum = self.my_model.format_data(input_data)
-        data = self.my_model.create_prediction_sequence(data, 20)
-        output = self.my_model.forecast_seq(data)
+        data = self.my_model.create_prediction_sequence(data, 10)
+        output = self.my_model.forecast_seq(data, period = num_forecast_days)
         print(output)
         output = [x * multiple + minimum for x in output]
-        return np.array(output, dtype = float)
+        return np.array(output, dtype = float).tolist()
 
 if __name__ == "__main__":
 
