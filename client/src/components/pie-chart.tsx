@@ -38,7 +38,6 @@ const chartConfig = {
 export function Pie_Chart() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  // Custom shape for hover effect, increases outerRadius
   const renderActiveShape = (props: any) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
     
@@ -47,7 +46,7 @@ export function Pie_Chart() {
         cx={cx}
         cy={cy}
         innerRadius={innerRadius}
-        outerRadius={outerRadius + 10} // Increase size on hover
+        outerRadius={outerRadius + 10}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
@@ -82,6 +81,30 @@ export function Pie_Chart() {
           </PieChart>
         </ChartContainer>
       </CardContent>
+      <div className="chart-labels flex justify-around mt-4">
+  <div className="label-item flex items-center space-x-2">
+    <div
+      className="w-4 h-4"
+      style={{ backgroundColor: chartConfig.buy.color }}
+    ></div>
+    <span style={{ color: chartConfig.buy.color }}>{chartConfig.buy.label}</span>
+  </div>
+  <div className="label-item flex items-center space-x-2">
+    <div
+      className="w-4 h-4"
+      style={{ backgroundColor: chartConfig.sell.color }}
+    ></div>
+    <span style={{ color: chartConfig.sell.color }}>{chartConfig.sell.label}</span>
+  </div>
+  <div className="label-item flex items-center space-x-2">
+    <div
+      className="w-4 h-4"
+      style={{ backgroundColor: chartConfig.hold.color }}
+    ></div>
+    <span style={{ color: chartConfig.hold.color }}>{chartConfig.hold.label}</span>
+  </div>
+</div>
+
     </Card>
   );
 }

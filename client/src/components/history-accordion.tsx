@@ -5,6 +5,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion"
+import { type Stock } from "@/types/stocks";
 import {
     Table,
     TableBody,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/table"
 import { useSupabase } from "@/database/SupabaseProvider";
 import useAsync from "@/hooks/useAsync";
+import { Button } from "./ui/button";
 
 const invoices = [
     {
@@ -71,78 +73,54 @@ interface props{
     ticker: string;
 }
 export default function TransactionHistory({ticker}:props) {
-    const { user, supabase } = useSupabase(); // Assuming `useSupabase` is a custom hook that provides `user` and `supabase`
+    const { user, supabase } = useSupabase();
 
     const {
-        value: history,
+        value: stocks,
         error: stocksError,
         loading: stocksLoading,
-      } = useAsync<PurchaseHistoryResponse[]>(
-        async () => {
-          if (!user || !ticker) {
-            throw new Error("User or ticker is missing");
-          }
-    
-          const { data: stockData, error: stockError } = await supabase
-            .from("stocks")
-            .select("stock_id")
-            .eq("stock_name", ticker)
-            .single();
-    
-          if (stockError) {
-            throw stockError;
-          }
-    
-          const { data: purchaseHistoryData, error: historyError } = await supabase
-            .from("User_Stock_Purchases")
-            .select("date, price_purchased, amount_purchased")
-            .eq("user_id", user?.id)
-            .eq("stock_id", stockData?.stock_id);
-    
-          if (historyError) {
-            throw historyError;
-          }
-    
-          return purchaseHistoryData|| [];
-        },
-        [ticker, user]
+      } = useAsync<Stock[]>(
+        () =>
+          new Promise((resolve, reject) => {
+            supabase
+              .from("Stocks")
+              .select("*")
+              .then(({ data, error }) => {
+                if (error) reject(error);
+                return resolve(data || []);
+              });
+          }),
+        [supabase]
       );
+      const stockid = stocks?.filter(stock => stock.stock_ticker === ticker).map(stock => stock.stock_id);
     
-      useEffect(() => {
-        if (history) {
-          console.log("Purchase History Data:", history);
-        } else {
-          console.log("Purchase History Data: No history available");
-        }
-      }, [history]);
-      
+      console.log(Number(stockid));
     
-      if (stocksLoading) {
-        return <div>Loading...</div>;
-      }
-    
-      if (stocksError) {
-        return (
-          <div className="flex flex-col justify-center items-center h-screen">
-            <h1 className="text-3xl">Error</h1>
-            <p className="text-primary">
-              Unfortunately, we encountered an error fetching your history. Please
-              refresh the page or try again later.
-            </p>
-          </div>
-        );
-      }
-    
-      if (!history || history.length === 0) {
-        return <div>No transaction history available.</div>;
-      }
+    const { value: history, error: historyError } = useAsync<PurchaseHistoryResponse[]>(
+        () =>
+          new Promise((resolve, reject) => {
+            supabase
+              .from("User_Stock_Purchases")
+              .select("date, price_purchased, amount_purchased")
+              .eq("user_id", user?.id)
+              .eq("stock_id", 5)
+              .limit(10)
+              .then(({ data, error }) => {
+                if (error) reject(error);
+                resolve(data || []);
+              });
+          }),
+        [user, supabase]
+      );
+      console.log(history);
+
     return (
         <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
-                <AccordionTrigger className="text-2xl justify-center">Transaction History</AccordionTrigger>
+                <AccordionTrigger className="text-2xl justify-center">Investment History</AccordionTrigger>
                 <AccordionContent>
                     <Table>
-                        <TableCaption>A list of your recent invoices.</TableCaption>
+                        <TableCaption>A list of your investments.</TableCaption>
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[100px] text-center">Timestamp</TableHead>
@@ -154,12 +132,15 @@ export default function TransactionHistory({ticker}:props) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {invoices.map((invoice) => (
-                                <TableRow key={invoice.invoice}>
-                                    <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                                    <TableCell>{invoice.paymentStatus}</TableCell>
-                                    <TableCell>{invoice.paymentMethod}</TableCell>
-                                    <TableCell className="text-right">{invoice.totalAmount}</TableCell>
+                            {history?.map((row) => (
+                                <TableRow key={row.date}>
+                                    <TableCell className="font-medium">{new Date(row.date).toLocaleDateString('en-US')}</TableCell>
+                                    <TableCell>{row.amount_purchased}</TableCell>
+                                    <TableCell>{row.price_purchased}</TableCell>
+                                    <TableCell className="">{124}</TableCell>
+                                    <TableCell className="">
+                                        <Button variant={'delete'}>Delete</Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
