@@ -4,12 +4,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
 function chooseEmoji(score: number): string {
-  if (score <= -4) return "😡";
-  if (score <= -1) return "😞";
-  if (score === 0) return "😐";
-  if (score > 0 && score <= 1) return "🙂";
-  if (score > 1 && score <= 4) return "😊";
-  return "😀";
+  if (score <= -4) return "Negative";
+  if (score <= -1) return "Mostly negative";
+  if (score === 0) return "Neutral";
+  if (score > 0 && score <= 1) return "Mostly positive";
+  if (score > 1 && score <= 4) return "Positive";
+  return "Positive";
 }
 const chartConfig = {
   negative: {
@@ -64,11 +64,14 @@ export default function RadialChart({ score }: RadialChartProps) {
                           y={(viewBox.cy || 0) - 16}
                           className="fill-foreground text-2xl font-bold"
                         >
-                          {Number(score.toFixed(2))} {emotion}
+                          {Number(score.toFixed(2)) * 100}%
+                        </tspan>
+                        <tspan x={viewBox.cx} y={viewBox.cy || 0}>
+                          {emotion}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
-                          y={(viewBox.cy || 0) + 4}
+                          y={(viewBox.cy || 0) + 16}
                           className="fill-muted-foreground"
                         >
                           Hype
@@ -79,7 +82,6 @@ export default function RadialChart({ score }: RadialChartProps) {
                 }}
               />
             </PolarRadiusAxis>
-
             <RadialBar
               dataKey="negative"
               stackId="a"
