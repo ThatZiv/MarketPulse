@@ -16,7 +16,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabase } from "@/database/SupabaseProvider";
@@ -129,7 +128,6 @@ export function CreateForm({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email Address</FormLabel>
                     <FormControl>
                       <Input placeholder="Email Address" {...field} />
                     </FormControl>
@@ -142,7 +140,6 @@ export function CreateForm({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -188,7 +185,6 @@ export function CreateForm({
                 name="password2"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
