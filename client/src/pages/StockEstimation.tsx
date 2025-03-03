@@ -238,8 +238,8 @@ export default function Stocks() {
           <CardContent className="flex flex-col md:items-center pt-4">
             <div className="flex flex-row justify-center lg:gap-14 mb-4">
               <Pie_Chart />
-              <div className="flex flex-col justify-start w-full">
-                <h3 className="flex flex-row sm:text-md lg:text-lg font-semibold gap-4">
+              <div className="flex flex-col justify-center w-full ml-6">
+                <h3 className="flex flex-row sm:text-md lg:text-lg font-semibold gap-8">
                   Prediction Time Frame:
                   <TimeFrameDropdownMenu values={options} selectedValue={timeFrameSelected} onChange={setTimeFrameSelected} />
                 </h3>

@@ -81,7 +81,7 @@ export default function TransactionHistory({ ticker }: props) {
             <AccordionItem value="item-1">
                 <AccordionTrigger className="text-2xl justify-center w-full">Investment History</AccordionTrigger>
                 <AccordionContent className="text-center">
-                    <Table className="flex justify-center w-full" style={{ width: "100%" }}>
+                    <Table className="flex justify-center w-full">
                         {historyError ? (
                             <TableCaption className="w-full">You have no history for this stock</TableCaption>
                         ) : (

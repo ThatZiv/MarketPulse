@@ -40,7 +40,7 @@ export function Pie_Chart() {
 
   const renderActiveShape = (props: any) => {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
-    
+
     return (
       <Sector
         cx={cx}
@@ -72,7 +72,7 @@ export function Pie_Chart() {
               nameKey="action"
               innerRadius={60}
               outerRadius={80}
-              activeShape={renderActiveShape} 
+              activeShape={renderActiveShape}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
               className="stroke-transparent stroke-2 hover:stroke-[0.3rem]"
@@ -81,29 +81,29 @@ export function Pie_Chart() {
           </PieChart>
         </ChartContainer>
       </CardContent>
-      <div className="chart-labels flex justify-around mt-4">
-  <div className="label-item flex items-center space-x-2">
-    <div
-      className="w-4 h-4"
-      style={{ backgroundColor: chartConfig.buy.color }}
-    ></div>
-    <span style={{ color: chartConfig.buy.color }}>{chartConfig.buy.label}</span>
-  </div>
-  <div className="label-item flex items-center space-x-2">
-    <div
-      className="w-4 h-4"
-      style={{ backgroundColor: chartConfig.sell.color }}
-    ></div>
-    <span style={{ color: chartConfig.sell.color }}>{chartConfig.sell.label}</span>
-  </div>
-  <div className="label-item flex items-center space-x-2">
-    <div
-      className="w-4 h-4"
-      style={{ backgroundColor: chartConfig.hold.color }}
-    ></div>
-    <span style={{ color: chartConfig.hold.color }}>{chartConfig.hold.label}</span>
-  </div>
-</div>
+      <div className="chart-labels flex justify-around mt-4 pb-3">
+        <div className="label-item flex items-center space-x-2">
+          <div
+            className="w-4 h-4"
+            style={{ backgroundColor: chartConfig.buy.color }}
+          ></div>
+          <span style={{ color: chartConfig.buy.color }}>{chartConfig.buy.label}</span>
+        </div>
+        <div className="label-item flex items-center space-x-2">
+          <div
+            className="w-4 h-4"
+            style={{ backgroundColor: chartConfig.sell.color }}
+          ></div>
+          <span style={{ color: chartConfig.sell.color }}>{chartConfig.sell.label}</span>
+        </div>
+        <div className="label-item flex items-center space-x-2">
+          <div
+            className="w-4 h-4"
+            style={{ backgroundColor: chartConfig.hold.color }}
+          ></div>
+          <span style={{ color: chartConfig.hold.color }}>{chartConfig.hold.label}</span>
+        </div>
+      </div>
 
     </Card>
   );
