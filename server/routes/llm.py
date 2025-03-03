@@ -6,13 +6,14 @@ from flask import Blueprint, Response, request
 from langchain_community.llms import LlamaCpp
 # pylint: enable=no-name-in-module
 # pylint: disable=line-too-long
+# pylint: disable=not-callable
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from langchain.prompts import PromptTemplate
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from database.tables import Stocks, Stock_Info, Stock_Predictions, User_Stock_Purchases
 from engine import get_engine
-from engine import get_engine
+
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
 
@@ -110,7 +111,6 @@ def llm__stock_route():
         if not output or not pred_output:
             return "</think>\nMissing context for suggestion"
 
-        
         closing = output.stock_close
         closing_pred = json.loads(pred_output.model_1)
         model_pred = closing_pred['forecast'][0]
@@ -130,12 +130,12 @@ def llm__stock_route():
         I bought them for {average} dollars per share.\
         The current price is {closing} dollars.\
         I predict that tomorows price will be {model_pred} and next weeks will be {model_pred_2}. What should I do?\n<think>\n"
-    
+
     else:
         query_template = f"Hello, I currently have shares of {ticker} stock. \
             The current price is {closing} dollars.\
             I predict that tomorows price will be {model_pred} and next weeks will be {model_pred_2}. What should I do?\n<think>\n"
-    
+
     query = query_template.format(stocks=stocks, ticker=ticker)
     def generate_response():
         """ stream llm response """
