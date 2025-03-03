@@ -56,31 +56,31 @@ interface StockResponse {
 
 const sample_predictions = [
   {
-    date: '2025-01-02',
+    date: '2025-02-20',
     predicted_price: 200
   },
   {
-    date: '2025-01-03',
+    date: '2025-01-21',
     predicted_price: 220
   },
   {
-    date: '2025-01-06',
+    date: '2025-01-24',
     predicted_price: 212
   },
   {
-    date: '2025-01-07',
+    date: '2025-02-25',
     predicted_price: 202
   },
   {
-    date: '2025-01-08',
+    date: '2025-02-26',
     predicted_price: 202
   },
   {
-    date: '2025-01-09',
+    date: '2025-02-27',
     predicted_price: 213
   },
   {
-    date: '2025-01-13',
+    date: '2025-02-28',
     predicted_price: 216
   }
 ]
