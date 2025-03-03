@@ -126,7 +126,7 @@ export default function Stock_Chart({ ticker, predictions }: Props) {
             </YAxis>
 
             <ChartTooltip
-              cursor={false}
+              cursor={true}
               content={<ChartTooltipContent labelFormatter={(value) => new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })} />}
             />
             <Area

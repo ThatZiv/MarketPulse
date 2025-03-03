@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Pie_Chart } from "@/components/pie-chart";
 import CustomTable from "@/components/custom-table";
 import PredictionChart from "@/components/prediction-chart";
+import TransactionHistory from "@/components/history-accordion";
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
   { stock_ticker: "F", stock_name: "Ford" },
@@ -229,13 +230,13 @@ export default function Stocks() {
       </div>
 
       <div className="flex flex-col md:items-center pt-4">
-        <Stock_Chart ticker={ticker ?? ""} />
+        {/* <Stock_Chart ticker={ticker ?? ""} /> */}
       </div>
       <Card className="flex flex-col p-2 my-3 border border-black dark:border-white dark:bg-dark rounded-md w-full">
         <CardHeader>
           <CardDescription className="text-2xl">Recommendations:</CardDescription>
           <CardContent className="flex flex-col md:items-center pt-4">
-            <div className="flex flex-row justify-center lg:gap-14">
+            <div className="flex flex-row justify-center lg:gap-14 mb-4">
               <Pie_Chart />
               <div className="flex flex-col justify-start w-full">
                 <h3 className="flex flex-row sm:text-md lg:text-lg font-semibold gap-4">
@@ -248,6 +249,9 @@ export default function Stocks() {
             <PredictionChart ticker={ticker ?? ""} predictions={sample_predictions} />
           </CardContent>
         </CardHeader>
+      </Card>
+      <Card className="p-4">
+        <TransactionHistory ticker={ticker??""}/>
       </Card>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <Card className="border border-black dark:border-white rounded-md md:p-4">

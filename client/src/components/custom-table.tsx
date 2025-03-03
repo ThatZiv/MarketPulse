@@ -43,3 +43,5 @@ export default function CustomTable({ caption, tableheader, predictions }: Custo
         </Table>
     );
 }
+
+
