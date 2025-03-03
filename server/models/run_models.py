@@ -17,6 +17,8 @@ from models.forecast.attention_lstm import AttentionLSTM
 from models.forecast.cnn_lstm import CNNLSTMTransformer
 from models.lstm_attention import AttentionLstm
 from database.tables import Stock_Info, Stock_Predictions
+from models.forecast.transformer import ZavTransformer
+from models.zav2 import Transformer
 
 
 def run_models():
@@ -43,6 +45,7 @@ def run_models():
 
     one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", "TSLA"))
     one_day.append(CNNLSTMTransformer("cnn-lstm-transformer", "TSLA"))
+    one_day.append(ZavTransformer(Transformer(), "zav-transformer", "TSLA"))
     prediction = ForecastModels(one_day)
 
     prediction.train_all(copy.deepcopy(data))
@@ -51,7 +54,7 @@ def run_models():
 
     model_1 = pred[0]
     model_2 = pred[1]
-    model_3 = pred[0]
+    model_3 = pred[2]
     model_4 = pred[0]
     model_5 = pred[0]
 
