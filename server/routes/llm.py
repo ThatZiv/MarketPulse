@@ -106,7 +106,7 @@ def llm__stock_route():
         session.close()
 
         if not output or not pred_output or not user_output:
-            return "Missing context for suggestion", 400
+            return "</think>\nMissing context for suggestion"
         for row in user_output:
             count+=1
             stocks_owned += row.amount_purchased
