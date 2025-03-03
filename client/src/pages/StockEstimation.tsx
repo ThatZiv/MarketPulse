@@ -25,6 +25,8 @@ import {
 } from "@/components/ui/card";
 import RadialChart from "@/components/radial-chart";
 import { GenerateStockLLM } from "@/components/llm/stock-llm";
+import { cache_keys } from "@/lib/constants";
+import Predictions from "@/components/predictions";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -50,7 +52,9 @@ const meters = [
 ];
 interface StockResponse {
   Stocks: {
+    stock_id: number;
     stock_name: string;
+    stock_ticker: string;
   };
   shares_owned: number;
   desired_investiture: number;
@@ -61,12 +65,13 @@ export default function Stocks() {
   const { ticker }: { ticker?: string } = useParams();
   const navigate = useNavigate();
   const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
-    queryKey: ["stocksFetch"],
+    queryKey: [cache_keys.USER_STOCKS, ticker],
     queryFn: async () => {
       const { data, error } = await supabase.from("Stocks").select("*");
       if (error) throw error;
       return data || [];
     },
+    enabled: !!ticker,
   });
 
   const availableStocks =
@@ -86,7 +91,7 @@ export default function Stocks() {
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name), shares_owned, desired_investiture")
+          .select("Stocks (*), shares_owned, desired_investiture")
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
@@ -144,9 +149,15 @@ export default function Stocks() {
       </div>
     );
   }
+
   const impact_factor = 10;
   const disruption_score = 40;
   const hype_meter = 0.365913391113281;
+  const currentStock = stocks?.find(
+    (stock) =>
+      stock?.Stocks?.stock_name ===
+      ticker_name?.[ticker as keyof typeof ticker_name]
+  );
   return (
     <div className="lg:p-4 md:w-10/12 w-xl mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
@@ -191,6 +202,9 @@ export default function Stocks() {
 
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
+      </div>
+      <div className="flex flex-col md:items-center pt-4">
+        <Predictions {...currentStock?.Stocks} />
       </div>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <Card className="border border-black dark:border-white rounded-md md:p-4">

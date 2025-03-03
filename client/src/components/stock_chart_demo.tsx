@@ -64,7 +64,6 @@ export default function Stock_Chart({ ticker }: props) {
       }
       return data;
     },
-    enabled: !!ticker,
   });
 
   const validData = data ?? ([] as StockDataItem[]);
