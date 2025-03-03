@@ -23,7 +23,7 @@ test("Renders the login page", async () => {
     </BrowserRouter>
   );
 
-  const email = await screen.findByText("Email Address");
+  const email = await screen.findByPlaceholderText("Email Address");
   expect(email).toBeInTheDocument();
 });
 
@@ -33,6 +33,6 @@ test("Renders the create user page", async () => {
       <UserAuth />
     </BrowserRouter>
   );
-  const email = await screen.findByText("Email Address");
+  const email = await screen.findByPlaceholderText("Email Address");
   expect(email).toBeInTheDocument();
 });

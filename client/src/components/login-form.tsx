@@ -16,7 +16,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Eye, EyeOff } from "lucide-react";
@@ -105,7 +104,6 @@ export function LoginForm({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-left">Email Address</FormLabel>
                     <FormControl>
                       <Input placeholder="Email Address" required {...field} />
                     </FormControl>
@@ -118,7 +116,6 @@ export function LoginForm({
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input

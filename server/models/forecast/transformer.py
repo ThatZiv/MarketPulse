@@ -41,7 +41,7 @@ class ZavTransformer(ForecastModel):
         # res = self.my_model.predict_future(input_data, num_forecast_days)
         mean_pred, _lower_bound, _upper_bound = self.my_model.predict_with_confidence(
             input_data, days_ahead=num_forecast_days, num_samples=100, confidence_level=0.95)
-        return mean_pred
+        return np.array(mean_pred, dtype = float).tolist()
         # print(input_data[-1], res)
         # plt.plot(_, color='red', alpha=0.7)
         # plt.plot(range(len(_), len(_) + len(res)), res, color='blue', alpha=0.7)

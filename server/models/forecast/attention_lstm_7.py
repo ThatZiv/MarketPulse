@@ -41,7 +41,7 @@ class AttentionLSTM(ForecastModel):
         print(minimum)
         print(multiple)
         output = [x * multiple + minimum for x in output]
-        return np.array(output, dtype = float)
+        return np.array(output, dtype = float).tolist()
 
 if __name__ == "__main__":
 

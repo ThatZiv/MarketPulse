@@ -2,7 +2,6 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import {
   BookOpen,
-  Command,
   LifeBuoy,
   Settings2,
   Gauge,
@@ -185,11 +184,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">MarketPulse</span>
+                <div className="flex items-center">
+                  <img
+                    src="/public/images/MarketPulse_Logo.png"
+                    alt="MarketPulse Logo"
+                    className="h-10 w-10 mr-2"
+                  />
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">MarketPulse</span>
+                  </div>
                 </div>
               </a>
             </SidebarMenuButton>
