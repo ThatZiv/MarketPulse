@@ -6,14 +6,13 @@
 
 import os
 import requests
-from routes.llm import llm_bp
 from flask import Blueprint, request, send_file, jsonify, Response
 import flask_jwt_extended as jw
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select
 from engine import get_engine
 from database.tables import Stocks, Stock_Info, Stock_Predictions
-
+from routes.llm import llm_bp
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
@@ -103,7 +102,10 @@ def forecast():
         if output_id :
             forcast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
             output = session.connection().execute(forcast).all()
-            return jsonify(output)
+            out = []
+            for o in output:
+                out.append({'stock_id' : o.stock_id, 'created_at' : o.created_at, 'model_1' : o.model_1,'model_2' : o.model_2,'model_3' : o.model_3,'model_4' : o.model_4,'model_5' : o.model_5,})
+            return jsonify(out)
 
         return Response(status=400, mimetype='application/json')
     return Response(status=500, mimetype='application/json')
