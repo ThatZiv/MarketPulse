@@ -164,8 +164,8 @@ export default function StockPage() {
       return;
     }
 
-    const updateStock = new Promise(async (resolve, reject) => {
-      const { error: userStockError } = await supabase
+    const updateStock = new Promise((resolve, reject) => {
+      supabase
         .from("User_Stocks")
         .upsert(
           {
@@ -174,44 +174,46 @@ export default function StockPage() {
             desired_investiture: formData.cashToInvest,
           },
           { onConflict: "user_id,stock_id" }
-        );
-
-      if (userStockError) {
-        reject(userStockError);
-        return;
-      }
-
-      if (formData.hasStocks === "yes" && formData.purchases.length > 0) {
-        const { error: deleteError } = await supabase
-          .from("User_Stock_Purchases")
-          .delete()
-          .eq("user_id", user?.id)
-          .eq("stock_id", formData.ticker);
-
-        if (deleteError) {
-          reject(deleteError);
-          return;
-        }
-
-        const purchasesData = formData.purchases.map(purchase => ({
-          user_id: user?.id,
-          stock_id: formData.ticker,
-          date: purchase.date,
-          amount_purchased: purchase.shares,
-          price_purchased: purchase.pricePurchased,
-        }));
-
-        const { error: insertError } = await supabase
-          .from("User_Stock_Purchases")
-          .insert(purchasesData);
-
-        if (insertError) {
-          reject(insertError);
-          return;
-        }
-      }
-
-      resolve(null);
+        )
+        .then(({ error: userStockError }) => {
+          if (userStockError) {
+            reject(userStockError);
+            return;
+          }
+    
+          if (!(formData.hasStocks === "yes" && formData.purchases.length > 0)) {
+            resolve(null);
+            return;
+          }
+    
+          supabase
+            .from("User_Stock_Purchases")
+            .delete()
+            .eq("user_id", user?.id)
+            .eq("stock_id", formData.ticker)
+            .then(({ error: deleteError }) => {
+              if (deleteError) {
+                reject(deleteError);
+                return;
+              }
+    
+              const purchasesData = formData.purchases.map(purchase => ({
+                user_id: user?.id,
+                stock_id: formData.ticker,
+                date: purchase.date,
+                amount_purchased: purchase.shares,
+                price_purchased: purchase.pricePurchased,
+              }));
+    
+              supabase
+                .from("User_Stock_Purchases")
+                .insert(purchasesData)
+                .then(({ error: insertError }) => {
+                  if (insertError) reject(insertError);
+                  else resolve(null);
+                });
+            });
+        })
     });
 
     toast.promise(updateStock, {
