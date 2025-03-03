@@ -230,7 +230,7 @@ export default function Stocks() {
       </div>
 
       <div className="flex flex-col md:items-center pt-4">
-        {/* <Stock_Chart ticker={ticker ?? ""} /> */}
+        <Stock_Chart ticker={ticker ?? ""} />
       </div>
       <Card className="flex flex-col p-2 my-3 border border-black dark:border-white dark:bg-dark rounded-md w-full">
         <CardHeader>
