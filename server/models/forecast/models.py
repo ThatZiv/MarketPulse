@@ -1,3 +1,5 @@
+
+import copy
 from typing import *
 from models.forecast.model import ForecastModel
 from models.forecast.forecast_types import DatasetType, ForecastSeriesType
@@ -12,13 +14,15 @@ class ForecastModels:
 
     def train_all(self, data_set: DatasetType):
         """ method used to train all models """
-        for model in self.models:
-            model.train(data_set)
 
-    def run_all(self, forecast_days: int) -> ForecastSeriesType:
+        for model in self.models[0]:
+            print(model)
+            model.train(copy.deepcopy(data_set))
+
+    def run_all(self, data_set: DatasetType, forecast_days: int) -> ForecastSeriesType:
         """ method used to run all models and forecast the next n days """
-        # TODO: implement ingestion to stock_prediction table here
+        
         return [
-            { "forecast": model.run(forecast_days),"name": model.name } \
-                for model in self.models
+            { "forecast": model.run(copy.deepcopy(data_set), forecast_days),"name": model.name } \
+                for model in self.models[0]
         ]

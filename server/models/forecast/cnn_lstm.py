@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from sqlalchemy import create_engine, select, exc
 from sqlalchemy.orm import sessionmaker
 from sklearn.preprocessing import MinMaxScaler
@@ -12,9 +12,9 @@ from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Dropout, LSTM, 
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error, r2_score
-from .forecast_types import DataForecastType, DatasetType
-from .model import ForecastModel
-from ...database.tables import Stock_Info
+from models.forecast.forecast_types import DataForecastType, DatasetType
+from models.forecast.model import ForecastModel
+from database.tables import Stock_Info
 
 class CNNLSTMTransformer(ForecastModel):
     """
