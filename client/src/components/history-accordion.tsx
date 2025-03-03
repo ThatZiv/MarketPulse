@@ -45,7 +45,7 @@ export default function TransactionHistory({ticker}:props) {
           }),
         [supabase]
       );
-    const stockid = stocks?.filter(stock => stock.stock_ticker === ticker).map(stock => stock.stock_id);
+      const stockid = stocks?.find(stock => stock.stock_ticker === ticker)?.stock_id;
     
     
     const { value: history, error: historyError } = useAsync<PurchaseHistoryResponse[]>(
@@ -55,7 +55,7 @@ export default function TransactionHistory({ticker}:props) {
               .from("User_Stock_Purchases")
               .select("date, price_purchased, amount_purchased")
               .eq("user_id", user?.id)
-              .eq("stock_id", Number(stockid))
+              .eq("stock_id", stockid)
               .limit(10)
               .then(({ data, error }) => {
                 if (error) reject(error);
@@ -80,8 +80,7 @@ export default function TransactionHistory({ticker}:props) {
           <div className="flex flex-col justify-center items-center h-screen">
             <h1 className="text-3xl">Error Retrieving History</h1>
             <p className="text-primary">
-              Unfortunately, we encountered an error fetching your history. Please
-              refresh the page or try again later.
+              You have no history for this stock.
             </p>
           </div>
         );
