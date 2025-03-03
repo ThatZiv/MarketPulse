@@ -2,16 +2,18 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 # pylint: disable=line-too-long
-# app/routes/auth_routes.py
 
 import os
-import requests
-from flask import Blueprint, request, send_file, jsonify, Response
+
 import flask_jwt_extended as jw
+import requests
+from flask import Blueprint, Response, jsonify, request, send_file
+from sqlalchemy import desc, select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select
+
+from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine
-from database.tables import Stocks, Stock_Info, Stock_Predictions
 from routes.llm import llm_bp
 
 auth_bp = Blueprint('auth', __name__)
@@ -60,30 +62,40 @@ def ticker_logo():
 
 
 #What do we want this path to return?
-@auth_bp.route('/stockchart/', methods=['GET'])
+@auth_bp.route('stockchart', methods=['GET'])
 @jw.jwt_required()
 def chart():
     if request.method == 'GET':
-        session_a = sessionmaker(bind=get_engine())
-        session = session_a()
-        ticker = request.args['ticker']
-        s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-        output_id = session.connection().execute(s_id).first()
-        #validating the ticker from the frontend
-        if output_id :
-            stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id)
-            output = session.connection().execute(stock_data).all()
-            json_output = []
-            for i in output:
-                json_output.append({'stock_id' : i.stock_id,
-                                    'stock_close' : i.stock_close,
-                                    'stock_volume' : i.stock_volume,
-                                    'stock_open' : i.stock_open,
-                                    'stock_high' : i.stock_high, 'stock_low' : i.stock_low,
-                                    'sentiment_data'  : i.sentiment_data,
-                                    'time_stamp' : dump_datetime(i.time_stamp) })
-            return jsonify(json_output)
-        return Response(status=400, mimetype='application/json')
+        try:
+            session_a = sessionmaker(bind=get_engine())
+            session = session_a()
+            ticker = request.args['ticker']
+            limit = request.args.get('limit', 7)
+            s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
+            output_id = session.connection().execute(s_id).first()
+            #validating the ticker from the frontend
+            if output_id:
+                stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id)\
+                    .order_by(desc(Stock_Info.time_stamp)).limit(limit)
+                output = session.connection().execute(stock_data).all()
+                json_output = []
+                for i in output:
+                    json_output.append({'stock_id' : i.stock_id,
+                                        'stock_close' : i.stock_close,
+                                        'stock_volume' : i.stock_volume,
+                                        'stock_open' : i.stock_open,
+                                        'stock_high' : i.stock_high, 'stock_low' : i.stock_low,
+                                        'sentiment_data'  : i.sentiment_data,
+                                        'time_stamp' : dump_datetime(i.time_stamp) })
+                json_output.reverse()
+                return jsonify(json_output)
+            return Response(status=400, mimetype='application/json')
+        except (SQLAlchemyError, requests.RequestException) as e:
+            print(e)
+            return Response(status=500)
+        finally:
+            if session:
+                session.close()
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
