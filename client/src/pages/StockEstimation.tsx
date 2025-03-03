@@ -1,17 +1,10 @@
+import { useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
-// import {
-//   IoMdInformationCircleOutline,
-//   IoMdInformationCircle,
-// } from "react-icons/io";
-// import {
-//   HoverCard,
-//   HoverCardContent,
-//   HoverCardTrigger,
-// } from "@/components/ui/hover-card";
+import TimeFrameDropdownMenu from "@/components/time-frame-dropdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
-import { MdEdit } from "react-icons/md";
+import { AiOutlineRise } from "react-icons/ai";
 import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
@@ -22,10 +15,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardContent,
 } from "@/components/ui/card";
 import RadialChart from "@/components/radial-chart";
 import { GenerateStockLLM } from "@/components/llm/stock-llm";
-
+import { Button } from "@/components/ui/button";
+import { Pie_Chart } from "@/components/pie-chart";
+import CustomTable from "@/components/custom-table";
+import PredictionChart from "@/components/prediction-chart";
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
   { stock_ticker: "F", stock_name: "Ford" },
@@ -56,9 +53,42 @@ interface StockResponse {
   desired_investiture: number;
 }
 
+const sample_predictions = [
+  {
+    date: '2025-01-02',
+    predicted_price: 200
+  },
+  {
+    date: '2025-01-03',
+    predicted_price: 220
+  },
+  {
+    date: '2025-01-06',
+    predicted_price: 212
+  },
+  {
+    date: '2025-01-07',
+    predicted_price: 202
+  },
+  {
+    date: '2025-01-08',
+    predicted_price: 202
+  },
+  {
+    date: '2025-01-09',
+    predicted_price: 213
+  },
+  {
+    date: '2025-01-13',
+    predicted_price: 216
+  }
+]
+
 export default function Stocks() {
   const { displayName, supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
+  const options = ["One Day", "One Week", "One Month"]
+  const [timeFrameSelected, setTimeFrameSelected] = useState(options[0]);
   const navigate = useNavigate();
   const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
     queryKey: ["stocksFetch"],
@@ -155,12 +185,14 @@ export default function Stocks() {
           : "Stock not found"}
       </h1>
       <GenerateStockLLM ticker={ticker} />
+      <div className="flex justify-end right-0 gap-4 py-2">
+        <Button variant="edit" asChild>
+          <Link to="/stocks">Edit</Link>
+        </Button>
+        <Button variant='delete'>Delete</Button>
+      </div>
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
-        <div className="relative">
-          <Link to="/stocks">
-            <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
-          </Link>
-        </div>
+
         <h2 className="font-semibold md:text-lg text-xs">Hey {displayName},</h2>
         <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
         <h3 className="md:text-md text-xs">
@@ -186,12 +218,37 @@ export default function Stocks() {
             <h3 className="lg:text-lg text-md">Current Stock Earnings:</h3>
             <p className="lg:text-4xl md:text-3xl text-2xl">$101.12</p>
           </div>
+          <div className="flex flex-col">
+            <h3 className="lg:text-lg text-md pb-6">Today's gains:</h3>
+            <div className="flex flex-row lg:text-4xl md:text-3xl text-2xl">
+              <h3 className="lg:text-4xl md:text-3xl text-2xl">$24.45</h3>
+              <AiOutlineRise />
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
+      <Card className="flex flex-col p-2 my-3 border border-black dark:border-white dark:bg-dark rounded-md w-full">
+        <CardHeader>
+          <CardDescription className="text-2xl">Recommendations:</CardDescription>
+          <CardContent className="flex flex-col md:items-center pt-4">
+            <div className="flex flex-row justify-center lg:gap-14">
+              <Pie_Chart />
+              <div className="flex flex-col justify-start w-full">
+                <h3 className="flex flex-row sm:text-md lg:text-lg font-semibold gap-4">
+                  Prediction Time Frame:
+                  <TimeFrameDropdownMenu values={options} selectedValue={timeFrameSelected} onChange={setTimeFrameSelected} />
+                </h3>
+                <CustomTable caption={"Predicted prices"} tableheader={["Prediction", "Date"]} predictions={sample_predictions} />
+              </div>
+            </div>
+            <PredictionChart ticker={ticker ?? ""} predictions={sample_predictions} />
+          </CardContent>
+        </CardHeader>
+      </Card>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <Card className="border border-black dark:border-white rounded-md md:p-4">
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">

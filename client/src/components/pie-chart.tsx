@@ -1,62 +1,64 @@
-"use client"
+"use client";
 
-import { TrendingUp } from "lucide-react"
-import { Pie, PieChart } from "recharts"
-
+import { Pie, PieChart, Sector } from "recharts";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
+import { useState } from "react";
+
 const chartData = [
-  { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { browser: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { browser: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { browser: "other", visitors: 90, fill: "var(--color-other)" },
-]
+  { action: "buy", suggest: 50, fill: "var(--color-buy)" },
+  { action: "sell", suggest: 20, fill: "var(--color-sell)" },
+  { action: "hold", suggest: 30, fill: "var(--color-hold)" },
+];
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
+  buy: {
+    label: "Buy",
     color: "hsl(var(--chart-1))",
   },
-  safari: {
-    label: "Safari",
+  sell: {
+    label: "Sell",
     color: "hsl(var(--chart-2))",
   },
-  firefox: {
-    label: "Firefox",
+  hold: {
+    label: "Hold",
     color: "hsl(var(--chart-3))",
   },
-  edge: {
-    label: "Edge",
-    color: "hsl(var(--chart-4))",
-  },
-  other: {
-    label: "Other",
-    color: "hsl(var(--chart-5))",
-  },
-} satisfies ChartConfig
+};
 
 export function Pie_Chart() {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  // Custom shape for hover effect, increases outerRadius
+  const renderActiveShape = (props: any) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+    
+    return (
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 10} // Increase size on hover
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+      />
+    );
+  };
+
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col w-full h-full">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Recommendations</CardTitle>
-        <CardDescription>Buy/Sell/Hold</CardDescription>
+        <CardTitle className="text-xl">Buy/Sell/Hold Suggestions:</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
@@ -64,27 +66,22 @@ export function Pie_Chart() {
           className="mx-auto aspect-square max-h-[250px]"
         >
           <PieChart>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
             <Pie
               data={chartData}
-              dataKey="visitors"
-              nameKey="browser"
+              dataKey="suggest"
+              nameKey="action"
               innerRadius={60}
+              outerRadius={80}
+              activeShape={renderActiveShape} 
+              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
+              className="stroke-transparent stroke-2 hover:stroke-[0.3rem]"
+              style={{ transition: "stroke 1s" }}
             />
           </PieChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col gap-2 text-sm">
-        <div className="flex items-center gap-2 font-medium leading-none">
-          Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          Showing total visitors for the last 6 months
-        </div>
-      </CardFooter>
     </Card>
-  )
+  );
 }
