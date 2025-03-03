@@ -17,7 +17,6 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import useAsync from "@/hooks/useAsync";
 import { Button } from "./ui/button";
-import { BiSolidUpArrowAlt } from "react-icons/bi";
 
 interface PurchaseHistoryResponse {
     date: string;

@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Chart configuration
 const chartConfig = {
   predicted_price: {
     label: "Predicted Price",
