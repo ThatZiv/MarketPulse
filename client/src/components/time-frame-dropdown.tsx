@@ -1,6 +1,4 @@
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"; // Adjust the import as needed
-import { IoIosArrowDropdown } from "react-icons/io";
-import { Button } from "@/components/ui/button";
 
 interface DropdownMenuDemoProps {
   values: string[];

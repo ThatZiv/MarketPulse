@@ -1,6 +1,5 @@
 import React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Label } from "recharts";
-import { StockDataItem } from "@/types/stocks";
 import {
   Card,
   CardContent,
@@ -23,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Chart configuration
 const chartConfig = {
