@@ -6,4 +6,7 @@ export const cache_keys = {
 export enum actions {
   SET_USER,
   SET_USER_FULL_NAME,
+  SET_STOCK_HISTORY,
+  SET_STOCK_PRICE,
+  SET_PREDICTION,
 }

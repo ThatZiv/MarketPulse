@@ -1,14 +1,6 @@
 import * as React from "react";
 import { actions } from "./constants";
-import assert from "assert";
-
-interface GlobalState {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-  };
-}
+import { type GlobalState } from "@/types/global_state";
 
 const initialState: GlobalState = {
   user: {
@@ -16,24 +8,89 @@ const initialState: GlobalState = {
     email: "",
     name: "",
   },
+  stocks: {},
+  predictions: {},
 };
 
+// general purpose reducer for the entire state
 const GlobalReducer = (
   state: GlobalState,
-  action: { type: number; payload: unknown }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: { type: number; payload: any }
 ): GlobalState => {
   switch (action.type) {
     case actions.SET_USER:
       if (typeof action.payload !== "object") {
         throw new Error("Expected object, got " + typeof action.payload);
       }
-      // @ts-expect-error action.payload is an object
       return { ...state, user: action.payload };
     case actions.SET_USER_FULL_NAME:
       if (typeof action.payload !== "string") {
         throw new Error("Expected string, got " + typeof action.payload);
       }
       return { ...state, user: { ...state.user, name: action.payload } };
+    // TODO move stock stuff into its own reducer (this is awful right now, i know)
+    case actions.SET_STOCK_PRICE:
+      if (typeof action.payload.stock_ticker !== "string") {
+        throw new Error("Expected string for payload.stock_ticker");
+      }
+      if (typeof action.payload.data !== "number") {
+        throw new Error("Expected number for payload.data");
+      }
+      return {
+        ...state,
+        stocks: {
+          ...state.stocks,
+          [action.payload.stock_ticker]: {
+            ...state.stocks[action.payload.stock_ticker],
+            stock_current_price: action.payload.data,
+          },
+        },
+      };
+    case actions.SET_STOCK_HISTORY:
+      if (typeof action.payload.stock_ticker !== "string") {
+        throw new Error("Expected string for payload.stock_ticker");
+      }
+
+      if (!Array.isArray(action.payload.data)) {
+        throw new Error("Expected array for payload.data");
+      }
+
+      return {
+        ...state,
+        stocks: {
+          ...state.stocks,
+          [action.payload.stock_ticker]: {
+            // TODO: finish this
+            ...state.stocks[action.payload.stock_ticker],
+            stock_name: action.payload.stock_name,
+            history: action.payload.data,
+            timestamp: Date.now(),
+          },
+        },
+      };
+    case actions.SET_PREDICTION:
+      if (typeof action.payload.stock_ticker !== "string") {
+        throw new Error("Expected string for payload.stock_ticker");
+      }
+      if (typeof action.payload.model_name !== "string") {
+        throw new Error("Expected string for payload.model_name");
+      }
+      if (!Array.isArray(action.payload.data)) {
+        throw new Error("Expected array for payload.data");
+      }
+      return {
+        ...state,
+        predictions: {
+          ...state.predictions,
+          [action.payload.stock_ticker]: {
+            ...state.predictions[action.payload.stock_ticker],
+            model_name: action.payload.model_name,
+            prediction: action.payload.data,
+            timestamp: Date.now(),
+          },
+        },
+      };
     default:
       throw new Error("Unknown action type: " + action.type);
   }
@@ -47,7 +104,6 @@ export const GlobalContext = React.createContext<{
 
 export function GlobalProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = React.useReducer(GlobalReducer, initialState);
-  console.log(state);
   return (
     <GlobalContext.Provider value={{ state, dispatch }}>
       {children}

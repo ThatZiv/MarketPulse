@@ -108,7 +108,10 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
             type: actions.SET_USER_FULL_NAME,
             payload: accountData
               ? [accountData.first_name, accountData.last_name]
-              : null,
+                  .filter((x) => x)
+                  .join(" ")
+                  .trim()
+              : "User",
           });
         }
         setStatus("success");
@@ -131,15 +134,13 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   }, [supabase]);
 
   const displayName = React.useMemo(() => {
-    if (!state.user.name) return user?.email ?? "User";
-    // FIXME: this doesnt change
-    return state.user.name;
-  }, [state.user, user]);
-  //   return [account.first_name, account.last_name]
-  //     .filter((x) => x)
-  //     .join(" ")
-  //     .trim();
-  // }, [account, user]);
+    if (!account) return user?.email ?? "User"; // keeping this for backwards compatibility
+    if (state.user.name) return state.user.name;
+    return [account?.first_name, account?.last_name]
+      .filter((x) => x)
+      .join(" ")
+      .trim();
+  }, [state.user.name, account, user]);
 
   React.useEffect(() => {
     // TODO: there prob is a better way to do this (middleware/auth comps)

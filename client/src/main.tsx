@@ -17,18 +17,18 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <SupabaseProvider>
-          <ApiProvider>
-            <GlobalProvider>
+        <GlobalProvider>
+          <SupabaseProvider>
+            <ApiProvider>
               <TooltipProvider>
                 <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
                   <App />
                   <Toaster />
                 </ThemeProvider>
               </TooltipProvider>
-            </GlobalProvider>
-          </ApiProvider>
-        </SupabaseProvider>
+            </ApiProvider>
+          </SupabaseProvider>
+        </GlobalProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </StrictMode>
