@@ -1,3 +1,4 @@
+import { type StockDataItem } from "@/types/stocks";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { toast } from "sonner";
 
@@ -7,6 +8,7 @@ export interface IApi {
     ticker: string,
     onToken: (token: string) => void
   ) => Promise<ReadableStream>;
+  getStockData: (ticker: string, limit?: number) => Promise<StockDataItem[]>;
   get: <TRes>(path: string) => Promise<TRes>;
   post: <TReq, TRes>(path: string, object?: TReq) => Promise<TRes>;
 }
@@ -94,6 +96,7 @@ export default class Api implements IApi {
     const params = new URLSearchParams();
     params.append("ticker", ticker);
     // have to use fetch here because axios sucks at streaming
+    // update: those cors errors were happening because my endpoints had trailing forward slash
     const response = await fetch(
       `${import.meta.env.VITE_API_URL}/auth/llm/stock?${params.toString()}`,
       {
@@ -143,6 +146,34 @@ export default class Api implements IApi {
       },
     });
   }
+
+  /**
+   * get stock data for a given ticker
+   * @param ticker stock ticker
+   * @param limit number of days to get
+   * @returns stock data {sentiment_data, stock_close, stock_high, stock_low, stock_open, time_stamp, stock_volume}
+   */
+  public async getStockData(
+    ticker: string,
+    limit: number = 30
+  ): Promise<StockDataItem[]> {
+    try {
+      const resp = await this.instance.get(`/auth/stockchart`, {
+        params: {
+          ticker,
+          limit,
+        },
+        responseType: "json",
+        withCredentials: true,
+      });
+      return resp.data;
+    } catch (error) {
+      this.handleError(error as AxiosError);
+      throw error;
+    }
+    return [];
+  }
+
   /**
    * handle error from axios
    * @param error  axios error
