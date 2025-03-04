@@ -145,16 +145,14 @@ export function LoginForm({
                 Login
               </Button>
               <div className="text-center text-sm">
-                Forgot your{" "}
                 <span className="link">
                   <button
                     type="button"
                     onClick={() => resetPasswordState(true)}
                   >
-                    password
+                    Forgot Password?
                   </button>
                 </span>{" "}
-                ?
               </div>
               <div className="flex items-center my-4">
                 <div className="w-full h-px bg-gray-300"></div>
