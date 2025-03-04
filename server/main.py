@@ -17,9 +17,11 @@ from database.tables import Base, Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import stock_thread
-from models.run_models import model_thread
-
 load_dotenv()
+
+LEGACY = os.environ.get("LEGACY") == "true"
+if not LEGACY:
+    from models.run_models import model_thread
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -81,7 +83,8 @@ if __name__ == '__main__':
     #stock_thread()
     # run the load_stocks job at a specific time.
     scheduler.add_job(func=stock_thread, trigger='cron', hour='23', id="load_stocks")
-    scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
+    if not LEGACY:
+        scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
 
     @app.route('/test', methods=['GET', 'POST'])
     @jwt_required()
