@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from database.tables import Stock_Info
 
 from models.forecast.model import ForecastModel
-from models.xgboost_implementation import XGBoostModel
+from models.xgboost_model import XGBoostModel
 from models.forecast.forecast_types import DataForecastType, DatasetType
 
 class XGBoost(ForecastModel):
