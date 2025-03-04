@@ -119,6 +119,7 @@ def forecast():
             model_3 = []
             model_4 = []
             model_5 = []
+            out = []
             for o in output:
                 model_1.append({ "forecast" : o.model_1, "created_at": o.created_at})
                 model_2.append({ "forecast" : o.model_2, "created_at": o.created_at})
@@ -126,7 +127,11 @@ def forecast():
                 model_4.append({ "forecast" : o.model_4, "created_at": o.created_at})
                 model_5.append({ "forecast" : o.model_5, "created_at": o.created_at})
             
-            out = {"model_1": model_1, "model_2": model_2, "model_3": model_3, "model_4": model_4, "model_5": model_5}
+            out.append(model_1)
+            out.append(model_2) 
+            out.append(model_3) 
+            out.append(model_4)
+            out.append(model_5)
             return jsonify(out)
 
         return Response(status=400, mimetype='application/json')
