@@ -28,7 +28,7 @@ class AzArima(ForecastModel):
 
     def train(self, data_set: DatasetType):
         self.model = ARIMA(data_set['Close'], order=self.arima_order).fit()
-        self.save()
+        #self.save()
 
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
         predictions = self.model.forecast(steps=num_forecast_days)
@@ -47,7 +47,7 @@ class AzSarima(ForecastModel):
 
     def train(self, data_set: DatasetType):
         self.model = SARIMAX(data_set['Close'], order=self.sarima_order, seasonal_order=self.seasonal_order).fit()
-        self.save()
+        #self.save()
 
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
         predictions = self.model.get_forecast(steps=num_forecast_days).predicted_mean

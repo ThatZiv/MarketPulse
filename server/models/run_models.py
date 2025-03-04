@@ -16,6 +16,7 @@ from models.forecast.attention_lstm import AttentionLSTM
 from models.forecast.cnn_lstm import CNNLSTMTransformer
 from models.lstm_attention import AttentionLstm
 from models.forecast.transformer import ZavTransformer
+from models.forecast.azad import AzArima, AzSarima
 from models.zav2 import Transformer
 from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine
@@ -52,12 +53,18 @@ def run_models():
         one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", stock.stock_ticker))
         one_day.append(CNNLSTMTransformer("cnn-lstm", stock.stock_ticker))
         one_day.append(ZavTransformer(Transformer(), "transformer", stock.stock_ticker))
+        one_day.append(AzArima("az-arima", stock.stock_ticker))
+        one_day.append(AzSarima("az-sarima", stock.stock_ticker))
+
+    
+        
         prediction = ForecastModels(one_day)
 
         prediction.train_all(copy.deepcopy(data))
 
         pred = prediction.run_all(copy.deepcopy(data), 7)
-
+        print(pred[3])
+        print(pred[4])
         model_1 = pred[0]
         model_2 = pred[1]
         model_3 = pred[2]
