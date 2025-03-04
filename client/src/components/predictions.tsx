@@ -20,6 +20,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Spinner } from "./ui/spinner";
+import { useApi } from "@/lib/ApiProvider";
 // const chartData = [
 //   { month: "January", desktop: 186, mobile: 80 },
 //   { month: "February", desktop: 305, mobile: 200 },
@@ -54,9 +55,9 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 interface PredictionsProps {
-  stock_id?: number;
-  stock_name?: string;
-  stock_ticker?: string;
+  stock_id: number;
+  stock_name: string;
+  stock_ticker: string;
 }
 
 // type StockPrediction = {
@@ -71,19 +72,20 @@ export default function Predictions({
   stock_ticker,
 }: PredictionsProps) {
   const { supabase } = useSupabase();
+  const api = useApi();
   const { data, isLoading, isError } = useQuery({
     queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
     queryFn: async () => {
-      const data = await supabase
-        .from("Stock_Predictions")
-        .select("*")
-        .eq("stock_id", stock_id);
-
-      console.log(stock_id);
-      if (!data) {
+      // const data = await supabase
+      //   .from("Stock_Predictions")
+      //   .select("*")
+      //   .eq("stock_id", stock_id);
+      const resp = await api?.getStockPredictions(stock_ticker);
+      console.log(resp);
+      if (!resp) {
         throw new Error("Failed to fetch stock predictions");
       }
-      return data;
+      return resp;
     },
     enabled: !!stock_id,
   });

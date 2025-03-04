@@ -100,9 +100,9 @@ def chart():
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
-@auth_bp.route('/forecast/', methods=['Get'])
+@auth_bp.route('forecast', methods=['GET'])
 @jw.jwt_required()
-def forecast():
+def forecast_route():
     ticker = request.args.get('ticker')
     if not ticker:
         return Response(status=400, mimetype='application/json')
@@ -113,17 +113,23 @@ def forecast():
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = session.connection().execute(s_id).first()
         if output_id :
-            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
-            output = session.connection().execute(forecast).all()
+            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
+            output = session.connection().execute(forecast).first()
             row_out = []
             out = []
-            for o in output:
+            columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
+            for column in columns:
+                output[column]
                 row_out.append(o.model_1)
                 row_out.append(o.model_2)
                 row_out.append(o.model_3)
                 row_out.append(o.model_4)
                 row_out.append(o.model_5)
-                out.append({"stock_id": o.stock_id, "created_at": o.created_at, "output": json.loads(row_out)})
+                out.append({
+                    "stock_id": o.stock_id,
+                    "created_at": o.created_at,
+                    "output": [json.loads(row) for row in row_out]
+                    })
                 row_out = []
 
 
