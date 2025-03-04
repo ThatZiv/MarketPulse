@@ -12,13 +12,14 @@ from models.xgBoost_implementation import XGBoostModel
 from models.forecast.forecast_types import DataForecastType, DatasetType
 from datetime import date
 import yfinance as yf
+import sys
 
 class XGBoost(ForecastModel):
     """
     XGBoost implementation of ForecastModel abstract class
     """
     def __init__(self, name: str, ticker: str = None):
-        self.model = XGBoostModel()
+        self.model = XGBoostModel(ticker)
         self.optimal_model = None
         super().__init__(self.model, name, ticker)
     
@@ -28,18 +29,9 @@ class XGBoost(ForecastModel):
 
     
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
-        predictions = self.model.future_predictions(self.optimal_model, DatasetType, num_forecast_days)
-        print("Predictions:\n")
-        for i in range(len(predictions)):
-            print(predictions[i], end='\n')
+        predictions = self.model.future_predictions(self.optimal_model, input_data, num_forecast_days)
         predicted_list = predictions.tolist()
         return predicted_list
-    
-    def save(self):
-        self.model.save()
-    
-    def load(self):
-        self.model.load()
 
 if __name__ == "__main__":
     load_dotenv()
@@ -60,7 +52,7 @@ if __name__ == "__main__":
     except exc.TimeoutError as e:
         print(e)
 
-    stock_q = select(Stock_Info).where(Stock_Info.stock_id == 1)
+    stock_q = select(Stock_Info).where(Stock_Info.stock_id == 4)
     Session = sessionmaker(bind=engine)
     session = Session()
     data2 = session.connection().execute(stock_q).all()
@@ -78,11 +70,8 @@ if __name__ == "__main__":
     data2 = {'Close': s_close, 'Open': s_open, 'High': s_high, 'Low': s_low, 'Volume': s_volume}
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
-
-    model = XGBoost("XGBoost-model", "TSLA")
+    
+    model = XGBoost("XGBoost-model", "TM")
     model.train(data2)
-
-
-
 
     print(model.run(data_copy, 7))
