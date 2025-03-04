@@ -114,7 +114,6 @@ def forecast():
         if output_id :
             forcast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
             output = session.connection().execute(forcast).all()
-            
             row_out = []
             out = []
             for o in output:
@@ -125,7 +124,6 @@ def forecast():
                 row_out.append(o.model_5)
                 out.append({"stock_id": o.stock_id, "created_at": o.created_at, "output": row_out})
                 row_out = []
-                
 
 
             return jsonify(out)
