@@ -1,24 +1,17 @@
 import pandas as pd
 # import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, TimeSeriesSplit,cross_val_score
+from sklearn.model_selection import train_test_split, TimeSeriesSplit
 from xgboost import XGBRegressor
-from sklearn.pipeline import Pipeline
-from sklearn.impute import SimpleImputer
 from skopt import BayesSearchCV
 from skopt.space import Real, Integer
-from xgboost import plot_importance
-from sklearn.ensemble import StackingRegressor, VotingRegressor
+from sklearn.ensemble import VotingRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score 
 import numpy as np
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import PolynomialFeatures
 import yfinance as yf
-from sklearn.preprocessing import StandardScaler
-import seaborn as sns
 import matplotlib.pyplot as plt
-from datetime import date
+from datetime import date, timedelta
 
 class XGBoostModel:
     def __init__(self,ticker):
@@ -27,19 +20,14 @@ class XGBoostModel:
     def add_features(self, df):
         if self.ticker == 'TSLA': 
             df = self.tsla_features(df)
-            print('Added TSLA features')
         elif self.ticker == 'GM':
             df = self.gm_features(df)
-            print('Added GM features')
         elif self.ticker == 'F':
-            df = self.f_features(df)
-            print('Added F features')
+            df = self.ford_features(df)
         elif self.ticker == 'TM':
             df = self.tm_features(df)
-            print('Added TM features')
         elif self.ticker == 'STLA':
             df = self.stla_features(df)
-            print('Added STLA features')            
         return df
 
     def tsla_features(self, frame):
@@ -61,7 +49,7 @@ class XGBoostModel:
         # frame["diff_7"] = frame["Close"].diff(7)
         return frame 
     
-    def gm_features(frame):
+    def gm_features(self, frame):
         frame = frame.copy()
         if 'Close' not in frame.columns:
             print("Error: 'Close' column not found in the DataFrame!")
@@ -74,13 +62,14 @@ class XGBoostModel:
         frame['rolling_mean_30'] = frame['Close'].shift(1).rolling(window=30).mean() 
         return frame
 
-    def ford_features(frame):
+    def ford_features(self, frame):
         frame = frame.copy()
         if 'Close' not in frame.columns:
             print("Error: 'Close' column not found in the DataFrame!")
             return None
-        frame['Day of Year'] = frame.index.dayofyear
-        frame['Week Of Year'] = frame.index.isocalendar().week
+        # frame = frame.index
+        # frame['Day of Year'] = frame.index.dayofyear
+        # frame['Week Of Year'] = frame.index.isocalendar().week
         frame['Last Day Price'] = frame['Close'].shift(1)
         frame['Last Week Price'] = frame['Close'].shift(7)
         frame['3 days ago'] = frame['Close'].shift(3)
@@ -91,12 +80,12 @@ class XGBoostModel:
         frame["diff_7"] = frame["Close"].shift(7).diff(7) 
         return frame
     
-    def tm_features(frame):
+    def tm_features(self, frame):
         frame = frame.copy()
         if 'Close' not in frame.columns:
             print("Error: 'Close' column not found in the DataFrame!")
             return None
-        frame['Week Of Year'] = frame.index.isocalendar().week
+        # frame['Week Of Year'] = frame.index.isocalendar().week
         frame['Last Day Price'] = frame['Close'].shift(1)
         frame['Last Week Price'] = frame['Close'].shift(7)
         frame['3 days ago'] = frame['Close'].shift(3)
@@ -104,7 +93,7 @@ class XGBoostModel:
         frame['rolling_mean_30'] = frame['Close'].shift(1).rolling(window=30).mean()
         return frame
 
-    def stla_features(frame):
+    def stla_features(self, frame):
         frame['Last Day Price'] = frame['Close'].shift(1)
         frame['Last Week Price'] = frame['Close'].shift(7)
         frame['3 days ago'] = frame['Close'].shift(3)
@@ -165,7 +154,6 @@ class XGBoostModel:
         return bayes_search.best_estimator_
     
     def model_predictions(self, model, X):
-        print("XGBoost Predictions:")
         return model.predict(X)
     
     def model_test_run(self, df):
@@ -181,6 +169,7 @@ class XGBoostModel:
         drop_cols = ['Open','High','Low','Volume']
         df = df.drop(columns=drop_cols)
         df = self.add_features(df)
+        print(f"Added {self.ticker} features.")
         df.fillna(df.mean(), inplace=True)
         X = df.drop(columns='Close')
         y = df['Close']
@@ -191,6 +180,10 @@ class XGBoostModel:
         print("Continuing with Future Predictions:")
         df = df.copy()
         today = date.today()
+        if today.weekday() == 5:
+            today += timedelta(days=2)
+        elif today.weekday() == 6:
+            today += timedelta(days=1)
         future = pd.date_range(today, periods=1)
         future_df = pd.DataFrame(index=future)
         future_df['isFuture'] = True
@@ -204,7 +197,6 @@ class XGBoostModel:
         drop_cols = ['Close','isFuture']
         future_values = future_values.drop(columns=drop_cols)
         holidays_dates = pd.to_datetime(['2025-01-01','2025-01-09'])
-        print(f"00000: {df_and_future}")
 
         for i in range(num_days):
             next_day_pred = self.model_predictions(model, future_values)
@@ -222,9 +214,7 @@ class XGBoostModel:
             future_values = df_and_future.query('isFuture').copy()
             drop_cols = ['Close','isFuture']
             future_values = future_values.drop(columns=drop_cols)
-            print(f"{i}: {df_and_future}")
         predicted = df_and_future.tail(num_days+1).iloc[:-1]['Close']
-        print(f"Predicted prices for requested days: {num_days}")
         return predicted
 
     def model_evaluation(self, predictions, y_test):
@@ -252,9 +242,9 @@ class XGBoostModel:
     
 if __name__ == "__main__":
     today = date.today()
-    data = yf.download('TSLA', start='2020-01-01', end=today.strftime('%Y-%m-%d'))
+    data = yf.download('TM', start='2020-01-01', end=today.strftime('%Y-%m-%d'))
     data.columns = data.columns.get_level_values(0)
-    model = XGBoostModel('TSLA')
+    model = XGBoostModel('TM')
     print(data)
     # Train/Test Evaluation
     # predictions, true = model.model_test_run(data)
