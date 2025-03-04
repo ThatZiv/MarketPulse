@@ -66,7 +66,11 @@ export default function RadialChart({ score }: RadialChartProps) {
                         >
                           {Number(score.toFixed(2)) * 100}%
                         </tspan>
-                        <tspan x={viewBox.cx} y={viewBox.cy || 0}>
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy || 0}
+                          className="fill-muted-foreground"
+                        >
                           {emotion}
                         </tspan>
                         <tspan

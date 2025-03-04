@@ -30,17 +30,23 @@ import { useApi } from "@/lib/ApiProvider";
 //   { month: "June", desktop: 214, mobile: 140 },
 // ];
 
+interface Prediction {
+  stock_id: number;
+  created_at: string;
+  model: string;
+}
+
 // TODO: make this dynamic
 const chartConfig = {
   attention_lstm: {
     label: "attention_lstm",
     color: "#FF0000",
   },
-  "cnn-lstm-transformer": {
-    label: "cnn-lstm-transformer",
+  "cnn-lstm": {
+    label: "cnn-lstm",
     color: "#00FF00",
   },
-  "zav-transformer": {
+  transformer: {
     label: "zav-transformer",
     color: "#0000FF",
   },
@@ -81,7 +87,7 @@ export default function Predictions({
       //   .select("*")
       //   .eq("stock_id", stock_id);
       const resp = await api?.getStockPredictions(stock_ticker);
-      console.log(resp);
+
       if (!resp) {
         throw new Error("Failed to fetch stock predictions");
       }
@@ -102,7 +108,7 @@ export default function Predictions({
   if (isError) {
     return <div>Failed to fetch stock predictions</div>;
   }
-  const points = [];
+  const points: Array<Record<string, string | number>> = [];
   const chartData = predictions.map(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (prediction: Record<string, any>) => {
@@ -115,21 +121,35 @@ export default function Predictions({
       )) {
         if (key.startsWith("model_")) {
           const jsonb_content = JSON.parse(value as string);
-          for (const price of jsonb_content.forecast) {
-            point["month"] = moment(jsonb_content.month)
-              .add(1, "days")
-              .format("YYYY-MM-DD");
-            // @ts-expect-error any
+          for (let i = 0; i < jsonb_content.forecast.length; i++) {
+            const price = jsonb_content.forecast[i];
+            const t = moment(prediction.created_at).add(i + 1, "days");
+            // for (
+            //   let daysAhead = 0;
+            //   t.weekday() > 5 && t.weekday() < 7;
+            //   daysAhead++
+            // ) {
+            //   t.add(daysAhead, "days");
+            // }
 
+            const np = {
+              month: t.format("MM-DD"),
+              [jsonb_content.name as string]: price,
+            };
+            // point["month"] = String(i + 1);
+            // @ts-expect-error any
             point[jsonb_content.name as string] = price;
+            points.push(np);
           }
         }
-        points.push(point);
       }
       return point;
     }
   );
-  //   console.log(points);
+
+  const randomChartStrokeColor = () => {
+    return "#" + Math.floor(Math.random() * 16777215).toString(16);
+  };
   return (
     <Card className="w-full border border-black dark:border-white ">
       {isLoading ? (
@@ -151,7 +171,7 @@ export default function Predictions({
               >
                 <LineChart
                   accessibilityLayer
-                  data={chartData}
+                  data={points}
                   margin={{
                     left: 12,
                     right: 12,
@@ -161,27 +181,31 @@ export default function Predictions({
                   <XAxis
                     dataKey="month"
                     tickLine={true}
+                    allowDuplicatedCategory={true}
                     axisLine={true}
                     tickMargin={8}
                   />
                   <ChartTooltip
-                    cursor={false}
+                    cursor={true}
                     content={<ChartTooltipContent />}
                   />
                   <ChartLegend content={<ChartLegendContent />} />
-                  {Object.keys(chartData[0]).map((key, index) => {
-                    if (key === "month") return null;
-                    return (
-                      <Line
-                        key={index}
-                        type="monotone"
-                        dataKey={key}
-                        strokeWidth={2}
-                        dot={true}
-                        activeDot={{ r: 3 }}
-                      />
-                    );
-                  })}
+                  {Object.keys(chartData[chartData.length - 1] ?? []).map(
+                    (key, index) => {
+                      if (key === "month") return null;
+                      return (
+                        <Line
+                          key={index}
+                          type="monotone"
+                          dataKey={key}
+                          strokeWidth={2}
+                          stroke={randomChartStrokeColor()}
+                          dot={true}
+                          activeDot={{ r: 3 }}
+                        />
+                      );
+                    }
+                  )}
                 </LineChart>
               </ChartContainer>
             </CardContent>

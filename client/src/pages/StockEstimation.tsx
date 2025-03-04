@@ -129,7 +129,6 @@ export default function Stocks() {
       (stock) => stock?.Stocks?.stock_name === tickerToCheck
     );
     if (!stockExists) {
-      console.log(ticker_name?.[ticker as keyof typeof ticker_name]);
       navigate("/");
       toast.warning(
         "Restricted access: To view this page, please add this ticker to your account."

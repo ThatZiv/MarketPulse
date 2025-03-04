@@ -57,6 +57,10 @@ const data = {
           title: "FAQ",
           url: "/documentation/faq",
         },
+        {
+          title: "Disclaimer",
+          url: "/documentation/disclaimer",
+        },
       ],
     },
     {

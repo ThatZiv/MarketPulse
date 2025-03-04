@@ -155,7 +155,7 @@ if __name__ == "__main__":
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
 
-    model = CNNLSTMTransformer("cnn-lstm-transformer", "TSLA")
+    model = CNNLSTMTransformer("cnn-lstm", "TSLA")
     model.train(data2)
 
 

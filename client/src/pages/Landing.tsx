@@ -151,7 +151,7 @@ function StockCard({
         </div>
 
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
-          {stock.Stocks.stock_name}
+          {stock.Stocks.stock_ticker}
         </h3>
 
         <Separator className="mb-4  border-2 dark:border-gray-300 border-gray-800" />

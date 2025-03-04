@@ -17,6 +17,7 @@ from database.tables import Base, Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import stock_thread
+
 load_dotenv()
 
 LEGACY = os.environ.get("LEGACY") == "true"
