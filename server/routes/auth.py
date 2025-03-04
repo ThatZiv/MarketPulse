@@ -4,6 +4,7 @@
 # pylint: disable=line-too-long
 
 import os
+import json
 
 import flask_jwt_extended as jw
 import requests
@@ -112,8 +113,8 @@ def forecast():
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = session.connection().execute(s_id).first()
         if output_id :
-            forcast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
-            output = session.connection().execute(forcast).all()
+            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
+            output = session.connection().execute(forecast).all()
             row_out = []
             out = []
             for o in output:
@@ -122,7 +123,7 @@ def forecast():
                 row_out.append(o.model_3)
                 row_out.append(o.model_4)
                 row_out.append(o.model_5)
-                out.append({"stock_id": o.stock_id, "created_at": o.created_at, "output": row_out})
+                out.append({"stock_id": o.stock_id, "created_at": o.created_at, "output": json.loads(row_out)})
                 row_out = []
 
 
