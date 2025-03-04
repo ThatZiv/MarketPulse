@@ -115,25 +115,21 @@ def forecast_route():
         if output_id :
             forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
             output = session.connection().execute(forecast).first()
-            row_out = []
             out = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
+            print()
+            # pylint: disable=protected-access
+            output_dict = output._mapping
+            # pylint: enable=protected-access
             for column in columns:
-                output[column]
-                row_out.append(o.model_1)
-                row_out.append(o.model_2)
-                row_out.append(o.model_3)
-                row_out.append(o.model_4)
-                row_out.append(o.model_5)
-                out.append({
-                    "stock_id": o.stock_id,
-                    "created_at": o.created_at,
-                    "output": [json.loads(row) for row in row_out]
-                    })
-                row_out = []
+                forecast_data = output_dict[column]
+                out.append(json.loads(forecast_data))
 
-
-            return jsonify(out)
+            return jsonify({
+                "stock_id": output_dict["stock_id"],
+                "created_at": output_dict["created_at"],
+                "output": out
+            })
 
         return Response(status=400, mimetype='application/json')
     return Response(status=500, mimetype='application/json')
