@@ -17,6 +17,7 @@ from database.tables import Base, Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import stock_thread
+from models.run_models import model_thread
 
 load_dotenv()
 
@@ -44,7 +45,8 @@ def create_app():
 if __name__ == '__main__':
 
     app = create_app()
-    CORS(app)
+    CORS(app, supports_credentials=True)
+
     jwt = jw.JWTManager()
     jwt.init_app(app)
     cache = Cache(app, config={'CACHE_TYPE': 'simple'})
@@ -78,7 +80,8 @@ if __name__ == '__main__':
     # For testing
     #stock_thread()
     # run the load_stocks job at a specific time.
-    scheduler.add_job(func=stock_thread, trigger='cron', hour='0', id="load_stocks")
+    scheduler.add_job(func=stock_thread, trigger='cron', hour='23', id="load_stocks")
+    scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
 
     @app.route('/test', methods=['GET', 'POST'])
     @jwt_required()
