@@ -126,10 +126,10 @@ def forecast():
                 model_3.append({ "forecast" : o.model_3, "created_at": o.created_at})
                 model_4.append({ "forecast" : o.model_4, "created_at": o.created_at})
                 model_5.append({ "forecast" : o.model_5, "created_at": o.created_at})
-            
+
             out.append(model_1)
-            out.append(model_2) 
-            out.append(model_3) 
+            out.append(model_2)
+            out.append(model_3)
             out.append(model_4)
             out.append(model_5)
             return jsonify(out)

@@ -75,5 +75,3 @@ def run_models():
 def model_thread():
     thread = threading.Thread(target=run_models)
     thread.start()
-
-
