@@ -114,9 +114,19 @@ def forecast():
         if output_id :
             forcast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
             output = session.connection().execute(forcast).all()
-            out = []
+            model_1 = []
+            model_2 = []
+            model_3 = []
+            model_4 = []
+            model_5 = []
             for o in output:
-                out.append({'stock_id' : o.stock_id, 'created_at' : o.created_at, 'model_1' : o.model_1,'model_2' : o.model_2,'model_3' : o.model_3,'model_4' : o.model_4,'model_5' : o.model_5,})
+                model_1.append( o.model_1)
+                model_2.append( o.model_2)
+                model_3.append( o.model_3)
+                model_4.append( o.model_4)
+                model_5.append( o.model_5)
+            
+            out = {"model_1": model_1, "model_2": model_2, "model_3": model_3, "model_4": model_4, "model_5": model_5}
             return jsonify(out)
 
         return Response(status=400, mimetype='application/json')

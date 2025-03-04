@@ -50,8 +50,8 @@ def run_models():
 
 
         one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", stock.stock_ticker))
-        one_day.append(CNNLSTMTransformer("cnn-lstm-transformer", stock.stock_ticker))
-        one_day.append(ZavTransformer(Transformer(), "zav-transformer", stock.stock_ticker))
+        one_day.append(CNNLSTMTransformer("cnn-lstm", stock.stock_ticker))
+        one_day.append(ZavTransformer(Transformer(), "transformer", stock.stock_ticker))
         prediction = ForecastModels(one_day)
 
         prediction.train_all(copy.deepcopy(data))
@@ -75,3 +75,5 @@ def run_models():
 def model_thread():
     thread = threading.Thread(target=run_models)
     thread.start()
+
+
