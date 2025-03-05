@@ -33,10 +33,10 @@ interface StockFormData {
   hasStocks: string;
   purchases: {
     date: string;
-    shares: number;
-    pricePurchased: number;
+    shares: string;
+    pricePurchased: string;
   }[];
-  cashToInvest: number;
+  cashToInvest: string;
 }
 
 export default function StockPage() {
@@ -48,7 +48,7 @@ export default function StockPage() {
     ticker: "",
     hasStocks: "",
     purchases: [],
-    cashToInvest: 0,
+    cashToInvest: "",
   });
   const [error, setError] = useState<string>();
   const {
@@ -84,11 +84,11 @@ export default function StockPage() {
             today.setHours(23, 59, 59, 999);
             return selectedDate <= today;
           }, "Date cannot be in the future"),
-        shares: z.number().min(0.01, "Shares must be at least 0.01"),
-        pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
+        shares: z.string().refine(val => parseFloat(val) >= 0.01, "Shares must be at least 0.01"),
+        pricePurchased: z.string().refine(val => parseFloat(val) >= 0.01, "Price must be at least $0.01"),
       })
     ),
-    cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
+    cashToInvest: z.string().refine(val => parseFloat(val) >= 1, "Cash to invest must be greater than 0"),
   }).refine(data => {
     if (data.hasStocks === "yes") {
       return data.purchases.length > 0;
@@ -102,7 +102,7 @@ export default function StockPage() {
   const addPurchaseEntry = () => {
     setFormData(prev => ({
       ...prev,
-      purchases: [...prev.purchases, { date: "", shares: 0, pricePurchased: 0 }]
+      purchases: [...prev.purchases, { date: "", shares: "", pricePurchased: "" }]
     }));
   };
 
@@ -121,9 +121,7 @@ export default function StockPage() {
     const newPurchases = [...formData.purchases];
     newPurchases[index] = {
       ...newPurchases[index],
-      [field]: (field === 'shares' || field === 'pricePurchased') 
-        ? Number(value) 
-        : value
+      [field]: value
     };
     setFormData(prev => ({ ...prev, purchases: newPurchases }));
   };
@@ -148,8 +146,8 @@ export default function StockPage() {
       hasStocks: data.length > 0 ? "yes" : "no",
       purchases: data.map(purchase => ({
         date: purchase.date.split('T')[0],
-        shares: purchase.amount_purchased,
-        pricePurchased: purchase.price_purchased
+        shares: purchase.amount_purchased.toString(),
+        pricePurchased: purchase.price_purchased.toString()
       }))
     }));
   };
@@ -171,7 +169,7 @@ export default function StockPage() {
           {
             user_id: user?.id,
             stock_id: formData.ticker,
-            desired_investiture: formData.cashToInvest,
+            desired_investiture: parseFloat(formData.cashToInvest),
           },
           { onConflict: "user_id,stock_id" }
         )
@@ -201,8 +199,8 @@ export default function StockPage() {
                 user_id: user?.id,
                 stock_id: formData.ticker,
                 date: purchase.date,
-                amount_purchased: purchase.shares,
-                price_purchased: purchase.pricePurchased,
+                amount_purchased: parseFloat(purchase.shares),
+                price_purchased: parseFloat(purchase.pricePurchased),
               }));
     
               supabase
@@ -409,7 +407,7 @@ export default function StockPage() {
               value={formData.cashToInvest}
               onChange={(e) => setFormData(prev => ({
                 ...prev,
-                cashToInvest: Number(e.target.value)
+                cashToInvest: e.target.value
               }))}
               required
             />
