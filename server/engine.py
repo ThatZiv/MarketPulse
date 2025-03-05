@@ -29,9 +29,9 @@ def get_engine():
 
         # ENGINE = create_engine(database, **run_args)
         try:
-            ENGINE = create_engine(database, **run_args)
+            # ENGINE = create_engine(database, **run_args)
             # TODO: we dont have to close each connection whereever we do it
-            # ENGINE = create_engine(database)
+            ENGINE = create_engine(database)
             with ENGINE.connect():
                 print("Connection successful!")
         except exc.OperationalError as e:
