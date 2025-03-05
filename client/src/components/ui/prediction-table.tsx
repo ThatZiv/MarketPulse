@@ -1,5 +1,4 @@
 import { useGlobal } from "@/lib/GlobalProvider";
-import React from "react";
 import {
   Select,
   SelectContent,
