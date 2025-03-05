@@ -16,7 +16,8 @@ from models.forecast.attention_lstm import AttentionLSTM
 from models.forecast.cnn_lstm import CNNLSTMTransformer
 from models.lstm_attention import AttentionLstm
 from models.forecast.transformer import ZavTransformer
-from models.forecast.azad import AzArima, AzSarima
+from models.forecast.azad import AzSarima
+from models.forecast.xgboost import XGBoost
 from models.zav2 import Transformer
 from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine
@@ -53,8 +54,10 @@ def run_models():
         one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", stock.stock_ticker))
         one_day.append(CNNLSTMTransformer("cnn-lstm", stock.stock_ticker))
         one_day.append(ZavTransformer(Transformer(), "transformer", stock.stock_ticker))
-        one_day.append(AzArima("az-arima", stock.stock_ticker))
+        one_day.append(XGBoost("XGBoost-model", stock.stock_ticker))
         one_day.append(AzSarima("az-sarima", stock.stock_ticker))
+        # one_day.append(AzArima("az-arima", stock.stock_ticker))
+        
 
     
         
@@ -68,8 +71,8 @@ def run_models():
         model_1 = pred[0]
         model_2 = pred[1]
         model_3 = pred[2]
-        model_4 = pred[0]
-        model_5 = pred[0]
+        model_4 = pred[3]
+        model_5 = pred[4]
 
         new_row = Stock_Predictions(stock_id=stock.stock_id, model_1=json.dumps(model_1), model_2=json.dumps(model_2), model_3=json.dumps(model_3), model_4=json.dumps(model_4), model_5=json.dumps(model_5), created_at = date.today())
         session.add(new_row)
