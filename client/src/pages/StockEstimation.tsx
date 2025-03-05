@@ -12,13 +12,13 @@ import Stock_Chart from "@/components/stock_chart_demo";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { MdEdit } from "react-icons/md";
-import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
 import { type Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -27,6 +27,8 @@ import RadialChart from "@/components/radial-chart";
 import { GenerateStockLLM } from "@/components/llm/stock-llm";
 import { cache_keys } from "@/lib/constants";
 import Predictions from "@/components/predictions";
+import PredictionTable from "@/components/ui/prediction-table";
+import { Separator } from "@/components/ui/separator";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -36,20 +38,6 @@ const staticStockData = [
   { stock_ticker: "STLA", stock_name: "Stellantis N.V." },
 ];
 
-const meters = [
-  {
-    "Hype Meter":
-      "Hype Meter analyzes social media sentiment to forecast stock market trends.",
-  },
-  {
-    "Disruption Score":
-      "Disruption Score measures the potential impact on stock prices from supply chain delays or shifts.",
-  },
-  {
-    "Impact Factor":
-      "Impact Factor scores how major events like elections, natural disasters, and regulations influence stock performance.",
-  },
-];
 interface StockResponse {
   Stocks: {
     stock_id: number;
@@ -149,8 +137,6 @@ export default function Stocks() {
     );
   }
 
-  const impact_factor = 10;
-  const disruption_score = 40;
   const hype_meter = 0.365913391113281;
   const currentStock = stocks?.find(
     (stock) =>
@@ -158,7 +144,7 @@ export default function Stocks() {
       ticker_name?.[ticker as keyof typeof ticker_name]
   );
   return (
-    <div className="lg:p-4 md:w-10/12 w-xl mx-auto">
+    <div className="lg:p-4 md:w-10/12 w-full mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
         {ticker_name
           ? ticker_name[ticker as keyof typeof ticker_name] || "Undefined"
@@ -203,120 +189,65 @@ export default function Stocks() {
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
       <div className="flex flex-col md:items-center pt-4">
-        <Predictions {...currentStock?.Stocks} />
+        <Card className="border border-black dark:border-white w-full p-1">
+          <CardTitle className="font-semibold text-3xl my-2">
+            Predictions
+            <Separator />
+          </CardTitle>
+          <CardContent>
+            <div className="grid grid-cols-6 gap-2">
+              <div className="col-span-6 lg:col-span-2">
+                <h2 className="font-semibold text-lg">Suggestion</h2>
+              </div>
+              <div className="col-span-6 lg:col-span-4">
+                {currentStock && (
+                  <PredictionTable ticker={currentStock?.Stocks.stock_ticker} />
+                )}
+              </div>
+            </div>
+            {currentStock && <Predictions {...currentStock?.Stocks} />}
+          </CardContent>
+        </Card>
       </div>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
-        <Card className="border border-black dark:border-white rounded-md md:p-4">
-          <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-            <div className="grid flex-1 gap-1 sm:text-left">
-              <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                {Object.keys(meters[0])[0]}
-              </CardTitle>
-              <CardDescription>{meters[0]["Hype Meter"]}</CardDescription>
-            </div>
-          </CardHeader>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
-            <RadialChart score={hype_meter} />
+        <div className="grid grid-cols-6 gap-2">
+          <div className="col-span-6 xl:col-span-3">
+            <Card className="border border-black dark:border-white rounded-md md:p-4">
+              <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                <div className="grid flex-1 gap-1 sm:text-left">
+                  <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                    Hype Meter
+                  </CardTitle>
+                  <CardDescription>
+                    Hype Meter analyzes social media sentiment to forecast stock
+                    market trends.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <div className="flex flex-col md:flex-row items-center justify-center">
+                <RadialChart score={hype_meter} />
+              </div>
+            </Card>
           </div>
-        </Card>
-
-        <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
-          <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
-            <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-              <div className="grid flex-1 gap-1 sm:text-left">
-                <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                  {Object.keys(meters[1])[0]}
-                </CardTitle>
-                <CardDescription>
-                  {meters[1]["Disruption Score"]}
-                </CardDescription>
+          <div className="col-span-6 xl:col-span-3">
+            <Card className="border border-black dark:border-white rounded-md md:p-4">
+              <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                <div className="grid flex-1 gap-1 sm:text-left">
+                  <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                    Impact Factor
+                  </CardTitle>
+                  <CardDescription>
+                    Impact Factor scores how major events like elections,
+                    natural disasters, and regulations influence stock
+                    performance
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <div className="flex flex-col md:flex-row items-center justify-center">
+                <RadialChart score={hype_meter} />
               </div>
-            </CardHeader>
-            <div className="lg:w-60 md:w-full w-96 h-full">
-              <GaugeComponent
-                style={{ width: "100%", height: "100%" }}
-                value={disruption_score}
-                type={"radial"}
-                labels={{
-                  valueLabel: {
-                    style: { fill: "var(--tick-label-color)" },
-                  },
-                  tickLabels: {
-                    type: "outer",
-                    ticks: [
-                      { value: 20 },
-                      { value: 40 },
-                      { value: 60 },
-                      { value: 80 },
-                      { value: 100 },
-                    ],
-
-                    defaultTickValueConfig: {
-                      style: { fill: "var(--tick-label-color)" },
-                    },
-                  },
-                }}
-                arc={{
-                  colorArray: ["#5BE12C", "#EA4228"],
-                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
-                  padding: 0.02,
-                  width: 0.4,
-                }}
-                pointer={{
-                  elastic: true,
-                  animationDelay: 0,
-                  color: "#000000",
-                }}
-              />
-            </div>
-          </Card>
-          <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
-            <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-              <div className="grid flex-1 gap-1 sm:text-left">
-                <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                  {Object.keys(meters[2])[0]}
-                </CardTitle>
-                <CardDescription>{meters[2]["Impact Factor"]}</CardDescription>
-              </div>
-            </CardHeader>
-            <div className="lg:w-60 md:w-full w-96 h-full">
-              <GaugeComponent
-                style={{ width: "100%", height: "100%" }}
-                value={impact_factor}
-                type={"radial"}
-                labels={{
-                  valueLabel: {
-                    style: { fill: "var(--tick-label-color)" },
-                  },
-                  tickLabels: {
-                    type: "outer",
-                    ticks: [
-                      { value: 20 },
-                      { value: 40 },
-                      { value: 60 },
-                      { value: 80 },
-                      { value: 100 },
-                    ],
-
-                    defaultTickValueConfig: {
-                      style: { fill: "var(--tick-label-color)" },
-                    },
-                  },
-                }}
-                arc={{
-                  colorArray: ["#5BE12C", "#EA4228"],
-                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
-                  padding: 0.02,
-                  width: 0.4,
-                }}
-                pointer={{
-                  elastic: true,
-                  animationDelay: 0,
-                  color: "#000000",
-                }}
-              />
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
