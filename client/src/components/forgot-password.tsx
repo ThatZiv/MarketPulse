@@ -16,7 +16,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabase } from "@/database/SupabaseProvider";
@@ -24,9 +23,7 @@ import { toast } from "sonner";
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"div"> {
   resetPasswordState: (arg: boolean) => void;
 }
-export function ResetPassword({
-  resetPasswordState,
-}: LoginFormProps) {
+export function ResetPassword({ resetPasswordState }: LoginFormProps) {
   const { supabase } = useSupabase();
   const formSchema = z.object({
     email: z.string().max(50).email(),
@@ -73,21 +70,24 @@ export function ResetPassword({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-left">Email Address</FormLabel>
                     <FormControl>
-                      <Input placeholder="" required {...field} />
+                      <Input placeholder="Email Address" required {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <span>
-              <Button type="submit" className="m-3">
-                Recover Password
-              </Button>
-              <Button type="button" onClick = {() => resetPasswordState(false)} className="m-3">
-                 Back
-              </Button>
+                <Button type="submit" className="m-3">
+                  Recover Password
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => resetPasswordState(false)}
+                  className="m-3"
+                >
+                  Back
+                </Button>
               </span>
             </form>
           </Form>

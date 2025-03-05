@@ -16,7 +16,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { useSupabase } from "@/database/SupabaseProvider";
@@ -114,11 +113,10 @@ export function ResetPasswordForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
-                          placeholder=""
+                          placeholder="Password"
                           type={showPassword ? "text" : "password"}
                           {...field}
                           onChange={(e) => {
@@ -160,11 +158,10 @@ export function ResetPasswordForm() {
                 name="password2"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
-                          placeholder=""
+                          placeholder="Confirm Password"
                           type={showConfirmPassword ? "text" : "password"}
                           {...field}
                           onChange={(e) => {
@@ -194,11 +191,14 @@ export function ResetPasswordForm() {
               <Button className="dark:text-white m-2" type="submit">
                 Reset
               </Button>
-              
-              <Button className="dark:text-white m-2" onClick = {() => signOut()} type="button">
+
+              <Button
+                className="dark:text-white m-2"
+                onClick={() => signOut()}
+                type="button"
+              >
                 Back
               </Button>
-              
             </form>
           </Form>
         </CardContent>
