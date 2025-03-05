@@ -33,10 +33,10 @@ interface StockFormData {
   hasStocks: string;
   purchases: {
     date: string;
-    shares: number | string;
-    pricePurchased: number | string;
+    shares: number | null;
+    pricePurchased: number | null;
   }[];
-  cashToInvest: string;
+  cashToInvest: number | null;
 }
 
 export default function StockPage() {
@@ -48,7 +48,7 @@ export default function StockPage() {
     ticker: "",
     hasStocks: "",
     purchases: [],
-    cashToInvest: "",
+    cashToInvest: null,
   });
   const [error, setError] = useState<string>();
   const {
@@ -88,7 +88,7 @@ export default function StockPage() {
         pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
       })
     ),
-    cashToInvest: z.string().refine(val => parseFloat(val) >= 1, "Cash to invest must be greater than 0"),
+    cashToInvest: z.number().min(1, "Cash to invest must be greater than 0"),
   }).refine(data => {
     if (data.hasStocks === "yes") {
       return data.purchases.length > 0;
@@ -102,7 +102,7 @@ export default function StockPage() {
   const addPurchaseEntry = () => {
     setFormData(prev => ({
       ...prev,
-      purchases: [...prev.purchases, { date: "", shares: "", pricePurchased: "" }]
+      purchases: [...prev.purchases, { date: "", shares: null, pricePurchased: null }]
     }));
   };
 
@@ -121,7 +121,7 @@ export default function StockPage() {
     const newPurchases = [...formData.purchases];
     newPurchases[index] = {
       ...newPurchases[index],
-      [field]: field === 'shares' || field === 'pricePurchased' ? parseFloat(value) : value
+      [field]: field === 'shares' || field === 'pricePurchased' ? (value === "" ? null : parseFloat(value)) : value
     };
     setFormData(prev => ({ ...prev, purchases: newPurchases }));
   };
@@ -169,7 +169,7 @@ export default function StockPage() {
           {
             user_id: user?.id,
             stock_id: formData.ticker,
-            desired_investiture: parseFloat(formData.cashToInvest),
+            desired_investiture: formData.cashToInvest,
           },
           { onConflict: "user_id,stock_id" }
         )
@@ -347,7 +347,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.shares === "" ? "" : purchase.shares.toString()}
+                      value={purchase.shares === null ? "" : purchase.shares}
                       onChange={(e) => handlePurchaseChange(index, 'shares', e.target.value)}
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -365,7 +365,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.pricePurchased === "" ? "" : purchase.pricePurchased.toString()}
+                      value={purchase.pricePurchased === null ? "" : purchase.pricePurchased}
                       onChange={(e) => handlePurchaseChange(index, 'pricePurchased', e.target.value)}
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -404,10 +404,10 @@ export default function StockPage() {
               min="0"
               step="0.01"
               className="w-full bg-white dark:bg-black dark:text-white border ring-offset-background rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              value={formData.cashToInvest}
+              value={formData.cashToInvest === null ? "" : formData.cashToInvest}
               onChange={(e) => setFormData(prev => ({
                 ...prev,
-                cashToInvest: e.target.value
+                cashToInvest: e.target.value === "" ? null : parseFloat(e.target.value)
               }))}
               required
             />
