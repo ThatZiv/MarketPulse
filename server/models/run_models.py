@@ -57,10 +57,7 @@ def run_models():
         one_day.append(XGBoost("XGBoost-model", stock.stock_ticker))
         one_day.append(AzSarima("az-sarima", stock.stock_ticker))
         # one_day.append(AzArima("az-arima", stock.stock_ticker))
-        
 
-    
-        
         prediction = ForecastModels(one_day)
 
         prediction.train_all(copy.deepcopy(data))
