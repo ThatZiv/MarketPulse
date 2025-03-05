@@ -53,7 +53,7 @@ interface StockResponse {
 }
 
 export default function Stocks() {
-  const { displayName, supabase, user } = useSupabase();
+  const { supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
   const { state } = useGlobal();
   const navigate = useNavigate();
@@ -207,19 +207,10 @@ export default function Stocks() {
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
           </Link>
         </div>
-        <h2 className="font-semibold md:text-xl text-xs">Hey {displayName},</h2>
-        <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
-        <h3 className="md:text-md text-xs">
-          Money Available to Invest: ${" "}
-          {stocks?.find(
-            (stock) =>
-              stock?.Stocks?.stock_name ===
-              ticker_name?.[ticker as keyof typeof ticker_name]
-          )?.desired_investiture ?? "N/A"}
-        </h3>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
-            <h3 className="lg:text-lg text-md">Number of Stocks Invested:</h3>
+            <h3 className="lg:text-2xl text-md">Shares Owned</h3>
+            <Separator />
             <p className="lg:text-4xl md:text-3xl text-2xl">
               {stocks?.find(
                 (stock) =>
@@ -229,8 +220,15 @@ export default function Stocks() {
             </p>
           </div>
           <div className="flex flex-col">
-            <h3 className="lg:text-lg text-md">Current Stock Earnings:</h3>
-            <p className="lg:text-4xl md:text-3xl text-2xl">$101.12</p>
+            <h3 className="lg:text-2xl text-md">Current Price</h3>
+            <Separator />
+            <p className="lg:text-4xl md:text-3xl text-2xl">
+              ${state.stocks[ticker ?? ""]?.current_price?.toFixed(2) ?? "N/A"}
+            </p>
+            <p className="text-xs italic">
+              Last updated{" "}
+              {moment(state.stocks[ticker ?? ""]?.timestamp).fromNow()}
+            </p>
           </div>
         </div>
       </div>
