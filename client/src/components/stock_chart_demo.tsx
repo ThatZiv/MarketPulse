@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/select";
 import { useApi } from "@/lib/ApiProvider";
 import { cache_keys } from "@/lib/constants";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const chartConfig = {
   close: {
@@ -114,10 +113,10 @@ export default function Stock_Chart({ ticker }: props) {
               role="status"
               className=" p-4 border border-gray-200 rounded-sm shadow-sm animate-pulse md:p-6 dark:border-gray-700"
             >
-              <div className="text-left p-4 bg-gray-200 rounded-full dark:bg-gray-700 w-20 mb-2.5">
-                {ticker}
+              <div className="bg-gray-200 rounded-full dark:bg-gray-700 w-20 mb-2.5">
+                <div className="w-48 h-2 m-10 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                <div className="w-48 h-2 m-10 bg-gray-200 rounded-full dark:bg-gray-700"></div>
               </div>
-              <div className="w-48 h-2 mb-10 bg-gray-200 rounded-full dark:bg-gray-700"></div>
               <div className="flex items-baseline mt-4">
                 <div className="w-full bg-gray-200 rounded-t-lg h-72 dark:bg-gray-700"></div>
                 <div className="w-full h-56 ms-6 bg-gray-200 rounded-t-lg dark:bg-gray-700"></div>
@@ -245,7 +244,7 @@ export default function Stock_Chart({ ticker }: props) {
                   domain={["auto", "auto"]}
                 >
                   <Label
-                    value="Stock Price"
+                    value="Stock Price ($)"
                     angle={-90}
                     position="insideLeft"
                     style={{ textAnchor: "middle" }}
