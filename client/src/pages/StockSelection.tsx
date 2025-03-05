@@ -33,8 +33,8 @@ interface StockFormData {
   hasStocks: string;
   purchases: {
     date: string;
-    shares: string;
-    pricePurchased: string;
+    shares: number | string;
+    pricePurchased: number | string;
   }[];
   cashToInvest: string;
 }
@@ -84,8 +84,8 @@ export default function StockPage() {
             today.setHours(23, 59, 59, 999);
             return selectedDate <= today;
           }, "Date cannot be in the future"),
-        shares: z.string().refine(val => parseFloat(val) >= 0.01, "Shares must be at least 0.01"),
-        pricePurchased: z.string().refine(val => parseFloat(val) >= 0.01, "Price must be at least $0.01"),
+        shares: z.number().min(0.01, "Shares must be at least 0.01"),
+        pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
       })
     ),
     cashToInvest: z.string().refine(val => parseFloat(val) >= 1, "Cash to invest must be greater than 0"),
@@ -121,7 +121,7 @@ export default function StockPage() {
     const newPurchases = [...formData.purchases];
     newPurchases[index] = {
       ...newPurchases[index],
-      [field]: value
+      [field]: field === 'shares' || field === 'pricePurchased' ? parseFloat(value) : value
     };
     setFormData(prev => ({ ...prev, purchases: newPurchases }));
   };
@@ -146,8 +146,8 @@ export default function StockPage() {
       hasStocks: data.length > 0 ? "yes" : "no",
       purchases: data.map(purchase => ({
         date: purchase.date.split('T')[0],
-        shares: purchase.amount_purchased.toString(),
-        pricePurchased: purchase.price_purchased.toString()
+        shares: purchase.amount_purchased,
+        pricePurchased: purchase.price_purchased
       }))
     }));
   };
@@ -199,8 +199,8 @@ export default function StockPage() {
                 user_id: user?.id,
                 stock_id: formData.ticker,
                 date: purchase.date,
-                amount_purchased: parseFloat(purchase.shares),
-                price_purchased: parseFloat(purchase.pricePurchased),
+                amount_purchased: purchase.shares,
+                price_purchased: purchase.pricePurchased,
               }));
     
               supabase
@@ -347,7 +347,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.shares}
+                      value={purchase.shares === "" ? "" : purchase.shares.toString()}
                       onChange={(e) => handlePurchaseChange(index, 'shares', e.target.value)}
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -365,7 +365,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.pricePurchased}
+                      value={purchase.pricePurchased === "" ? "" : purchase.pricePurchased.toString()}
                       onChange={(e) => handlePurchaseChange(index, 'pricePurchased', e.target.value)}
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
