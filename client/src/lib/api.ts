@@ -1,4 +1,4 @@
-import { type StockDataItem } from "@/types/stocks";
+import { type StockPrediction, type StockDataItem } from "@/types/stocks";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 import { toast } from "sonner";
 
@@ -9,6 +9,8 @@ export interface IApi {
     onToken: (token: string) => void
   ) => Promise<ReadableStream>;
   getStockData: (ticker: string, limit?: number) => Promise<StockDataItem[]>;
+  getStockPredictions: (ticker: string) => Promise<StockPrediction>;
+  getStockRealtime: (ticker: string) => Promise<StockDataItem[]>;
   get: <TRes>(path: string) => Promise<TRes>;
   post: <TReq, TRes>(path: string, object?: TReq) => Promise<TRes>;
 }
@@ -172,6 +174,44 @@ export default class Api implements IApi {
       throw error;
     }
     return [];
+  }
+
+  /**
+   * get stock predictions for a given ticker from all models
+   * @param ticker stock ticker
+   * @returns {Promise<StockPrediction>}
+   */
+  public async getStockPredictions(ticker: string): Promise<StockPrediction> {
+    try {
+      const resp = await this.instance.get("/auth/forecast", {
+        params: { ticker },
+        responseType: "json",
+        withCredentials: true,
+      });
+      return resp.data;
+    } catch (error) {
+      this.handleError(error as AxiosError);
+      throw error;
+    }
+  }
+
+  /**
+   * get the realtime stock data for a given ticker (1m interval)
+   * @param ticker stock ticker
+   * @returns {Promise<StockDataItem>}
+   */
+  public async getStockRealtime(ticker: string): Promise<StockDataItem[]> {
+    try {
+      const resp = await this.instance.get("/stockrealtime", {
+        params: { ticker },
+        responseType: "json",
+        withCredentials: true,
+      });
+      return resp.data;
+    } catch (error) {
+      this.handleError(error as AxiosError);
+      throw error;
+    }
   }
 
   /**

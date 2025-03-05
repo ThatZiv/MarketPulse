@@ -10,21 +10,29 @@ import Stock_Chart from "@/components/stock_chart_demo";
 //   HoverCardTrigger,
 // } from "@/components/ui/hover-card";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { MdEdit } from "react-icons/md";
-import GaugeComponent from "react-gauge-component";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
 import { type Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import RadialChart from "@/components/radial-chart";
 import { GenerateStockLLM } from "@/components/llm/stock-llm";
+import { cache_keys } from "@/lib/constants";
+import Predictions from "@/components/predictions";
+import PredictionTable from "@/components/ui/prediction-table";
+import { Separator } from "@/components/ui/separator";
+import { useGlobal } from "@/lib/GlobalProvider";
+import { StocksState } from "@/types/global_state";
+import moment from "moment";
+import Recommendation from "@/components/recommendation-chart";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -34,39 +42,29 @@ const staticStockData = [
   { stock_ticker: "STLA", stock_name: "Stellantis N.V." },
 ];
 
-const meters = [
-  {
-    "Hype Meter":
-      "Hype Meter analyzes social media sentiment to forecast stock market trends.",
-  },
-  {
-    "Disruption Score":
-      "Disruption Score measures the potential impact on stock prices from supply chain delays or shifts.",
-  },
-  {
-    "Impact Factor":
-      "Impact Factor scores how major events like elections, natural disasters, and regulations influence stock performance.",
-  },
-];
 interface StockResponse {
   Stocks: {
+    stock_id: number;
     stock_name: string;
+    stock_ticker: string;
   };
   shares_owned: number;
   desired_investiture: number;
 }
 
 export default function Stocks() {
-  const { displayName, supabase, user } = useSupabase();
+  const { supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
+  const { state } = useGlobal();
   const navigate = useNavigate();
   const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
-    queryKey: ["stocksFetch"],
+    queryKey: [cache_keys.USER_STOCKS, ticker],
     queryFn: async () => {
       const { data, error } = await supabase.from("Stocks").select("*");
       if (error) throw error;
       return data || [];
     },
+    enabled: !!ticker,
   });
 
   const availableStocks =
@@ -86,7 +84,7 @@ export default function Stocks() {
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name), shares_owned, desired_investiture")
+          .select("Stocks (*), shares_owned, desired_investiture")
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
@@ -98,6 +96,52 @@ export default function Stocks() {
       }),
     [user, supabase]
   );
+
+  const meters = useMemo(() => {
+    // gets the last data point in stock data for a given ticker
+    const defaultMeter = {
+      date: new Date("bad date"),
+      value: 0,
+      state: "loading",
+    };
+    if (!ticker || !state.stocks[ticker]) {
+      //def a better way to do this
+      return {
+        hype: defaultMeter,
+        impact: defaultMeter,
+      };
+    }
+    const getLastStockHistory = (
+      stockHistory: StocksState["history"],
+      key: string
+    ) => {
+      if (!stockHistory) {
+        return defaultMeter;
+      }
+      const t = stockHistory.sort(
+        (a, b) =>
+          new Date(a.time_stamp.join(" ")).getTime() -
+          new Date(b.time_stamp.join(" ")).getTime()
+      );
+      const last = t[t.length - 1];
+      return {
+        date: new Date((last?.time_stamp ?? []).join(" ")),
+        value: (last?.[key as keyof typeof last] as number) ?? 0,
+      };
+    };
+    const hype_meter = getLastStockHistory(
+      state.stocks[ticker ?? ""].history,
+      "sentiment_data"
+    );
+    const impact_meter = getLastStockHistory(
+      state.stocks[ticker ?? ""].history,
+      "news_data"
+    );
+    return {
+      hype: hype_meter,
+      impact: impact_meter,
+    };
+  }, [state.stocks, ticker]);
   useEffect(() => {
     if (!ticker_name) {
       // Redirect
@@ -124,7 +168,6 @@ export default function Stocks() {
       (stock) => stock?.Stocks?.stock_name === tickerToCheck
     );
     if (!stockExists) {
-      console.log(ticker_name?.[ticker as keyof typeof ticker_name]);
       navigate("/");
       toast.warning(
         "Restricted access: To view this page, please add this ticker to your account."
@@ -144,11 +187,14 @@ export default function Stocks() {
       </div>
     );
   }
-  const impact_factor = 10;
-  const disruption_score = 40;
-  const hype_meter = 0.365913391113281;
+
+  const currentStock = stocks?.find(
+    (stock) =>
+      stock?.Stocks?.stock_name ===
+      ticker_name?.[ticker as keyof typeof ticker_name]
+  );
   return (
-    <div className="lg:p-4 md:w-10/12 w-xl mx-auto">
+    <div className="md:w-10/12 w-full mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
         {ticker_name
           ? ticker_name[ticker as keyof typeof ticker_name] || "Undefined"
@@ -161,19 +207,10 @@ export default function Stocks() {
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
           </Link>
         </div>
-        <h2 className="font-semibold md:text-lg text-xs">Hey {displayName},</h2>
-        <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
-        <h3 className="md:text-md text-xs">
-          Money Available to Invest: ${" "}
-          {stocks?.find(
-            (stock) =>
-              stock?.Stocks?.stock_name ===
-              ticker_name?.[ticker as keyof typeof ticker_name]
-          )?.desired_investiture ?? "N/A"}
-        </h3>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
-            <h3 className="lg:text-lg text-md">Number of Stocks Invested:</h3>
+            <h3 className="lg:text-2xl text-md">Shares Owned</h3>
+            <Separator />
             <p className="lg:text-4xl md:text-3xl text-2xl">
               {stocks?.find(
                 (stock) =>
@@ -183,8 +220,15 @@ export default function Stocks() {
             </p>
           </div>
           <div className="flex flex-col">
-            <h3 className="lg:text-lg text-md">Current Stock Earnings:</h3>
-            <p className="lg:text-4xl md:text-3xl text-2xl">$101.12</p>
+            <h3 className="lg:text-2xl text-md">Current Price</h3>
+            <Separator />
+            <p className="lg:text-4xl md:text-3xl text-2xl">
+              ${state.stocks[ticker ?? ""]?.current_price?.toFixed(2) ?? "N/A"}
+            </p>
+            <p className="text-xs italic">
+              Last updated{" "}
+              {moment(state.stocks[ticker ?? ""]?.timestamp).fromNow()}
+            </p>
           </div>
         </div>
       </div>
@@ -192,118 +236,87 @@ export default function Stocks() {
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
-      <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
-        <Card className="border border-black dark:border-white rounded-md md:p-4">
-          <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-            <div className="grid flex-1 gap-1 sm:text-left">
-              <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                {Object.keys(meters[0])[0]}
-              </CardTitle>
-              <CardDescription>{meters[0]["Hype Meter"]}</CardDescription>
+      <div className="flex flex-col md:items-center pt-4">
+        <Card className="border border-black dark:border-white w-full p-1">
+          <CardTitle className="font-semibold text-center md:text-left text-3xl mx-6 my-5">
+            Predictions
+          </CardTitle>
+          <Separator className="my-3" />
+          <CardContent>
+            <div className="mb-3">
+              {currentStock && <Predictions {...currentStock?.Stocks} />}
+              <Separator className="my-3" />
             </div>
-          </CardHeader>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-5">
-            <RadialChart score={hype_meter} />
-          </div>
+            <div className="grid grid-cols-6 gap-2">
+              <div className="col-span-6 lg:col-span-2">
+                {currentStock && ticker && (
+                  <Recommendation stock_ticker={ticker} />
+                )}
+                <Separator orientation="vertical" className="mx-2" />
+              </div>
+              <div className="col-span-6 lg:col-span-4">
+                {currentStock && (
+                  <PredictionTable ticker={currentStock?.Stocks.stock_ticker} />
+                )}
+              </div>
+            </div>
+          </CardContent>
         </Card>
-
-        <div className="flex flex-col md:flex-row justify-between gap-4 md:mt-4 md:max-w-9/12 lg:max-w-full max-w-full">
-          <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
-            <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-              <div className="grid flex-1 gap-1 sm:text-left">
-                <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                  {Object.keys(meters[1])[0]}
-                </CardTitle>
-                <CardDescription>
-                  {meters[1]["Disruption Score"]}
-                </CardDescription>
-              </div>
-            </CardHeader>
-            <div className="lg:w-60 md:w-full w-96 h-full">
-              <GaugeComponent
-                style={{ width: "100%", height: "100%" }}
-                value={disruption_score}
-                type={"radial"}
-                labels={{
-                  valueLabel: {
-                    style: { fill: "var(--tick-label-color)" },
-                  },
-                  tickLabels: {
-                    type: "outer",
-                    ticks: [
-                      { value: 20 },
-                      { value: 40 },
-                      { value: 60 },
-                      { value: 80 },
-                      { value: 100 },
-                    ],
-
-                    defaultTickValueConfig: {
-                      style: { fill: "var(--tick-label-color)" },
-                    },
-                  },
-                }}
-                arc={{
-                  colorArray: ["#5BE12C", "#EA4228"],
-                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
-                  padding: 0.02,
-                  width: 0.4,
-                }}
-                pointer={{
-                  elastic: true,
-                  animationDelay: 0,
-                  color: "#000000",
-                }}
-              />
-            </div>
-          </Card>
-          <Card className="flex flex-col items-center justify-between border border-black dark:border-white md:w-1/2 rounded-md">
-            <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-              <div className="grid flex-1 gap-1 sm:text-left">
-                <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                  {Object.keys(meters[2])[0]}
-                </CardTitle>
-                <CardDescription>{meters[2]["Impact Factor"]}</CardDescription>
-              </div>
-            </CardHeader>
-            <div className="lg:w-60 md:w-full w-96 h-full">
-              <GaugeComponent
-                style={{ width: "100%", height: "100%" }}
-                value={impact_factor}
-                type={"radial"}
-                labels={{
-                  valueLabel: {
-                    style: { fill: "var(--tick-label-color)" },
-                  },
-                  tickLabels: {
-                    type: "outer",
-                    ticks: [
-                      { value: 20 },
-                      { value: 40 },
-                      { value: 60 },
-                      { value: 80 },
-                      { value: 100 },
-                    ],
-
-                    defaultTickValueConfig: {
-                      style: { fill: "var(--tick-label-color)" },
-                    },
-                  },
-                }}
-                arc={{
-                  colorArray: ["#5BE12C", "#EA4228"],
-                  subArcs: [{ limit: 20 }, {}, {}, {}, {}],
-                  padding: 0.02,
-                  width: 0.4,
-                }}
-                pointer={{
-                  elastic: true,
-                  animationDelay: 0,
-                  color: "#000000",
-                }}
-              />
-            </div>
-          </Card>
+      </div>
+      <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
+        <div className="grid grid-cols-6 gap-2">
+          <div className="col-span-6 xl:col-span-3">
+            {moment(meters.hype.date).isValid() && (
+              <Card className="border border-black dark:border-white rounded-md md:p-4">
+                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                  <div className="grid flex-1 gap-1 sm:text-left">
+                    <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                      Hype Meter
+                    </CardTitle>
+                    <CardDescription>
+                      <i>Hype Meter</i> analyzes social media sentiment to
+                      forecast stock market trends. A higher score indicates
+                      more positive outlook on the stock among social media
+                      users.
+                      <Separator className="my-2" />
+                      <div className="text-xs">
+                        As of {moment(meters.hype.date).calendar()}{" "}
+                      </div>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <div className="flex flex-col md:flex-row items-center justify-center">
+                  <RadialChart score={meters.hype.value} />
+                </div>
+              </Card>
+            )}
+          </div>
+          <div className="col-span-6 xl:col-span-3">
+            {moment(meters.hype.date).isValid() && (
+              <Card className="border border-black dark:border-white rounded-md md:p-4">
+                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                  <div className="grid flex-1 gap-1 sm:text-left">
+                    <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                      Impact Factor
+                    </CardTitle>
+                    <CardDescription>
+                      <i>Impact Factor</i> scores how major news events like
+                      elections, natural disasters, and regulations influence
+                      stock performance. A higher score indicates a more
+                      positive impact on the stock.
+                      <Separator className="my-2" />
+                      <div className="text-xs">
+                        As of {moment(meters.impact?.date).calendar()}{" "}
+                      </div>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <div className="flex flex-col md:flex-row items-center justify-center">
+                  <RadialChart score={meters.impact.value} />
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -11,3 +11,7 @@ export function generateGravatarUrl(id: string, size = 200) {
   // https://www.gravatar.com/avatar/EMAIL_MD5?d=https%3A%2F%2Fui-avatars.com%2Fapi%2F/Lasse+Rafn/128 fallback
   return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
 }
+
+export function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

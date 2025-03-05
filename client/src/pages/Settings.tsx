@@ -39,9 +39,12 @@ import {
 } from "@/components/ui/select";
 import { useNavigate, useParams } from "react-router";
 import { Label } from "@/components/ui/label";
+import { useGlobal } from "@/lib/GlobalProvider";
+import { actions } from "@/lib/constants";
 
 export default function SettingsPage() {
   const { supabase, user, signOut } = useSupabase();
+  const { dispatch } = useGlobal();
   const [state, setState] = React.useState<"loading" | "error" | "done">(
     "loading"
   );
@@ -55,7 +58,9 @@ export default function SettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [fontSize, setFontSize] = useState(localStorage.getItem("fontSize") || "medium");
+  const [fontSize, setFontSize] = useState(
+    localStorage.getItem("fontSize") || "medium"
+  );
 
   const accountFormSchema = z.object({
     first_name: z.string().min(2).max(50),
@@ -176,6 +181,13 @@ export default function SettingsPage() {
             });
           } else {
             toast.success("Profile updated successfully!");
+            dispatch({
+              type: actions.SET_USER_FULL_NAME,
+              payload: [values.first_name, values.last_name]
+                .filter((x) => x)
+                .join(" ")
+                .trim(),
+            });
             navigate("/");
           }
         },
@@ -193,7 +205,8 @@ export default function SettingsPage() {
   const handleFontSizeChange = (value: string) => {
     setFontSize(value);
     localStorage.setItem("fontSize", value);
-    document.documentElement.style.fontSize = value === "small" ? "14px" : value === "large" ? "18px" : "16px";
+    document.documentElement.style.fontSize =
+      value === "small" ? "14px" : value === "large" ? "18px" : "16px";
   };
 
   return (

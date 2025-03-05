@@ -25,8 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApi } from "@/lib/ApiProvider";
-import { cache_keys } from "@/lib/constants";
-import { Skeleton } from "@/components/ui/skeleton";
+import { actions, cache_keys } from "@/lib/constants";
+import { useGlobal } from "@/lib/GlobalProvider";
 
 const chartConfig = {
   close: {
@@ -50,6 +50,7 @@ const chartConfig = {
 type props = { ticker: string };
 export default function Stock_Chart({ ticker }: props) {
   const api = useApi();
+  const { dispatch } = useGlobal();
   const [timeRange, setTimeRange] = React.useState("14d");
   // const timeRangeNum = React.useMemo(
   //   () => Number(timeRange.match("[0-9]+")?.[0]),
@@ -62,9 +63,13 @@ export default function Stock_Chart({ ticker }: props) {
       if (!data) {
         throw new Error("Failed to fetch stock data");
       }
+      dispatch({
+        type: actions.SET_STOCK_HISTORY,
+        payload: { data, stock_ticker: ticker },
+      });
       return data;
     },
-    enabled: !!ticker,
+    enabled: !!api && !!ticker,
   });
 
   const validData = data ?? ([] as StockDataItem[]);
@@ -110,7 +115,27 @@ export default function Stock_Chart({ ticker }: props) {
     <>
       {isLoading || isError ? (
         <Card className="w-full p-4">
-          {isLoading && <Skeleton className="h-52" />}
+          {isLoading && (
+            <div
+              role="status"
+              className="border border-gray-200 rounded-sm shadow-sm animate-pulse md:p-6 dark:border-gray-700"
+            >
+              <div className="">
+                <div className="w-48 h-2 my-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                <div className="w-32 h-2 my-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                <div className="w-52 h-2 my-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+              </div>
+              <div className="flex items-baseline mt-2">
+                <div className="w-full bg-gray-200 rounded-t-lg h-72 dark:bg-gray-700"></div>
+                <div className="w-full h-56 ms-6 bg-gray-200 rounded-t-lg dark:bg-gray-700"></div>
+                <div className="w-full bg-gray-200 rounded-t-lg h-72 ms-6 dark:bg-gray-700"></div>
+                <div className="w-full h-64 ms-6 bg-gray-200 rounded-t-lg dark:bg-gray-700"></div>
+                <div className="w-full bg-gray-200 rounded-t-lg h-80 ms-6 dark:bg-gray-700"></div>
+                <div className="w-full bg-gray-200 rounded-t-lg h-72 ms-6 dark:bg-gray-700"></div>
+                <div className="w-full bg-gray-200 rounded-t-lg h-80 ms-6 dark:bg-gray-700"></div>
+              </div>
+            </div>
+          )}
           {isError && (
             <div>Error fetching stock data. Please try again later...</div>
           )}
@@ -119,7 +144,7 @@ export default function Stock_Chart({ ticker }: props) {
         <Card className="w-full border border-black dark:border-white ">
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
-              <CardTitle>{ticker}</CardTitle>
+              <CardTitle>{ticker} Historical Prices</CardTitle>
               <CardDescription>
                 <div className="text-xs">
                   Updated as of{" "}
@@ -227,7 +252,7 @@ export default function Stock_Chart({ ticker }: props) {
                   domain={["auto", "auto"]}
                 >
                   <Label
-                    value="Stock Price"
+                    value="Stock Price ($)"
                     angle={-90}
                     position="insideLeft"
                     style={{ textAnchor: "middle" }}

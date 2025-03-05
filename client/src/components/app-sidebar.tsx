@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useSupabase } from "@/database/SupabaseProvider";
 import useAsync from "@/hooks/useAsync";
+import { Separator } from "./ui/separator";
+import { Link } from "react-router";
 
 const data = {
   navMain: [
@@ -56,6 +58,10 @@ const data = {
         {
           title: "FAQ",
           url: "/documentation/faq",
+        },
+        {
+          title: "Disclaimer",
+          url: "/documentation/disclaimer",
         },
       ],
     },
@@ -183,7 +189,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <Link to={window.location.origin}>
                 <div className="flex items-center">
                   <img
                     src="/public/images/MarketPulse_Logo.png"
@@ -194,10 +200,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <span className="truncate font-semibold">MarketPulse</span>
                   </div>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        <Separator />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navData.navMain} />

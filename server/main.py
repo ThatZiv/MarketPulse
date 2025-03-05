@@ -17,9 +17,12 @@ from database.tables import Base, Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import stock_thread
-from models.run_models import model_thread
 
 load_dotenv()
+
+LEGACY = os.environ.get("LEGACY") == "true"
+if not LEGACY:
+    from models.run_models import model_thread
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -81,14 +84,15 @@ if __name__ == '__main__':
     #stock_thread()
     # run the load_stocks job at a specific time.
     scheduler.add_job(func=stock_thread, trigger='cron', hour='23', id="load_stocks")
-    scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
+    if not LEGACY:
+        scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
 
     @app.route('/test', methods=['GET', 'POST'])
     @jwt_required()
     def route():
         return jsonify('hello')
 
-    @app.route('/stockrealtime/', methods = ['GET'] )
+    @app.route('/stockrealtime', methods = ['GET'] )
     @jwt_required()
     def realtime():
         if request.method == 'GET':
@@ -117,9 +121,10 @@ if __name__ == '__main__':
                                         'stock_open' : open_rt[i],
                                         'stock_high' : high_rt[i],
                                         'stock_low' : low_rt[i],
-                                        'sentiment_data'  : 0, 
+                                        'sentiment_data'  : 0,
+                                        'news_data': 0,
                                         'time_stamp' : dump_datetime(stock_data["Datetime"][i])})
-                cache.set(output_id, json_output, timeout = 60)
+                cache.set(output_id, json_output, timeout = 60*5)
                 print("Reset Cache")
                 return json_output
             return Response(status=400, mimetype='application/json')

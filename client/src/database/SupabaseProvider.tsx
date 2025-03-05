@@ -12,6 +12,8 @@ import {
 import React from "react";
 import { useNavigate, useLocation } from "react-router";
 import { toast } from "sonner";
+import { useGlobal } from "@/lib/GlobalProvider";
+import { actions } from "@/lib/constants";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
@@ -79,6 +81,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { state, dispatch } = useGlobal();
   const [status, setStatus] = React.useState<Status>("loading");
   const [account, setAccount] = React.useState<null | IAccount>(null);
   const [user, setUser] = React.useState<null | User>(null);
@@ -101,6 +104,15 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
             .eq("user_id", thisUser.id)
             .maybeSingle();
           setAccount(accountData ?? null);
+          dispatch({
+            type: actions.SET_USER_FULL_NAME,
+            payload: accountData
+              ? [accountData.first_name, accountData.last_name]
+                  .filter((x) => x)
+                  .join(" ")
+                  .trim()
+              : "User",
+          });
         }
         setStatus("success");
       } catch (error) {
@@ -122,12 +134,13 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   }, [supabase]);
 
   const displayName = React.useMemo(() => {
-    if (!account) return user?.email ?? "User";
-    return [account.first_name, account.last_name]
+    if (!account) return user?.email ?? "User"; // keeping this for backwards compatibility
+    if (state.user.name) return state.user.name;
+    return [account?.first_name, account?.last_name]
       .filter((x) => x)
       .join(" ")
       .trim();
-  }, [account, user]);
+  }, [state.user.name, account, user]);
 
   React.useEffect(() => {
     // TODO: there prob is a better way to do this (middleware/auth comps)

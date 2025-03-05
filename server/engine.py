@@ -5,10 +5,15 @@
 
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, exc
+from sqlalchemy import create_engine, exc, pool
 
 
 ENGINE = None
+
+run_args = {
+    # "client_encoding": "utf8",
+    "poolclass": pool.SingletonThreadPool,
+}
 
 def get_engine():
     global ENGINE
@@ -22,8 +27,10 @@ def get_engine():
 
         database=f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}?sslmode=require"
 
-        ENGINE = create_engine(database)
+        # ENGINE = create_engine(database, **run_args)
         try:
+            # ENGINE = create_engine(database, **run_args)
+            # TODO: we dont have to close each connection whereever we do it
             ENGINE = create_engine(database)
             with ENGINE.connect():
                 print("Connection successful!")

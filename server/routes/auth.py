@@ -4,6 +4,7 @@
 # pylint: disable=line-too-long
 
 import os
+import json
 
 import flask_jwt_extended as jw
 import requests
@@ -86,6 +87,7 @@ def chart():
                                         'stock_open' : i.stock_open,
                                         'stock_high' : i.stock_high, 'stock_low' : i.stock_low,
                                         'sentiment_data'  : i.sentiment_data,
+                                        'news_data': i.news_data,
                                         'time_stamp' : dump_datetime(i.time_stamp) })
                 json_output.reverse()
                 return jsonify(json_output)
@@ -99,34 +101,36 @@ def chart():
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
-@auth_bp.route('/forecast/', methods=['Get'])
+@auth_bp.route('forecast', methods=['GET'])
 @jw.jwt_required()
-def forecast():
+def forecast_route():
     ticker = request.args.get('ticker')
     if not ticker:
         return Response(status=400, mimetype='application/json')
     if request.method == 'GET':
-        session = sessionmaker(bind=get_engine())
-        session = session()
+        session_a = sessionmaker(bind=get_engine())
+        session = session_a()
         ticker = request.args['ticker']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = session.connection().execute(s_id).first()
         if output_id :
-            forcast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at).limit(7)
-            output = session.connection().execute(forcast).all()
-            row_out = []
+            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
+            output = session.connection().execute(forecast).first()
             out = []
-            for o in output:
-                row_out.append(o.model_1)
-                row_out.append(o.model_2)
-                row_out.append(o.model_3)
-                row_out.append(o.model_4)
-                row_out.append(o.model_5)
-                out.append({"stock_id": o.stock_id, "created_at": o.created_at, "output": row_out})
-                row_out = []
+            columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
+            print()
+            # pylint: disable=protected-access
+            output_dict = output._mapping
+            # pylint: enable=protected-access
+            for column in columns:
+                forecast_data = output_dict[column]
+                out.append(json.loads(forecast_data))
 
-
-            return jsonify(out)
+            return jsonify({
+                "stock_id": output_dict["stock_id"],
+                "created_at": output_dict["created_at"],
+                "output": out
+            })
 
         return Response(status=400, mimetype='application/json')
     return Response(status=500, mimetype='application/json')
