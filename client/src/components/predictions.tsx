@@ -189,7 +189,7 @@ export default function Predictions({
   }
 
   return (
-    <Card className="w-full  ">
+    <Card className="w-full">
       {isLoading ? (
         <div
           role="status"
@@ -218,7 +218,7 @@ export default function Predictions({
             <CardContent className="flex items-center justify-center">
               <ChartContainer
                 config={chartConfig}
-                className="min-h-[275px] w-full"
+                className="aspect-auto h-[300px] w-full"
               >
                 <LineChart
                   accessibilityLayer

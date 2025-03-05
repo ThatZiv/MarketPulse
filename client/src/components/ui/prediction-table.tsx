@@ -114,7 +114,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
       </div>
       <Table>
         <TableHeader>
-          <TableRow>
+          <TableRow className="font-bold">
             {Object.keys(data[0]).map((key) => {
               if (model && model !== key && key !== "day") return null;
               return (

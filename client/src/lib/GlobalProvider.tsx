@@ -50,6 +50,7 @@ const GlobalReducer = (
           [action.payload.stock_ticker]: {
             ...state.stocks[action.payload.stock_ticker],
             current_price: action.payload.data,
+            timestamp: Date.now(),
           },
         },
       };

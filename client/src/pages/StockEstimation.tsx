@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { StocksState } from "@/types/global_state";
 import moment from "moment";
+import Recommendation from "@/components/recommendation-chart";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -250,9 +251,10 @@ export default function Stocks() {
             </div>
             <div className="grid grid-cols-6 gap-2">
               <div className="col-span-6 lg:col-span-2">
-                <h2 className="font-semibold text-lg">
-                  Our Suggestion <span className="text-red-500">*</span>
-                </h2>
+                {currentStock && ticker && (
+                  <Recommendation stock_ticker={ticker} />
+                )}
+                <Separator orientation="vertical" className="mx-2" />
               </div>
               <div className="col-span-6 lg:col-span-4">
                 {currentStock && (
@@ -275,7 +277,9 @@ export default function Stocks() {
                     </CardTitle>
                     <CardDescription>
                       <i>Hype Meter</i> analyzes social media sentiment to
-                      forecast stock market trends.
+                      forecast stock market trends. A higher score indicates
+                      more positive outlook on the stock among social media
+                      users.
                       <Separator className="my-2" />
                       <div className="text-xs">
                         As of {moment(meters.hype.date).calendar()}{" "}
@@ -298,9 +302,10 @@ export default function Stocks() {
                       Impact Factor
                     </CardTitle>
                     <CardDescription>
-                      <i>Impact Factor</i> scores how major events like
+                      <i>Impact Factor</i> scores how major news events like
                       elections, natural disasters, and regulations influence
-                      stock performance
+                      stock performance. A higher score indicates a more
+                      positive impact on the stock.
                       <Separator className="my-2" />
                       <div className="text-xs">
                         As of {moment(meters.impact?.date).calendar()}{" "}

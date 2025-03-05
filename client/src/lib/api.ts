@@ -10,6 +10,7 @@ export interface IApi {
   ) => Promise<ReadableStream>;
   getStockData: (ticker: string, limit?: number) => Promise<StockDataItem[]>;
   getStockPredictions: (ticker: string) => Promise<StockPrediction>;
+  getStockRealtime: (ticker: string) => Promise<StockDataItem[]>;
   get: <TRes>(path: string) => Promise<TRes>;
   post: <TReq, TRes>(path: string, object?: TReq) => Promise<TRes>;
 }
@@ -183,6 +184,25 @@ export default class Api implements IApi {
   public async getStockPredictions(ticker: string): Promise<StockPrediction> {
     try {
       const resp = await this.instance.get("/auth/forecast", {
+        params: { ticker },
+        responseType: "json",
+        withCredentials: true,
+      });
+      return resp.data;
+    } catch (error) {
+      this.handleError(error as AxiosError);
+      throw error;
+    }
+  }
+
+  /**
+   * get the realtime stock data for a given ticker (1m interval)
+   * @param ticker stock ticker
+   * @returns {Promise<StockDataItem>}
+   */
+  public async getStockRealtime(ticker: string): Promise<StockDataItem[]> {
+    try {
+      const resp = await this.instance.get("/stockrealtime", {
         params: { ticker },
         responseType: "json",
         withCredentials: true,

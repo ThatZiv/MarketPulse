@@ -118,13 +118,14 @@ export default function Stock_Chart({ ticker }: props) {
           {isLoading && (
             <div
               role="status"
-              className=" p-4 border border-gray-200 rounded-sm shadow-sm animate-pulse md:p-6 dark:border-gray-700"
+              className="border border-gray-200 rounded-sm shadow-sm animate-pulse md:p-6 dark:border-gray-700"
             >
-              <div className="bg-gray-200 rounded-full dark:bg-gray-700 w-20 mb-2.5">
-                <div className="w-48 h-2 m-10 bg-gray-200 rounded-full dark:bg-gray-700"></div>
-                <div className="w-48 h-2 m-10 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+              <div className="">
+                <div className="w-48 h-2 my-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                <div className="w-32 h-2 my-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
+                <div className="w-52 h-2 my-2 bg-gray-200 rounded-full dark:bg-gray-700"></div>
               </div>
-              <div className="flex items-baseline mt-4">
+              <div className="flex items-baseline mt-2">
                 <div className="w-full bg-gray-200 rounded-t-lg h-72 dark:bg-gray-700"></div>
                 <div className="w-full h-56 ms-6 bg-gray-200 rounded-t-lg dark:bg-gray-700"></div>
                 <div className="w-full bg-gray-200 rounded-t-lg h-72 ms-6 dark:bg-gray-700"></div>

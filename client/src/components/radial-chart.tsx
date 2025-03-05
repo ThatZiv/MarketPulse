@@ -64,7 +64,7 @@ export default function RadialChart({ score }: RadialChartProps) {
                           y={(viewBox.cy || 0) - 16}
                           className="fill-foreground text-2xl font-bold"
                         >
-                          {(Number(score) * 100).toFixed(0)}%
+                          {(Number(score / 6) * 100).toFixed(0)}%
                         </tspan>
                         <tspan
                           x={viewBox.cx}

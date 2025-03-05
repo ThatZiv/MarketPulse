@@ -92,7 +92,7 @@ if __name__ == '__main__':
     def route():
         return jsonify('hello')
 
-    @app.route('/stockrealtime/', methods = ['GET'] )
+    @app.route('/stockrealtime', methods = ['GET'] )
     @jwt_required()
     def realtime():
         if request.method == 'GET':
@@ -121,9 +121,10 @@ if __name__ == '__main__':
                                         'stock_open' : open_rt[i],
                                         'stock_high' : high_rt[i],
                                         'stock_low' : low_rt[i],
-                                        'sentiment_data'  : 0, 
+                                        'sentiment_data'  : 0,
+                                        'news_data': 0,
                                         'time_stamp' : dump_datetime(stock_data["Datetime"][i])})
-                cache.set(output_id, json_output, timeout = 60)
+                cache.set(output_id, json_output, timeout = 60*5)
                 print("Reset Cache")
                 return json_output
             return Response(status=400, mimetype='application/json')
