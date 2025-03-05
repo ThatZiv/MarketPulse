@@ -4,11 +4,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
 function chooseEmoji(score: number): string {
-  if (score <= -4) return "Negative";
-  if (score <= -1) return "Mostly negative";
+  if (score <= -4) return "Mostly negative";
+  if (score < 0) return "Negative";
   if (score === 0) return "Neutral";
-  if (score > 0 && score <= 1) return "Mostly positive";
-  if (score > 1 && score <= 4) return "Positive";
+  if (score > 0 && score <= 1) return "Positive";
+  if (score > 1 && score <= 4) return "Mostly positive";
   return "Positive";
 }
 const chartConfig = {
@@ -64,7 +64,7 @@ export default function RadialChart({ score }: RadialChartProps) {
                           y={(viewBox.cy || 0) - 16}
                           className="fill-foreground text-2xl font-bold"
                         >
-                          {Number(score.toFixed(2)) * 100}%
+                          {(Number(score) * 100).toFixed(0)}%
                         </tspan>
                         <tspan
                           x={viewBox.cx}
@@ -78,7 +78,7 @@ export default function RadialChart({ score }: RadialChartProps) {
                           y={(viewBox.cy || 0) + 16}
                           className="fill-muted-foreground"
                         >
-                          Hype
+                          sentiment
                         </tspan>
                       </text>
                     );
@@ -90,16 +90,16 @@ export default function RadialChart({ score }: RadialChartProps) {
               dataKey="negative"
               stackId="a"
               cornerRadius={5}
-              fill="#EA4228"
-              className="stroke-transparent stroke-2 hover:stroke-[#EA4228] hover:stroke-[0.3rem]"
+              fill="#F93827"
+              className="stroke-transparent stroke-2 hover:stroke-[#F93827] hover:stroke-[0.3rem]"
               style={{ transition: "stroke 0.3s" }}
             />
             <RadialBar
               dataKey="positive"
-              fill="#5BE12C"
+              fill="#16C47F"
               stackId="a"
               cornerRadius={5}
-              className="stroke-transparent stroke-2 hover:stroke-[#5BE12C] hover:stroke-[0.3rem]"
+              className="stroke-transparent stroke-2 hover:stroke-[#16C47F] hover:stroke-[0.3rem]"
               style={{ transition: "stroke 0.3s" }}
             />
           </RadialBarChart>

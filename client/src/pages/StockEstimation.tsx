@@ -10,7 +10,7 @@ import Stock_Chart from "@/components/stock_chart_demo";
 //   HoverCardTrigger,
 // } from "@/components/ui/hover-card";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { MdEdit } from "react-icons/md";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
@@ -29,6 +29,9 @@ import { cache_keys } from "@/lib/constants";
 import Predictions from "@/components/predictions";
 import PredictionTable from "@/components/ui/prediction-table";
 import { Separator } from "@/components/ui/separator";
+import { useGlobal } from "@/lib/GlobalProvider";
+import { StocksState } from "@/types/global_state";
+import moment from "moment";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -51,6 +54,7 @@ interface StockResponse {
 export default function Stocks() {
   const { displayName, supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
+  const { state } = useGlobal();
   const navigate = useNavigate();
   const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
     queryKey: [cache_keys.USER_STOCKS, ticker],
@@ -91,6 +95,52 @@ export default function Stocks() {
       }),
     [user, supabase]
   );
+
+  const meters = useMemo(() => {
+    // gets the last data point in stock data for a given ticker
+    const defaultMeter = {
+      date: new Date("bad date"),
+      value: 0,
+      state: "loading",
+    };
+    if (!ticker || !state.stocks[ticker]) {
+      //def a better way to do this
+      return {
+        hype: defaultMeter,
+        impact: defaultMeter,
+      };
+    }
+    const getLastStockHistory = (
+      stockHistory: StocksState["history"],
+      key: string
+    ) => {
+      if (!stockHistory) {
+        return defaultMeter;
+      }
+      const t = stockHistory.sort(
+        (a, b) =>
+          new Date(a.time_stamp.join(" ")).getTime() -
+          new Date(b.time_stamp.join(" ")).getTime()
+      );
+      const last = t[t.length - 1];
+      return {
+        date: new Date((last?.time_stamp ?? []).join(" ")),
+        value: (last?.[key as keyof typeof last] as number) ?? 0,
+      };
+    };
+    const hype_meter = getLastStockHistory(
+      state.stocks[ticker ?? ""].history,
+      "sentiment_data"
+    );
+    const impact_meter = getLastStockHistory(
+      state.stocks[ticker ?? ""].history,
+      "news_data"
+    );
+    return {
+      hype: hype_meter,
+      impact: impact_meter,
+    };
+  }, [state.stocks, ticker]);
   useEffect(() => {
     if (!ticker_name) {
       // Redirect
@@ -137,14 +187,13 @@ export default function Stocks() {
     );
   }
 
-  const hype_meter = 0.365913391113281;
   const currentStock = stocks?.find(
     (stock) =>
       stock?.Stocks?.stock_name ===
       ticker_name?.[ticker as keyof typeof ticker_name]
   );
   return (
-    <div className="lg:p-4 md:w-10/12 w-full mx-auto">
+    <div className="md:w-10/12 w-full mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
         {ticker_name
           ? ticker_name[ticker as keyof typeof ticker_name] || "Undefined"
@@ -157,7 +206,7 @@ export default function Stocks() {
             <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
           </Link>
         </div>
-        <h2 className="font-semibold md:text-lg text-xs">Hey {displayName},</h2>
+        <h2 className="font-semibold md:text-xl text-xs">Hey {displayName},</h2>
         <h3 className="md:text-md text-xs">Current Stock Rate: $ 10.12</h3>
         <h3 className="md:text-md text-xs">
           Money Available to Invest: ${" "}
@@ -190,14 +239,20 @@ export default function Stocks() {
       </div>
       <div className="flex flex-col md:items-center pt-4">
         <Card className="border border-black dark:border-white w-full p-1">
-          <CardTitle className="font-semibold text-3xl my-5">
+          <CardTitle className="font-semibold text-center md:text-left text-3xl mx-6 my-5">
             Predictions
           </CardTitle>
           <Separator className="my-3" />
           <CardContent>
+            <div className="mb-3">
+              {currentStock && <Predictions {...currentStock?.Stocks} />}
+              <Separator className="my-3" />
+            </div>
             <div className="grid grid-cols-6 gap-2">
               <div className="col-span-6 lg:col-span-2">
-                <h2 className="font-semibold text-lg">Suggestion</h2>
+                <h2 className="font-semibold text-lg">
+                  Our Suggestion <span className="text-red-500">*</span>
+                </h2>
               </div>
               <div className="col-span-6 lg:col-span-4">
                 {currentStock && (
@@ -205,48 +260,59 @@ export default function Stocks() {
                 )}
               </div>
             </div>
-            {currentStock && <Predictions {...currentStock?.Stocks} />}
           </CardContent>
         </Card>
       </div>
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <div className="grid grid-cols-6 gap-2">
           <div className="col-span-6 xl:col-span-3">
-            <Card className="border border-black dark:border-white rounded-md md:p-4">
-              <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-                <div className="grid flex-1 gap-1 sm:text-left">
-                  <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                    Hype Meter
-                  </CardTitle>
-                  <CardDescription>
-                    Hype Meter analyzes social media sentiment to forecast stock
-                    market trends.
-                  </CardDescription>
+            {moment(meters.hype.date).isValid() && (
+              <Card className="border border-black dark:border-white rounded-md md:p-4">
+                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                  <div className="grid flex-1 gap-1 sm:text-left">
+                    <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                      Hype Meter
+                    </CardTitle>
+                    <CardDescription>
+                      <i>Hype Meter</i> analyzes social media sentiment to
+                      forecast stock market trends.
+                      <Separator className="my-2" />
+                      <div className="text-xs">
+                        As of {moment(meters.hype.date).calendar()}{" "}
+                      </div>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <div className="flex flex-col md:flex-row items-center justify-center">
+                  <RadialChart score={meters.hype.value} />
                 </div>
-              </CardHeader>
-              <div className="flex flex-col md:flex-row items-center justify-center">
-                <RadialChart score={hype_meter} />
-              </div>
-            </Card>
+              </Card>
+            )}
           </div>
           <div className="col-span-6 xl:col-span-3">
-            <Card className="border border-black dark:border-white rounded-md md:p-4">
-              <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-                <div className="grid flex-1 gap-1 sm:text-left">
-                  <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                    Impact Factor
-                  </CardTitle>
-                  <CardDescription>
-                    Impact Factor scores how major events like elections,
-                    natural disasters, and regulations influence stock
-                    performance
-                  </CardDescription>
+            {moment(meters.hype.date).isValid() && (
+              <Card className="border border-black dark:border-white rounded-md md:p-4">
+                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                  <div className="grid flex-1 gap-1 sm:text-left">
+                    <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                      Impact Factor
+                    </CardTitle>
+                    <CardDescription>
+                      <i>Impact Factor</i> scores how major events like
+                      elections, natural disasters, and regulations influence
+                      stock performance
+                      <Separator className="my-2" />
+                      <div className="text-xs">
+                        As of {moment(meters.impact?.date).calendar()}{" "}
+                      </div>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <div className="flex flex-col md:flex-row items-center justify-center">
+                  <RadialChart score={meters.impact.value} />
                 </div>
-              </CardHeader>
-              <div className="flex flex-col md:flex-row items-center justify-center">
-                <RadialChart score={hype_meter} />
-              </div>
-            </Card>
+              </Card>
+            )}
           </div>
         </div>
       </div>

@@ -49,7 +49,7 @@ const GlobalReducer = (
           ...state.stocks,
           [action.payload.stock_ticker]: {
             ...state.stocks[action.payload.stock_ticker],
-            stock_current_price: action.payload.data,
+            current_price: action.payload.data,
           },
         },
       };
@@ -108,7 +108,6 @@ const GlobalReducer = (
       if (typeof action.payload.model !== "string") {
         throw new Error("Expected string for payload.model");
       }
-      console.log("setting model to", action.payload.model);
       return {
         ...state,
         views: {

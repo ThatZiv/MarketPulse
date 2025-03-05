@@ -25,7 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApi } from "@/lib/ApiProvider";
-import { cache_keys } from "@/lib/constants";
+import { actions, cache_keys } from "@/lib/constants";
+import { useGlobal } from "@/lib/GlobalProvider";
 
 const chartConfig = {
   close: {
@@ -49,6 +50,7 @@ const chartConfig = {
 type props = { ticker: string };
 export default function Stock_Chart({ ticker }: props) {
   const api = useApi();
+  const { dispatch } = useGlobal();
   const [timeRange, setTimeRange] = React.useState("14d");
   // const timeRangeNum = React.useMemo(
   //   () => Number(timeRange.match("[0-9]+")?.[0]),
@@ -61,8 +63,13 @@ export default function Stock_Chart({ ticker }: props) {
       if (!data) {
         throw new Error("Failed to fetch stock data");
       }
+      dispatch({
+        type: actions.SET_STOCK_HISTORY,
+        payload: { data, stock_ticker: ticker },
+      });
       return data;
     },
+    enabled: !!api && !!ticker,
   });
 
   const validData = data ?? ([] as StockDataItem[]);
@@ -136,7 +143,7 @@ export default function Stock_Chart({ ticker }: props) {
         <Card className="w-full border border-black dark:border-white ">
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
-              <CardTitle>{ticker}</CardTitle>
+              <CardTitle>{ticker} Historical Prices</CardTitle>
               <CardDescription>
                 <div className="text-xs">
                   Updated as of{" "}

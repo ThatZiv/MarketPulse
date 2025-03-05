@@ -7,6 +7,7 @@ export interface Stock {
 export interface StockDataItem {
   stock_id: number;
   sentiment_data: number;
+  news_data: number;
   stock_volume: number;
   stock_close: number;
   stock_high: number;

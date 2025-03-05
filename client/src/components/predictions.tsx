@@ -44,7 +44,7 @@ export default function Predictions({
 }: PredictionsProps) {
   // const { supabase } = useSupabase();
   const api = useApi();
-  const { dispatch } = useGlobal();
+  const { state, dispatch } = useGlobal();
   const { data, isLoading, isError } = useQuery({
     queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
     queryFn: async () => {
@@ -118,6 +118,47 @@ export default function Predictions({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [predictions]);
 
+  const shownChartData = React.useMemo(() => {
+    if (!chartData) return [];
+    const model = state.views.predictions.model;
+    const timeWindow = state.views.predictions.timeWindow;
+    const timeIndex = timeWindow + (timeWindow == 1 ? 1 : 0); // just so it's not a single dot on the chart
+    if (!model) {
+      if (!timeWindow) {
+        return chartData;
+      }
+      return chartData.slice(0, timeIndex);
+    }
+    const final = Object.keys(chartData[0])
+      .reduce((acc, key) => {
+        if (key === "day" || key === model) {
+          acc.push(key);
+        }
+        return acc;
+      }, [] as string[])
+      .map((key) => {
+        return chartData.map((point) => {
+          return {
+            day: point.day,
+            [key]: point[key],
+          };
+        });
+      })
+      .filter((points) => {
+        console.log(points);
+        return points.some((point) => point["day"] && point[model]);
+      })
+      .flat();
+    if (timeWindow) {
+      return final.slice(0, timeIndex);
+    }
+    return final;
+  }, [
+    chartData,
+    state.views.predictions.model,
+    state.views.predictions.timeWindow,
+  ]);
+  // console.log(shownChartData);
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {};
     const colors = ["#F5A79F", "#E2C541", "#BF0F52", "#92E98C", "#479BC6"];
@@ -148,7 +189,7 @@ export default function Predictions({
   }
 
   return (
-    <Card className="w-full border border-black dark:border-white ">
+    <Card className="w-full  ">
       {isLoading ? (
         <div
           role="status"
@@ -181,7 +222,7 @@ export default function Predictions({
               >
                 <LineChart
                   accessibilityLayer
-                  data={chartData}
+                  data={shownChartData}
                   margin={{
                     left: 12,
                     right: 12,
@@ -199,7 +240,7 @@ export default function Predictions({
                   <YAxis
                     tickLine={true}
                     axisLine={true}
-                    tickMargin={9}
+                    tickMargin={4}
                     tickCount={9}
                     domain={["auto", "auto"]}
                   >
@@ -207,6 +248,7 @@ export default function Predictions({
                       value="Stock Price ($)"
                       angle={-90}
                       position="insideLeft"
+                      offset={-5}
                       style={{ textAnchor: "middle" }}
                     />
                   </YAxis>
@@ -224,22 +266,22 @@ export default function Predictions({
                     }
                   />
                   <ChartLegend content={<ChartLegendContent />} />
-                  {Object.keys(chartData[chartData.length - 1] ?? []).map(
-                    (key, index) => {
-                      if (key === "day") return null;
-                      return (
-                        <Line
-                          key={index}
-                          type="monotone"
-                          dataKey={key}
-                          strokeWidth={2}
-                          stroke={chartConfig[key].color}
-                          dot={true}
-                          activeDot={{ r: 3 }}
-                        />
-                      );
-                    }
-                  )}
+                  {Object.keys(
+                    shownChartData[shownChartData.length - 1] ?? []
+                  ).map((key, index) => {
+                    if (key === "day") return null;
+                    return (
+                      <Line
+                        key={index}
+                        type="monotone"
+                        dataKey={key}
+                        strokeWidth={2}
+                        stroke={chartConfig[key].color}
+                        dot={true}
+                        activeDot={{ r: 3 }}
+                      />
+                    );
+                  })}
                 </LineChart>
               </ChartContainer>
             </CardContent>
