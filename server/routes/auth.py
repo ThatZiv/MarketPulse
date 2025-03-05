@@ -107,8 +107,8 @@ def forecast_route():
     if not ticker:
         return Response(status=400, mimetype='application/json')
     if request.method == 'GET':
-        session = sessionmaker(bind=get_engine())
-        session = session()
+        session_a = sessionmaker(bind=get_engine())
+        session = session_a()
         ticker = request.args['ticker']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = session.connection().execute(s_id).first()
