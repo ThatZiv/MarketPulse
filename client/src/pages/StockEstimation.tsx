@@ -33,6 +33,7 @@ import { useGlobal } from "@/lib/GlobalProvider";
 import { StocksState } from "@/types/global_state";
 import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
+import { PurchaseHistory } from "@/components/purchase-history";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -291,6 +292,7 @@ export default function Stocks() {
               </Card>
             )}
           </div>
+          {ticker && <PurchaseHistory ticker={ticker} />}
           <div className="col-span-6 xl:col-span-3">
             {moment(meters.hype.date).isValid() && (
               <Card className="border border-black dark:border-white rounded-md md:p-4">
