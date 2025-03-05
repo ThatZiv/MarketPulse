@@ -87,6 +87,7 @@ def chart():
                                         'stock_open' : i.stock_open,
                                         'stock_high' : i.stock_high, 'stock_low' : i.stock_low,
                                         'sentiment_data'  : i.sentiment_data,
+                                        'news_data': i.news_data,
                                         'time_stamp' : dump_datetime(i.time_stamp) })
                 json_output.reverse()
                 return jsonify(json_output)
