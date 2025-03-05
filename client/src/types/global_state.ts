@@ -8,4 +8,10 @@ export interface GlobalState {
   };
   stocks: { [stock_ticker: string]: [] };
   predictions: { [stock_ticker: string]: PredictionDatapoint[] };
+  views: {
+    predictions: {
+      timeWindow: number;
+      model: string | null;
+    };
+  };
 }

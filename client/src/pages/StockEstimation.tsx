@@ -190,10 +190,10 @@ export default function Stocks() {
       </div>
       <div className="flex flex-col md:items-center pt-4">
         <Card className="border border-black dark:border-white w-full p-1">
-          <CardTitle className="font-semibold text-3xl my-2">
+          <CardTitle className="font-semibold text-3xl my-5">
             Predictions
-            <Separator />
           </CardTitle>
+          <Separator className="my-3" />
           <CardContent>
             <div className="grid grid-cols-6 gap-2">
               <div className="col-span-6 lg:col-span-2">

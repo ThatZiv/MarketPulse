@@ -20,25 +20,41 @@ import {
 import moment from "moment";
 import { Button } from "@/components/ui/button";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { actions } from "@/lib/constants";
 
 interface PredictionTableProps {
   ticker: string;
 }
 
 export default function PredictionTable({ ticker }: PredictionTableProps) {
-  const { state } = useGlobal();
+  const { state, dispatch } = useGlobal();
   const { predictions } = state;
+  const model = state.views.predictions.model;
+  const days = state.views.predictions.timeWindow;
 
   const data = predictions[ticker];
-  const [model, setModel] = React.useState(""); // used in model selection
-  const [days, setDays] = React.useState(7); // used in row selection
   if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
+
+  const setModel = (value: string) => {
+    dispatch({
+      type: actions.SET_PREDICTION_VIEW_MODEL,
+      payload: { model: value },
+    });
+  };
+
+  const setDays = (value: number) => {
+    dispatch({
+      type: actions.SET_PREDICTION_VIEW_TIME,
+      payload: { timeWindow: value },
+    });
+  };
+
   return (
     <>
       <div className="flex w-full space-x-2 items-center justify-end">
-        <Select value={model} onValueChange={(value) => setModel(value)}>
+        <Select value={model ?? ""} onValueChange={(value) => setModel(value)}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by model" />
           </SelectTrigger>
@@ -48,11 +64,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
               {Object.keys(data[0]).map((key) => {
                 if (key === "day") return null;
                 return (
-                  <SelectItem
-                    onSelect={() => setModel("")}
-                    key={key}
-                    value={key}
-                  >
+                  <SelectItem key={key} value={key}>
                     {key}
                   </SelectItem>
                 );
@@ -77,7 +89,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
           onValueChange={(value) => setDays(Number(value))}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter lookahead" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -118,7 +130,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                 {Object.values(row).map((value, j) => {
                   let valueStr = value.toString();
                   if (!isNaN(Number(value))) {
-                    valueStr = Number(value).toFixed(2);
+                    valueStr = "$" + Number(value).toFixed(2);
                     if (model && model !== Object.keys(data[0])[j]) return null;
                   } else if (moment(value).isValid()) {
                     valueStr = moment(valueStr).format("YYYY-MM-DD");

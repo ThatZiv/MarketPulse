@@ -10,6 +10,12 @@ const initialState: GlobalState = {
   },
   stocks: {},
   predictions: {},
+  views: {
+    predictions: {
+      timeWindow: 7,
+      model: null,
+    },
+  },
 };
 
 // general purpose reducer for the entire state
@@ -83,6 +89,37 @@ const GlobalReducer = (
           [action.payload.stock_ticker]: action.payload.data,
         },
       };
+    case actions.SET_PREDICTION_VIEW_TIME:
+      if (typeof action.payload.timeWindow !== "number") {
+        throw new Error("Expected number for payload.timeWindow");
+      }
+
+      return {
+        ...state,
+        views: {
+          ...state.views,
+          predictions: {
+            ...state.views.predictions,
+            timeWindow: action.payload.timeWindow,
+          },
+        },
+      };
+    case actions.SET_PREDICTION_VIEW_MODEL:
+      if (typeof action.payload.model !== "string") {
+        throw new Error("Expected string for payload.model");
+      }
+      console.log("setting model to", action.payload.model);
+      return {
+        ...state,
+        views: {
+          ...state.views,
+          predictions: {
+            ...state.views.predictions,
+            model: action.payload.model,
+          },
+        },
+      };
+
     default:
       throw new Error("Unknown action type: " + action.type);
   }
