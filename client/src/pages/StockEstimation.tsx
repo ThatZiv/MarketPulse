@@ -292,7 +292,6 @@ export default function Stocks() {
               </Card>
             )}
           </div>
-          {ticker && <PurchaseHistory ticker={ticker} />}
           <div className="col-span-6 xl:col-span-3">
             {moment(meters.hype.date).isValid() && (
               <Card className="border border-black dark:border-white rounded-md md:p-4">
@@ -320,6 +319,9 @@ export default function Stocks() {
             )}
           </div>
         </div>
+        {currentStock && (
+          <PurchaseHistory stock_id={currentStock?.Stocks.stock_id} />
+        )}
       </div>
     </div>
   );

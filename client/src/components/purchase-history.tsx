@@ -19,24 +19,24 @@ import {
 } from "@/components/ui/accordion";
 import moment from "moment";
 interface PurchaseHistoryProps {
-  ticker: string;
+  stock_id: number;
 }
 
-export function PurchaseHistory({ ticker }: PurchaseHistoryProps) {
+export function PurchaseHistory({ stock_id }: PurchaseHistoryProps) {
   const { supabase } = useSupabase();
   const { data, isError, isLoading } = useQuery({
-    queryKey: [cache_keys.USER_STOCK_PURCHASES, ticker],
+    queryKey: [cache_keys.USER_STOCK_PURCHASES, stock_id],
     queryFn: async () => {
       const resp = await supabase
         .from("User_Stock_Purchases")
         .select("*")
-        .eq("stock_ticker", ticker);
+        .eq("stock_id", stock_id);
       if (resp.error) {
         throw new Error(resp.error.message);
       }
       return resp.data;
     },
-    enabled: !!ticker && !!supabase,
+    enabled: !!stock_id && !!supabase,
   });
   if (isLoading) {
     return <Spinner />;
@@ -51,7 +51,7 @@ export function PurchaseHistory({ ticker }: PurchaseHistoryProps) {
       <AccordionItem value="purchasehistory" title="Purchase History">
         <AccordionContent>
           <Table>
-            <TableCaption>Your purchase history for {ticker}</TableCaption>
+            <TableCaption>Your purchase history</TableCaption>
             <TableHead>
               <TableRow>
                 <TableHeader>Date</TableHeader>
