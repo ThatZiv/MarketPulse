@@ -73,9 +73,6 @@ const GlobalReducer = (
       if (typeof action.payload.stock_ticker !== "string") {
         throw new Error("Expected string for payload.stock_ticker");
       }
-      if (typeof action.payload.model_name !== "string") {
-        throw new Error("Expected string for payload.model_name");
-      }
       if (!Array.isArray(action.payload.data)) {
         throw new Error("Expected array for payload.data");
       }
@@ -83,12 +80,7 @@ const GlobalReducer = (
         ...state,
         predictions: {
           ...state.predictions,
-          [action.payload.stock_ticker]: {
-            ...state.predictions[action.payload.stock_ticker],
-            model_name: action.payload.model_name,
-            prediction: action.payload.data,
-            timestamp: Date.now(),
-          },
+          [action.payload.stock_ticker]: action.payload.data,
         },
       };
     default:

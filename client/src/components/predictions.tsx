@@ -1,4 +1,4 @@
-import { cache_keys } from "@/lib/constants";
+import { actions, cache_keys } from "@/lib/constants";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -20,6 +20,8 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useApi } from "@/lib/ApiProvider";
+import { type PredictionDatapoint } from "@/types/global_state";
+import { useGlobal } from "@/lib/GlobalProvider";
 // const chartData = [
 //   { day: "January", desktop: 186, mobile: 80 },
 //   { day: "February", desktop: 305, mobile: 200 },
@@ -35,12 +37,6 @@ interface PredictionsProps {
   stock_ticker: string;
 }
 
-// type StockPrediction = {
-//   model_name: string;
-//   prediction: number[];
-//   timestamp: number;
-// };
-
 export default function Predictions({
   stock_id,
   stock_name,
@@ -48,6 +44,7 @@ export default function Predictions({
 }: PredictionsProps) {
   // const { supabase } = useSupabase();
   const api = useApi();
+  const { dispatch } = useGlobal();
   const { data, isLoading, isError } = useQuery({
     queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
     queryFn: async () => {
@@ -67,7 +64,7 @@ export default function Predictions({
   const predictions = data?.output;
 
   const chartData = React.useMemo(() => {
-    const points: Array<Datapoint> = [];
+    const points: Array<PredictionDatapoint> = [];
     if (!predictions) return points;
 
     // TODO: make sure this works when:
@@ -93,8 +90,8 @@ export default function Predictions({
         currentDate.add(1, "days");
       }
 
-      const point: Datapoint = {
-        day: currentDate.format("MMM DD"),
+      const point: PredictionDatapoint = {
+        day: currentDate.toString(),
       };
 
       for (const { name, forecast } of predictions) {
@@ -110,7 +107,13 @@ export default function Predictions({
       //   currentDate.add(1, "days");
       // }
     }
-
+    dispatch({
+      type: actions.SET_PREDICTION,
+      payload: {
+        stock_ticker,
+        data: points,
+      },
+    });
     return points;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [predictions]);
@@ -127,7 +130,6 @@ export default function Predictions({
     return config;
   }, [predictions]);
 
-  type Datapoint = Record<string, string | number>;
   if (!stock_id) {
     return <div>Stock ID not found</div>;
   }
@@ -160,19 +162,22 @@ export default function Predictions({
           </div>
         </div>
       ) : (
-        <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+        <CardHeader className="flex items-center gap-2 space-y-0 border-b sm:flex-row">
           <div className="grid flex-1 gap-1 text-center sm:text-left">
             <CardTitle>{stock_ticker} Forecasts</CardTitle>
             <CardDescription>
-              <div className="text-xs ">
-                Up to {chartData[chartData.length - 1]?.day}
+              <div className="text-xs">
+                Up to{" "}
+                {moment(chartData[chartData.length - 1]?.day).format(
+                  "MMMM DD,  yyyy"
+                )}
               </div>
             </CardDescription>
 
             <CardContent className="flex items-center justify-center">
               <ChartContainer
                 config={chartConfig}
-                className="min-h-[300px] w-full"
+                className="min-h-[275px] w-full"
               >
                 <LineChart
                   accessibilityLayer
@@ -189,6 +194,7 @@ export default function Predictions({
                     allowDuplicatedCategory={false}
                     axisLine={true}
                     tickMargin={9}
+                    tickFormatter={(value) => moment(value).format("MMM D")}
                   />
                   <YAxis
                     tickLine={true}
@@ -206,7 +212,16 @@ export default function Predictions({
                   </YAxis>
                   <ChartTooltip
                     cursor={true}
-                    content={<ChartTooltipContent />}
+                    content={
+                      <ChartTooltipContent
+                        labelFormatter={(val) => {
+                          return new Date(val).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          });
+                        }}
+                      />
+                    }
                   />
                   <ChartLegend content={<ChartLegendContent />} />
                   {Object.keys(chartData[chartData.length - 1] ?? []).map(
