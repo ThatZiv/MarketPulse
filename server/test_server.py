@@ -2,7 +2,7 @@
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, Response
 import os
-
+from load_data import load_stocks
 from sqlalchemy import create_engine, select, func
 
 from models.run_models import run_models
@@ -19,6 +19,7 @@ def create_app():
 if __name__ == '__main__':
 
     app = create_app()
+    load_stocks()    
    
     run_models()
 
