@@ -88,3 +88,4 @@ def load_data(engine):
                             sentiment_data=0, time_stamp=stock5["Date"][i], news_data = 0)
         session.add(new_row)
     session.commit()
+    session.close()
