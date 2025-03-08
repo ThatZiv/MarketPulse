@@ -13,6 +13,7 @@ interface StockResponse {
     stock_ticker: string;
   };
   shares_owned: number;
+  desired_investiture: number;
 }
 
 interface StockCardProps {
@@ -33,7 +34,9 @@ export default function Landing() {
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name, stock_ticker), shares_owned")
+          .select(
+            "Stocks (stock_name, stock_ticker), shares_owned, desired_investiture"
+          )
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
@@ -158,9 +161,9 @@ function StockCard({
 
         <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
           <span className="text-xl font-semibold text-gray-900 dark:text-white">
-            {stock.shares_owned.toLocaleString()}
+            ${stock.desired_investiture}
           </span>{" "}
-          shares owned
+          to invest
         </p>
       </div>
     </Link>

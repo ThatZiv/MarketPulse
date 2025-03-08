@@ -71,8 +71,7 @@ export default function Predictions({
     // - predictions are made on a weekend
     // - predictions are made on a friday
     //// predictions are made on a monday
-    let startDate = moment(new Date(data.created_at));
-
+    let startDate = moment(new Date(data.created_at)).add(1, "days");
     // initial weekend day check
     if (startDate.isoWeekday() === 6) {
       // saturday -> monday
