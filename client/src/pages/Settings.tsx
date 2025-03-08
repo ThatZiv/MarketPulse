@@ -319,10 +319,6 @@ export default function SettingsPage() {
                           )}
                         />
                       </div>
-                      <div className="grid w-full max-w-sm items-center gap-1.5 space-y-1">
-                        <Label htmlFor="picture">Avatar</Label>
-                        <Input id="picture" type="file" accept="image/*" />
-                      </div>
                     </CardContent>
                     <CardFooter>
                       <Button

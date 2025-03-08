@@ -6,60 +6,53 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import { generateGravatarUrl } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
-import useAsync from "@/hooks/useAsync";
-
-interface picture {
-  profile_picture: string;
-}
+import { useState, useEffect } from "react";
+import { useGlobal } from "@/lib/GlobalProvider";
+import { actions } from "@/lib/constants";
 export default function Avatar() {
   const { supabase, user, status } = useSupabase();
-  let picture_key = "";
-  const {
-    value: picture_id,
-    error: error,
-    loading: loading,
-  } = useAsync<picture[]>(
-    () =>
-      new Promise((resolve, reject) =>
-        supabase
+  const [imageReady, setImageReady] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const { state, dispatch } = useGlobal();
+
+  useEffect(() => {
+    console.log(state.user.url);
+    console.log(state.user.name);
+    console.log(state.user);
+    if (state.user.url === "") {
+      const image_url = async () => {
+        const { data, error } = await supabase
           .from("Account")
           .select("profile_picture")
-          .eq("user_id", user?.id)
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            resolve(data || []);
-          })
-      ),
-    [supabase]
-  );
-
-  if (picture_id) picture_key = picture_id[0].profile_picture;
-
-  const { value: image_url } = useAsync(
-    () =>
-      new Promise((resolve, reject) => {
-        if (picture_key != "") {
-          supabase.storage
+          .eq("user_id", user?.id);
+        if (data) {
+          const image = await supabase.storage
             .from("profile_pictures")
-            .createSignedUrl(picture_key, 3600)
-            .then(({ data, error }) => {
-              if (error) reject(error);
-              return resolve(data || []);
+            .createSignedUrl(data[0].profile_picture, 3600);
+          if (image.data) {
+            console.log(image.data.signedUrl);
+            setImageUrl(image.data.signedUrl);
+            setImageReady(true);
+            state.user.url = image.data.signedUrl;
+            dispatch({
+              type: actions.SET_USER,
+              payload: [state.user],
             });
+          }
         }
-      })
-  );
-  let image: any = "";
-  if (image_url) {
-    console.log(image_url);
-    image = image_url;
-  }
+      };
+      image_url();
+    } else {
+      setImageUrl(state.user.url);
+      setImageReady(true);
+    }
+  }, []);
 
   if (status === "loading") return <Skeleton className="h-8 w-8 rounded-lg" />;
   return (
     <_Avatar className="h-8 w-8 rounded-lg">
-      {image_url ? (
-        <AvatarImage src={image.signedUrl} alt="avatar" />
+      {imageReady ? (
+        <AvatarImage src={imageUrl} alt="avatar" />
       ) : user ? (
         <AvatarImage src={generateGravatarUrl(user?.id)} alt="avatar" />
       ) : (
