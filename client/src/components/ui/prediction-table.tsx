@@ -27,17 +27,16 @@ interface PredictionTableProps {
 function Average(row: { row: (number | string)[] }) {
   let average = 0;
   let count = 0;
-  console.log(row.row[1]);
-  try {
-    row.row.forEach((x: number | string) => {
-      if (!isNaN(Number(x))) {
-        average += Number(x);
-        count += 1;
-      }
-    });
-    //console.log(average);
-    average = average / count;
-  } catch {}
+  //console.log(row.row[1]);
+
+  row.row.forEach((x: number | string) => {
+    if (!isNaN(Number(x))) {
+      average += Number(x);
+      count += 1;
+    }
+  });
+  //console.log(average);
+  average = average / count;
 
   const output = "$" + Number(average).toFixed(2);
   return <TableCell>{output}</TableCell>;
@@ -47,19 +46,17 @@ function ColoredRow(row: { row: (number | string)[]; value: number }) {
   let greatest = true;
   let least = true;
 
-  try {
-    row.row.forEach((x: number | string) => {
-      if (!isNaN(Number(x))) {
-        if (Number(x) > row.value) {
-          greatest = false;
-        }
-        if (Number(x) < row.value) {
-          least = false;
-        }
+  row.row.forEach((x: number | string) => {
+    if (!isNaN(Number(x))) {
+      if (Number(x) > row.value) {
+        greatest = false;
       }
-    });
-    //console.log(average);
-  } catch {}
+      if (Number(x) < row.value) {
+        least = false;
+      }
+    }
+  });
+  //console.log(average);
 
   const valueStr = "$" + Number(row.value).toFixed(2);
   if (greatest) {
