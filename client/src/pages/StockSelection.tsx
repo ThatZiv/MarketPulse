@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
@@ -42,7 +42,13 @@ interface StockFormData {
 export default function StockPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, supabase } = useSupabase();
+
+  const title = useMemo(
+    () => (searchParams.has("ticker") ? "Edit Stock" : "Add New Stock"),
+    [searchParams]
+  );
 
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
@@ -68,6 +74,17 @@ export default function StockPage() {
       }),
     [supabase]
   );
+
+  useEffect(() => {
+    if (searchParams.has("ticker") && stocks) {
+      const ticker = (searchParams.get("ticker") as string).toUpperCase();
+      const stock = stocks.find((stock) => stock.stock_ticker === ticker);
+      if (stock) {
+        setFormData((prev) => ({ ...prev, ticker: stock.stock_id.toString() }));
+        fetchPurchaseHistory(stock.stock_id.toString());
+      }
+    }
+  }, [searchParams, stocks]);
 
   const formSchema = z
     .object({
@@ -256,7 +273,7 @@ export default function StockPage() {
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
         <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
-          Add New Stock
+          {title}
         </h1>
       </header>
 
