@@ -126,9 +126,11 @@ if __name__ == '__main__':
                                         'time_stamp' : dump_datetime(stock_data["Datetime"][i])})
                 cache.set(output_id, json_output, timeout = 60*5)
                 print("Reset Cache")
+                session.close()
                 return json_output
+            session.close()
             return Response(status=400, mimetype='application/json')
-
+        session.close()
         return Response(status=401, mimetype='application/json')
 
     app.run(debug=True, host='0.0.0.0')
