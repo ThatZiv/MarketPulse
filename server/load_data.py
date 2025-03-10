@@ -88,3 +88,4 @@ def load_stocks():
             session.commit()
         except  exc.SQLAlchemyError as e:
             print(e)
+        session.close()
