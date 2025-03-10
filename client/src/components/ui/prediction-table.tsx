@@ -24,6 +24,49 @@ import { actions } from "@/lib/constants";
 interface PredictionTableProps {
   ticker: string;
 }
+function Average(row: { row: (number | string)[] }) {
+  let average = 0;
+  let count = 0;
+  //console.log(row.row[1]);
+
+  row.row.forEach((x: number | string) => {
+    if (!isNaN(Number(x))) {
+      average += Number(x);
+      count += 1;
+    }
+  });
+  //console.log(average);
+  average = average / count;
+
+  const output = "$" + Number(average).toFixed(2);
+  return <TableCell>{output}</TableCell>;
+}
+
+function ColoredRow(row: { row: (number | string)[]; value: number }) {
+  let greatest = true;
+  let least = true;
+
+  row.row.forEach((x: number | string) => {
+    if (!isNaN(Number(x))) {
+      if (Number(x) > row.value) {
+        greatest = false;
+      }
+      if (Number(x) < row.value) {
+        least = false;
+      }
+    }
+  });
+  //console.log(average);
+
+  const valueStr = "$" + Number(row.value).toFixed(2);
+  if (greatest) {
+    return <p className="text-green-700">{valueStr}</p>;
+  } else if (least) {
+    return <p className="text-red-700">{valueStr}</p>;
+  } else {
+    return <p>{valueStr}</p>;
+  }
+}
 
 export default function PredictionTable({ ticker }: PredictionTableProps) {
   const { state, dispatch } = useGlobal();
@@ -120,6 +163,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                 <TableCell key={key}>{capitalizeFirstLetter(key)}</TableCell>
               );
             })}
+            {model === "" ? <TableCell>Average</TableCell> : <></>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -131,11 +175,22 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                   if (!isNaN(Number(value))) {
                     valueStr = "$" + Number(value).toFixed(2);
                     if (model && model !== Object.keys(data[0])[j]) return null;
+                    else {
+                      return (
+                        <TableCell key={`${i}:${j}`}>
+                          <ColoredRow
+                            row={Object.values(row)}
+                            value={Number(value)}
+                          />
+                        </TableCell>
+                      );
+                    }
                   } else if (moment(value).isValid()) {
                     valueStr = moment(valueStr).format("YYYY-MM-DD");
                   }
                   return <TableCell key={`${i}:${j}`}>{valueStr}</TableCell>;
                 })}
+                {model === "" ? <Average row={Object.values(row)} /> : <></>}
               </TableRow>
             ))
             .slice(0, days)}

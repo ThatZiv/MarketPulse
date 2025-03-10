@@ -206,6 +206,7 @@ def add_to_database(data, engine, stock_id):
         session.close()
     except exc.SQLAlchemyError as e:
         print(e)
+        session.close()
 
 # Finds the daily reddit posts for a stock and adds them to the database
 # dates[0]["search"]
