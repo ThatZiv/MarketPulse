@@ -14,12 +14,10 @@ export default function Avatar() {
   const [imageReady, setImageReady] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const { state, dispatch } = useGlobal();
-
+  const [imagestatus, setImageStatus] = useState(status);
   useEffect(() => {
-    console.log(state.user.url);
-    console.log(state.user.name);
-    console.log(state.user);
     if (state.user.url === "") {
+      setImageStatus("loading");
       const image_url = async () => {
         const { data, error } = await supabase
           .from("Account")
@@ -30,25 +28,31 @@ export default function Avatar() {
             .from("profile_pictures")
             .createSignedUrl(data[0].profile_picture, 3600);
           if (image.data) {
-            console.log(image.data.signedUrl);
             setImageUrl(image.data.signedUrl);
             setImageReady(true);
             state.user.url = image.data.signedUrl;
             dispatch({
               type: actions.SET_USER,
-              payload: [state.user],
+              payload: state.user,
             });
+            setImageStatus("success");
+          } else {
+            setImageStatus("success");
           }
+        } else {
+          setImageStatus("success");
         }
       };
       image_url();
     } else {
       setImageUrl(state.user.url);
       setImageReady(true);
+      setImageStatus("success");
     }
   }, []);
 
-  if (status === "loading") return <Skeleton className="h-8 w-8 rounded-lg" />;
+  if (status === "loading" || imagestatus === "loading")
+    return <Skeleton className="h-8 w-8 rounded-lg" />;
   return (
     <_Avatar className="h-8 w-8 rounded-lg">
       {imageReady ? (
