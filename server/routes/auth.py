@@ -90,14 +90,18 @@ def chart():
                                         'news_data': i.news_data,
                                         'time_stamp' : dump_datetime(i.time_stamp) })
                 json_output.reverse()
+                session.close()
                 return jsonify(json_output)
+            session.close()
             return Response(status=400, mimetype='application/json')
         except (SQLAlchemyError, requests.RequestException) as e:
             print(e)
+            session.close()
             return Response(status=500)
         finally:
             if session:
                 session.close()
+    session.close()
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
@@ -125,12 +129,13 @@ def forecast_route():
             for column in columns:
                 forecast_data = output_dict[column]
                 out.append(json.loads(forecast_data))
-
+            session.close()
             return jsonify({
                 "stock_id": output_dict["stock_id"],
                 "created_at": output_dict["created_at"],
                 "output": out
             })
-
+        session.close()
         return Response(status=400, mimetype='application/json')
+    session.close()
     return Response(status=500, mimetype='application/json')
