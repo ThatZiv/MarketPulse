@@ -33,10 +33,10 @@ interface StockFormData {
   hasStocks: string;
   purchases: {
     date: string;
-    shares: number;
-    pricePurchased: number;
+    shares: number | null;
+    pricePurchased: number | null;
   }[];
-  cashToInvest: number;
+  cashToInvest: number | null;
 }
 
 export default function StockPage() {
@@ -48,7 +48,7 @@ export default function StockPage() {
     ticker: "",
     hasStocks: "",
     purchases: [],
-    cashToInvest: 0,
+    cashToInvest: null,
   });
   const [error, setError] = useState<string>();
   const {
@@ -110,7 +110,7 @@ export default function StockPage() {
       ...prev,
       purchases: [
         ...prev.purchases,
-        { date: "", shares: 0, pricePurchased: 0 },
+        { date: "", shares: null, pricePurchased: null },
       ],
     }));
   };
@@ -132,7 +132,7 @@ export default function StockPage() {
       ...newPurchases[index],
       [field]:
         field === "shares" || field === "pricePurchased"
-          ? Number(value)
+          ? value === "" ? null : Number(value)
           : value,
     };
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
@@ -372,7 +372,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.shares}
+                      value={purchase.shares ?? ""}
                       onChange={(e) =>
                         handlePurchaseChange(index, "shares", e.target.value)
                       }
@@ -395,7 +395,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.pricePurchased}
+                      value={purchase.pricePurchased ?? ""}
                       onChange={(e) =>
                         handlePurchaseChange(
                           index,
@@ -436,11 +436,11 @@ export default function StockPage() {
               min="0"
               step="0.01"
               className="w-full bg-white dark:bg-black dark:text-white border ring-offset-background rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              value={formData.cashToInvest}
+              value={formData.cashToInvest ?? ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  cashToInvest: Number(e.target.value),
+                  cashToInvest: e.target.value === "" ? null : Number(e.target.value),
                 }))
               }
               required
