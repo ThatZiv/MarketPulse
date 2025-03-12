@@ -275,9 +275,9 @@ export default function Stocks() {
                     </CardTitle>
                     <CardDescription>
                       <i>Hype Meter</i> analyzes social media sentiment to
-                      forecast stock market trends. A higher score indicates
-                      more positive outlook on the stock among social media
-                      users.
+                      capture the public's view of a stock. A higher 
+                      score indicates more positive outlook on the stock among 
+                      social media users.
                       <Separator className="my-2" />
                       <div className="text-xs">
                         As of {moment(meters.hype.date).calendar()}{" "}
