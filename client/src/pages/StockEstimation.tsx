@@ -232,9 +232,63 @@ export default function Stocks() {
           </div>
         </div>
       </div>
+      <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
+        <div className="grid grid-cols-6 gap-2">
+          <div className="col-span-6 xl:col-span-3">
+            <Card className="border border-black dark:border-white rounded-md md:p-4">
+              <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                <div className="grid flex-1 gap-1 sm:text-left">
+                  <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                    Hype Meter
+                  </CardTitle>
+                  <CardDescription>
+                    <i>Hype Meter</i> analyzes social media sentiment to
+                    capture the public's view of a stock. A higher
+                    score indicates more positive outlook on the stock among
+                    social media users.
+                    <Separator className="my-2" />
+                    <div className="text-xs">
+                      As of ...
+                      {/* As of {moment(meters.hype.date).calendar()}{" "} */}
+                    </div>
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <div className="flex flex-col md:flex-row items-center justify-center">
+              <SentimentMeter score={70} />
+
+              </div>
+            </Card>
+
+          </div>
+          <div className="col-span-6 xl:col-span-3">
+              <Card className="border border-black dark:border-white rounded-md md:p-4">
+                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                  <div className="grid flex-1 gap-1 sm:text-left">
+                    <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                      Impact Factor
+                    </CardTitle>
+                    <CardDescription>
+                      <i>Impact Factor</i> scores how major news events like
+                      elections, natural disasters, and regulations influence
+                      stock performance. A higher score indicates a more
+                      positive impact on the stock.
+                      <Separator className="my-2" />
+                      <div className="text-xs">
+                        As of ...
+                        {/* As of {moment(meters.impact?.date).calendar()}{" "} */}
+                      </div>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <div className="flex flex-col md:flex-row items-center justify-center">
+                <SentimentMeter score={70} />
+                </div>
+              </Card>
+          </div>
+        </div>
+      </div>
       <Card>
-      <SentimentMeter score={70}/>
-      <RadialChart score={3} />
       </Card>
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
@@ -278,8 +332,8 @@ export default function Stocks() {
                     </CardTitle>
                     <CardDescription>
                       <i>Hype Meter</i> analyzes social media sentiment to
-                      capture the public's view of a stock. A higher 
-                      score indicates more positive outlook on the stock among 
+                      capture the public's view of a stock. A higher
+                      score indicates more positive outlook on the stock among
                       social media users.
                       <Separator className="my-2" />
                       <div className="text-xs">

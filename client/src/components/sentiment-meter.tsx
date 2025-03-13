@@ -22,7 +22,7 @@ export const SentimentMeter = ({ score }: SentimentMeterProps) => {
     return (
         <GaugeComponent
         key={tickLabelColor}
-            className='w-full md:w-1/2'
+            className='w-full'
             type="semicircle"
             marginInPercent={0.08}
             arc={{
