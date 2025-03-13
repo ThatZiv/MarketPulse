@@ -83,7 +83,7 @@ export const SentimentMeter = ({ score }: SentimentMeterProps) => {
             minValue={0}
             maxValue={100}
             pointer={{
-                type: "needle",
+                type: "arrow",
                 elastic: true,
                 color: pointerColor,
                 animationDuration: 4000
