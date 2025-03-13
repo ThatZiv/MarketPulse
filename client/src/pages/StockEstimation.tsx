@@ -33,7 +33,7 @@ import { useGlobal } from "@/lib/GlobalProvider";
 import { StocksState } from "@/types/global_state";
 import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
-
+import { SentimentMeter } from "@/components/sentiment-meter";
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
   { stock_ticker: "F", stock_name: "Ford" },
@@ -232,7 +232,10 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-
+      <Card>
+      <SentimentMeter score={70}/>
+      <RadialChart score={3} />
+      </Card>
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
