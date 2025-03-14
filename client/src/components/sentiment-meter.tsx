@@ -94,7 +94,7 @@ export const SentimentMeter = ({ score }: SentimentMeterProps) => {
                         fontWeight: 700,
                         fill: tickLabelColor,
                     },
-                    maxDecimalDigits: 1,
+                    maxDecimalDigits: 0,
                 },
                 tickLabels: {
                     type: 'outer',
