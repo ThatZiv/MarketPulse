@@ -305,7 +305,7 @@ export default function Stocks() {
         <div className="grid grid-cols-6 gap-2">
           <div className="col-span-6 xl:col-span-3">
           {moment(meters.hype.date).isValid() && (
-            <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto">
+            <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
               <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                 <div className="grid flex-1 gap-1 sm:text-left">
                   <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
@@ -326,8 +326,8 @@ export default function Stocks() {
               <div className="flex flex-col md:flex-row items-center justify-center py-8">
               <SentimentMeter score={hype_meter} /> 
               </div>
-              <CardFooter>
-              <p className="flex justify-center gap-2 font-medium leading-none">
+              <CardFooter className="flex justify-center">
+              <p className="gap-2 font-medium leading-none">
               {sentimentFooter(hype_meter, "hype")}
                 </p>
               </CardFooter>
@@ -336,7 +336,7 @@ export default function Stocks() {
           </div>
           <div className="col-span-6 xl:col-span-3">
           {moment(meters.hype.date).isValid() && (
-              <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto">
+              <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
                 <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                   <div className="grid flex-1 gap-1 sm:text-left">
                     <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
@@ -357,8 +357,8 @@ export default function Stocks() {
                 <div className="flex flex-col md:flex-row items-center justify-center py-8">
                 <SentimentMeter score={impact_meter} />
                 </div>
-                <CardFooter>
-                <p className="flex justify-center gap-2 font-medium leading-none">
+                <CardFooter className="flex justify-center">
+                <p className="gap-2 font-medium leading-none">
                   {sentimentFooter(impact_meter, "impact")}
                 </p>
               </CardFooter>
