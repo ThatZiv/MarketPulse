@@ -122,7 +122,6 @@ def forecast_route():
             output = session.connection().execute(forecast).first()
             out = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
-            print()
             # pylint: disable=protected-access
             output_dict = output._mapping
             # pylint: enable=protected-access
