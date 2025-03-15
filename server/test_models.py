@@ -1,7 +1,6 @@
+# pylint: disable=all
 import pickle
-from datetime import date
 import copy
-import pytest
 from models.forecast.attention_lstm import AttentionLSTM
 from models.forecast.cnn_lstm import CNNLSTMTransformer
 from models.lstm_attention import AttentionLstm
@@ -12,9 +11,7 @@ from models.zav2 import Transformer
 
 
 f = open('stock_data.pkl', 'rb')
-
 data = pickle.load(f)
-
 f.close()
 
 
@@ -24,15 +21,14 @@ def test_attention_lstm():
     model.train(copy.deepcopy(data))
     output = model.run(copy.deepcopy(data), 7)
 
-    assert type(output[0]) is float
+    assert isinstance(output[0], float)
 
 # Testing CNNLSTMTransformer
 def cnnlstmtransformer():
     model = CNNLSTMTransformer("cnn-lstm", "TEST")
     model.train(copy.deepcopy(data))
     output = model.run(copy.deepcopy(data), 7)
-    
-    assert type(output[0]) is float
+    assert isinstance(output[0], float)
 
 # Testing ZavTransformer
 def test_transformer():
@@ -40,7 +36,7 @@ def test_transformer():
     model.train(copy.deepcopy(data))
     output = model.run(copy.deepcopy(data), 7)
 
-    assert type(output[0]) is float
+    assert isinstance(output[0],float)
 
 # Testing AzSarima
 def test_azsarima():
@@ -48,7 +44,7 @@ def test_azsarima():
     model.train(copy.deepcopy(data))
     output = model.run(copy.deepcopy(data), 7)
 
-    assert type(output[0]) is float
+    assert isinstance(output[0], float)
 
 # Testing XGBoost, needs a real ticker name
 def test_xgboost():
@@ -56,7 +52,4 @@ def test_xgboost():
     model.train(copy.deepcopy(data))
     output = model.run(copy.deepcopy(data), 7)
 
-    assert type(output[0]) is float
-    
-
-
+    assert isinstance(output[0], float)

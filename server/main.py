@@ -7,13 +7,13 @@ import flask_jwt_extended as jw
 from flask import Flask, request, jsonify, Response
 from dotenv import load_dotenv
 from flask_cors import CORS
-from sqlalchemy import create_engine, select, exc
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from flask_jwt_extended import jwt_required
 from flask_caching import Cache
 from flask_apscheduler import APScheduler
 from engine import get_engine
-from database.tables import Base, Stocks
+from database.tables import Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import stock_thread
@@ -34,25 +34,30 @@ def dump_datetime(value):
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
 
+def create_session():
+    session = sessionmaker(bind=get_engine())
+    return session()
+
+def stock_query_single(query, session):
+    return session.connection().execute(query).first()
+
 def create_app():
 
-    app = Flask(__name__)
-    
-    app.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
+    ap = Flask(__name__)
 
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    CORS(app, supports_credentials=True)
+    ap.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
+
+    ap.register_blueprint(auth_bp, url_prefix='/auth')
+    CORS(ap, supports_credentials=True)
     jwt = jw.JWTManager()
-    jwt.init_app(app)
-    
-    Base.metadata.create_all(get_engine())
+    jwt.init_app(ap)
     scheduler = APScheduler()
-    scheduler.init_app(app)
+    scheduler.init_app(ap)
     scheduler.add_job(func=stock_thread, trigger='cron', hour='23', id="load_stocks")
     if not LEGACY:
         scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
     scheduler.start()
-    return app
+    return ap
 
 app = create_app()
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
@@ -66,11 +71,10 @@ def route():
 @jwt_required()
 def realtime():
     if request.method == 'GET':
-        session_a = sessionmaker(bind=get_engine())
-        session = session_a()
+        session = create_session()
         ticker = request.args['ticker']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-        output_id = session.connection().execute(s_id).first()
+        output_id = stock_query_single(s_id, session)
         if output_id:
             cache_output = cache.get(output_id)
             if cache_output is not None:
@@ -103,5 +107,5 @@ def realtime():
     return Response(status=401, mimetype='application/json')
 
 if __name__ == '__main__':
-    
+
     app.run(debug=True, host='0.0.0.0')

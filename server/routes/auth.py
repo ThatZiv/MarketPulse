@@ -27,6 +27,15 @@ def dump_datetime(value):
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
 
+def create_session():
+    session = sessionmaker(bind=get_engine())
+    return session()
+
+def stock_query_single(query, session):
+    return session.connection().execute(query).first()
+
+def stock_query_all(query, session):
+    return session.connection().execute(query).all()
 
 @auth_bp.route('/private', methods=['GET', 'POST'])
 @jw.jwt_required()
@@ -68,17 +77,17 @@ def ticker_logo():
 def chart():
     if request.method == 'GET':
         try:
-            session = sessionmaker(bind=get_engine())
-            session = session()
+            session = create_session()
             ticker = request.args['ticker']
             limit = request.args.get('limit', 7)
             s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-            output_id = session.connection().execute(s_id).first()
+            output_id = stock_query_single(s_id, session)
             #validating the ticker from the frontend
             if output_id:
                 stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id)\
                     .order_by(desc(Stock_Info.time_stamp)).limit(limit)
-                output = session.connection().execute(stock_data).all()
+                output = stock_query_all(stock_data, session)
+
                 json_output = []
                 for i in output:
                     json_output.append({'stock_id' : i.stock_id,
@@ -112,15 +121,13 @@ def forecast_route():
     if not ticker:
         return Response(status=400, mimetype='application/json')
     if request.method == 'GET':
-        session = sessionmaker(bind=get_engine())
-        session = session()
+        session = create_session()
         ticker = request.args['ticker']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-        output_id = session.connection().execute(s_id).first()
+        output_id = stock_query_single(s_id, session)
         if output_id :
             forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
-            output = session.connection().execute(forecast).first()
-            
+            output = stock_query_single(forecast, session)
             out = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
             # pylint: disable=protected-access

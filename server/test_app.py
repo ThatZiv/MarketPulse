@@ -1,33 +1,29 @@
-import sys
-import os
-import pytest
-from main import app
-import flask_jwt_extended as jw
-from unittest.mock import patch
+# pylint: disable=all
 import pickle
+import pytest
+import flask_jwt_extended as jw
 import database.yfinanceapi as yf
-from unittest import mock
-import sqlalchemy.orm as db
-from sqlalchemy import select
+import routes.auth as a
+import main as m
+from main import app
 
-import engine as eg
+def mock_base(a):
+    return 1
 
-
-
-
-@pytest.fixture
 def mock_session():
-    mock_session = mock.Mock()
+    class session():
+        def __init__(self, stuff =0):
+            self.stuff=stuff
+        def close(a):
+            stuff = 1
+    return session()
 
-    mock_connection = mock.Mock()
-    mock_session.connection.return_value = mock_connection
+def mock_ticker(query, session):
+    class Output():
+        def __init__(self, stock_id=1):
+            self.stock_id = stock_id
+    return Output()
 
-    mock_result = mock.Mock()
-    mock_result.first.return_value = ('mocked_id',)
-
-    mock_connection.execute.return_value = mock_result
-
-    return mock_session
 @pytest.fixture
 def client():
     with app.test_client() as client:
@@ -47,11 +43,9 @@ def test_logo(client):
     assert response.status_code == 200
     assert response.data != None
 
-def test_stockrealtime(client, monkeypatch, mock_session):
-    
-    monkeypatch.setattr(eg, "get_engine", True)
-    monkeypatch.setattr(db ,'sessionmaker', mock.Mock(return_value=mock_session))
-
+def test_stockrealtime(client, monkeypatch):
+    monkeypatch.setattr(m, "create_session", mock_session)
+    monkeypatch.setattr(m, "stock_query_single", mock_ticker)
     response = client.get('/stockrealtime')
     assert response.status_code == 401
 
@@ -66,8 +60,16 @@ def test_stockrealtime(client, monkeypatch, mock_session):
         assert response.status_code == 200
         assert response.json != None
 
+def test_stockchart(client, monkeypatch):
+    def mock_stock_chart(a, b):
+        f = open('stock_chart', 'rb')
+        data = pickle.load(f)
+        f.close()
+        return data
+    monkeypatch.setattr(a, "create_session", mock_session)
+    monkeypatch.setattr(a, "stock_query_single", mock_ticker)
+    monkeypatch.setattr(a, "stock_query_all", mock_stock_chart)
 
-def test_stockchart(client):
     response = client.get('/auth/stockchart')
     assert response.status_code == 401
 
@@ -81,8 +83,15 @@ def test_stockchart(client):
     assert response.status_code == 200
     assert response.json != None
 
+def test_forecast(client, monkeypatch):
+    def mock_forecast(a, b):
+        f = open('forecast', 'rb')
+        data = pickle.load(f)
+        f.close()
+        return data
 
-def test_forecast(client):
+    monkeypatch.setattr(a, "create_session", mock_session)
+    monkeypatch.setattr(a, "stock_query_single", mock_forecast)
     response = client.get('/auth/forecast')
     assert response.status_code == 401
 
@@ -94,4 +103,3 @@ def test_forecast(client):
     response = client.get('/auth/forecast?ticker=TSLA', headers = headers)
     assert response.status_code == 200
     assert response.json != None
-

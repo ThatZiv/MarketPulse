@@ -1,6 +1,9 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
+# pylint: disable=too-many-nested-blocks
 
 import os
 import copy
@@ -11,43 +14,41 @@ import torch
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update, exc
-from database.tables import Stock_Info
 from models.sentiment_hf import sentiment_model
+from database.tables import Stock_Info
 
 
-load_dotenv()
+def reddit_auth():
+    load_dotenv()
 
-PUBLIC_KEY = os.environ.get("reddit_public_key")
-SECRET_KEY = os.environ.get("reddit_secret_key")
-USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-                "AppleWebKit/537.36 (KHTML, like Gecko)" 
-                "Chrome/132.0.0.0 Safari/537.36")
+    public_key = os.environ.get("reddit_public_key")
+    secret_key = os.environ.get("reddit_secret_key")
+    user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    "AppleWebKit/537.36 (KHTML, like Gecko)" 
+                    "Chrome/132.0.0.0 Safari/537.36")
 
-AUTH = requests.auth.HTTPBasicAuth(PUBLIC_KEY, SECRET_KEY)
+    auth = requests.auth.HTTPBasicAuth(public_key, secret_key)
 
-URL = "https://www.reddit.com/api/v1/access_token"
+    url = "https://www.reddit.com/api/v1/access_token"
 
-DATA = {
-    "grant_type": "client_credentials"
-}
-
-HEADERS = {
-    "User-Agent": USER_AGENT
-}
-
-
-OUTPUT = requests.post(URL, auth=AUTH, data=DATA, headers=HEADERS , timeout = 5)
-
-if OUTPUT.status_code == 200:
-    AUTH_TOKEN = OUTPUT.json()["access_token"]
-    print("Success")
-else:
-    AUTH_TOKEN = 0
-
-REQUEST_HEADERS = {
-    "Authorization": f"Bearer {AUTH_TOKEN}",
-    "User-Agent": USER_AGENT
+    data = {
+        "grant_type": "client_credentials"
     }
+
+    headers = {
+        "User-Agent": user_agent
+    }
+
+
+    output = requests.post(url, auth=auth, data=data, headers=headers , timeout = 5)
+
+    if output.status_code == 200:
+        auth_token = output.json()["access_token"]
+        print("Success")
+    else:
+        auth_token = 0
+    return auth_token
+
 #sub_reddits = ["stocks","investing","wallstreetbets","Wallstreetbetsnew","StockMarket"]
 #stocks = ["Tesla", "Ford Motor Company", "General Motors", "Toyota Motors", "Rivian"]
 
@@ -55,10 +56,18 @@ REQUEST_HEADERS = {
 # Collects the reddit api for a subreddit and topic at
 # this depth all the above subreddits have the same results
 
-def base_request(url, params):
+def base_request(url, params, auth):
+    user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    "AppleWebKit/537.36 (KHTML, like Gecko)" 
+                    "Chrome/132.0.0.0 Safari/537.36")
+
+    request_headers = {
+        "Authorization": f"Bearer {auth}",
+        "User-Agent": user_agent
+        }
     output = -1
     try:
-        output = requests.get(url, headers=REQUEST_HEADERS, params=params, timeout = 5)
+        output = requests.get(url, headers=request_headers, params=params, timeout = 5)
     except requests.exceptions.HTTPError as e:
         print(e)
         time.sleep(30)
@@ -72,7 +81,7 @@ def base_request(url, params):
         print(e)
     return output
 
-def request_search(subreddit, topic, thread_limit, period):
+def request_search(subreddit, topic, thread_limit, period, auth):
     url = f"https://oauth.reddit.com/r/{subreddit}/search"
     params = {
     "t": period,
@@ -81,9 +90,9 @@ def request_search(subreddit, topic, thread_limit, period):
     "sort": "relevance",
     "type": "link"
     }
-    return base_request(url, params)
+    return base_request(url, params, auth)
 
-def request_after(subreddit, topic, thread_limit, after, period):
+def request_after(subreddit, topic, thread_limit, after, period, auth):
     url = f"https://oauth.reddit.com/r/{subreddit}/search"
     params = {
                 "t": period,
@@ -91,15 +100,15 @@ def request_after(subreddit, topic, thread_limit, after, period):
                 "q": topic,
                 "after": after
             }
-    return base_request(url, params)
+    return base_request(url, params, auth)
 
-def request_comment(lists_url, lists_name, comment_limit):
+def request_comment(lists_url, lists_name, comment_limit, auth):
     url = f"https://oauth.reddit.com/r/{lists_url}/comments/{lists_name}"
     params = {
             "limit": comment_limit,
             "sort": "top",
             }
-    output = base_request(url, params)
+    output = base_request(url, params, auth)
     try:
         if output.status_code == 200:
             return output.json()[1]["data"]["children"]
@@ -110,65 +119,68 @@ def request_comment(lists_url, lists_name, comment_limit):
     return -1
 # period can be hour, day, week, month, year, all
 def reddit_request(subreddit, topic, thread_limit, comment_limit, period):
-    output = request_search(subreddit, topic, thread_limit, period)
-    inputs = []
-    if output.status_code == 200:
-        try:
-            data = output.json()["data"]["children"]
-            after = output.json()["data"]["after"]
-            count = 0
-            for listing in data:
-                count+=1
-                inputs.append({'title': listing["data"]["title"],
-                            'self_text': listing["data"]["selftext"],
-                            'timestamp': listing["data"]["created_utc"],
-                            'name': listing["data"]["name"],
-                            'url': listing['data']['subreddit']} )
-        except KeyError as e:
-            print(e)
-        # gather the first 5000 results on this subreddit,
-        # there are usually less than 400 results so this will always end with the break
-        for i  in range (49):
-            print(i)
-            output = request_after(subreddit, topic, thread_limit, after, time)
-            if output.status_code == 200 and count == 100:
-                try:
-                    data = output.json()["data"]["children"]
-                    after = output.json()["data"]["after"]
-                    count = 0
-                    for listing in data:
-                        count+=1
-                        inputs.append({'title': listing["data"]["title"],
-                                        'self_text': listing["data"]["selftext"],
-                                        'timestamp': listing["data"]["created_utc"],
-                                        'name': listing["data"]["name"],
-                                        'url': listing['data']['subreddit']})
-                except KeyError as e:
-                    print(e)
-                    continue
-            else:
-                break
-        # search for the comments to the posts this will grab the first 25 comments
-        # needs to be a deep copy to prevent infinite loop
-        inputs_temp = copy.deepcopy(inputs)
-        for lists in inputs_temp:
-            # slow down to limit the amount of requests per minute
-            #reddit will allow 100 requests per minute so this could be lowered
-            time.sleep(1)
-            data = request_comment(lists['url'], lists['name'][3:], comment_limit)
-                #print(data)
-            for listing in data:
-                try:
-                    #not adding name or url because I do not want to recure over the comments
-                    inputs.append({'title': "", 'self_text': listing["data"]["body"],
+    auth = reddit_auth()
+    if auth != 0:
+        output = request_search(subreddit, topic, thread_limit, period, auth)
+        inputs = []
+
+        if output.status_code == 200:
+            try:
+                data = output.json()["data"]["children"]
+                after = output.json()["data"]["after"]
+                count = 0
+                for listing in data:
+                    count+=1
+                    inputs.append({'title': listing["data"]["title"],
+                                'self_text': listing["data"]["selftext"],
                                 'timestamp': listing["data"]["created_utc"],
-                                'name': "", 'url': ""})
-                except KeyError as e:
-                    # This will error happen every pass because the last
-                    # element is a list of comments and does not have a body
-                    continue
-                # Number of elements currently in the output array
-        return inputs
+                                'name': listing["data"]["name"],
+                                'url': listing['data']['subreddit']} )
+            except KeyError as e:
+                print(e)
+            # gather the first 5000 results on this subreddit,
+            # there are usually less than 400 results so this will always end with the break
+            for i  in range (49):
+                print(i)
+                output = request_after(subreddit, topic, thread_limit, after, period, auth)
+                if output.status_code == 200 and count == 100:
+                    try:
+                        data = output.json()["data"]["children"]
+                        after = output.json()["data"]["after"]
+                        count = 0
+                        for listing in data:
+                            count+=1
+                            inputs.append({'title': listing["data"]["title"],
+                                            'self_text': listing["data"]["selftext"],
+                                            'timestamp': listing["data"]["created_utc"],
+                                            'name': listing["data"]["name"],
+                                            'url': listing['data']['subreddit']})
+                    except KeyError as e:
+                        print(e)
+                        continue
+                else:
+                    break
+            # search for the comments to the posts this will grab the first 25 comments
+            # needs to be a deep copy to prevent infinite loop
+            inputs_temp = copy.deepcopy(inputs)
+            for lists in inputs_temp:
+                # slow down to limit the amount of requests per minute
+                #reddit will allow 100 requests per minute so this could be lowered
+                time.sleep(1)
+                data = request_comment(lists['url'], lists['name'][3:], comment_limit, auth)
+                    #print(data)
+                for listing in data:
+                    try:
+                        #not adding name or url because I do not want to recure over the comments
+                        inputs.append({'title': "", 'self_text': listing["data"]["body"],
+                                    'timestamp': listing["data"]["created_utc"],
+                                    'name': "", 'url': ""})
+                    except KeyError as e:
+                        # This will error happen every pass because the last
+                        # element is a list of comments and does not have a body
+                        continue
+                    # Number of elements currently in the output array
+            return inputs
     return 0
 #find dates from the database for the chosen stock and add the data to those table rows
 def add_to_database(data, engine, stock_id):
