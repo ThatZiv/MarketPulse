@@ -34,6 +34,7 @@ import { StocksState } from "@/types/global_state";
 import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
 import { Button } from "@/components/ui/button";
+import PurchaseHistory from "@/components/purchase-history";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -324,6 +325,14 @@ export default function Stocks() {
             )}
           </div>
         </div>
+      </div>
+      <div>
+        {currentStock && ticker && (
+          <PurchaseHistory
+            stock_id={currentStock.Stocks.stock_id}
+            ticker={ticker}
+          />
+        )}
       </div>
     </div>
   );
