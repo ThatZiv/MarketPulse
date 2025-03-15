@@ -1,4 +1,4 @@
-import { TrendingUp } from "lucide-react";
+import { TrendingDown, TrendingUp } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -24,12 +24,13 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useQuery } from "@tanstack/react-query";
-import { cache_keys } from "@/lib/constants";
+import { actions, cache_keys } from "@/lib/constants";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useMemo } from "react";
-import { PredictionDatapoint } from "@/types/global_state";
+import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 import moment from "moment";
 import { Skeleton } from "./ui/skeleton";
+import { useGlobal } from "@/lib/GlobalProvider";
 // const chartData = [
 //   { month: "January", visitors: 186 },
 //   { month: "February", visitors: 205 },
@@ -45,8 +46,8 @@ interface PurchaseHistoryProps {
 }
 
 const chartConfig = {
-  visitors: {
-    label: "Amount",
+  amount_purchased: {
+    label: "Shares",
   },
 } satisfies ChartConfig;
 
@@ -56,10 +57,14 @@ export default function PurchaseHistory({
 }: PurchaseHistoryProps) {
   const { supabase, user } = useSupabase();
   const {
+    // state: { history },
+    dispatch,
+  } = useGlobal();
+  const {
     data: purchases,
     isLoading,
     isError,
-  } = useQuery({
+  } = useQuery<Array<PurchaseHistoryDatapoint>>({
     queryKey: [cache_keys.USER_STOCK_TRANSACTION, ticker],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -69,21 +74,38 @@ export default function PurchaseHistory({
         .eq("user_id", user?.id)
         .order("date", { ascending: true });
       if (error) throw error;
+      dispatch({
+        type: actions.SET_USER_STOCK_TRANSACTIONS,
+        payload: {
+          stock_ticker: ticker,
+          data,
+        },
+      });
+
       return data || [];
     },
     enabled: !!ticker,
   });
 
   const chartData = useMemo(() => {
-    const points: Array<PredictionDatapoint> = [];
+    const points: Array<PurchaseHistoryDatapoint> = [];
     if (!purchases) return points;
-    for (const { date, amount_purchased } of purchases) {
-      points.push({ date: moment(date).calendar(), amount_purchased });
+    for (const { date, amount_purchased, price_purchased } of purchases) {
+      points.push({
+        date: moment(date).calendar(),
+        amount_purchased,
+        price_purchased,
+      });
     }
-    console.log(points);
     return points;
   }, [purchases]);
 
+  const currentValue = useMemo(() => {
+    if (!purchases || purchases.length === 0) return 0;
+    return purchases.reduce((acc, { amount_purchased, price_purchased }) => {
+      return acc + amount_purchased * price_purchased;
+    }, 0);
+  }, [purchases]);
   return (
     <Card className="border border-black dark:border-white rounded-md md:p-4 mt-4">
       <CardHeader>
@@ -92,11 +114,11 @@ export default function PurchaseHistory({
       <CardContent>
         {isLoading && (
           <div className="flex items-end justify-end gap-2">
-            <Skeleton className="h-40 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-40 w-full rounded-none" />
+            <Skeleton className="h-16 w-full rounded-none" />
+            <Skeleton className="h-24 w-full rounded-none" />
+            <Skeleton className="h-12 w-full rounded-none" />
+            <Skeleton className="h-32 w-full rounded-none" />
           </div>
         )}
         {purchases && purchases?.length > 0 ? (
@@ -143,12 +165,20 @@ export default function PurchaseHistory({
         )}
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 font-medium leading-none">
-          Summary <TrendingUp className="h-4 w-4" />
-        </div>
-        <div className="leading-none text-muted-foreground">
-          {isError && <div>Error loading purchase history</div>}
-        </div>
+        {isError ? (
+          <div className="leading-none text-muted-foreground">
+            <div>Error loading purchase history</div>
+          </div>
+        ) : (
+          <div className="flex gap-2 font-medium leading-none">
+            ${currentValue}{" "}
+            {currentValue > 0 ? (
+              <TrendingUp className="h-4 w-4" />
+            ) : (
+              <TrendingDown className="h-4 w-4" />
+            )}
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

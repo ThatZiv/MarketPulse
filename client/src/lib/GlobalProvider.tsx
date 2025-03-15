@@ -1,6 +1,6 @@
 import * as React from "react";
-import { actions } from "./constants";
 import { type GlobalState } from "@/types/global_state";
+import { actions } from "@/lib/constants";
 
 const initialState: GlobalState = {
   user: {
@@ -10,6 +10,7 @@ const initialState: GlobalState = {
   },
   stocks: {},
   predictions: {},
+  history: {},
   views: {
     predictions: {
       timeWindow: 7,
@@ -74,6 +75,20 @@ const GlobalReducer = (
             history: action.payload.data,
             timestamp: Date.now(),
           },
+        },
+      };
+    case actions.SET_USER_STOCK_TRANSACTIONS:
+      if (!Array.isArray(action.payload.data)) {
+        throw new Error("Expected array for payload.data");
+      }
+      if (typeof action.payload.stock_ticker !== "string") {
+        throw new Error("Expected string for payload.stock_ticker");
+      }
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          [action.payload.stock_ticker]: action.payload.data,
         },
       };
     case actions.SET_PREDICTION:

@@ -253,12 +253,11 @@ export default function StockPage() {
         await queryClient.invalidateQueries({
           queryKey: [cache_keys.USER_STOCKS],
         });
+        await navigate("/");
         return "Stock data saved successfully";
       },
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
-
-    navigate("/");
   };
 
   if (stocksError) {
