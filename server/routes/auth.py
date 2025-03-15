@@ -68,8 +68,8 @@ def ticker_logo():
 def chart():
     if request.method == 'GET':
         try:
-            session_a = sessionmaker(bind=get_engine())
-            session = session_a()
+            session = sessionmaker(bind=get_engine())
+            session = session()
             ticker = request.args['ticker']
             limit = request.args.get('limit', 7)
             s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
@@ -112,14 +112,15 @@ def forecast_route():
     if not ticker:
         return Response(status=400, mimetype='application/json')
     if request.method == 'GET':
-        session_a = sessionmaker(bind=get_engine())
-        session = session_a()
+        session = sessionmaker(bind=get_engine())
+        session = session()
         ticker = request.args['ticker']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = session.connection().execute(s_id).first()
         if output_id :
             forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
             output = session.connection().execute(forecast).first()
+            
             out = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
             # pylint: disable=protected-access

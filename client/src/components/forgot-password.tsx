@@ -36,7 +36,6 @@ export function ResetPassword({ resetPasswordState }: LoginFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Fail");
     const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
       redirectTo: `${window.location.origin}/reset`,
     });
@@ -54,7 +53,9 @@ export function ResetPassword({ resetPasswordState }: LoginFormProps) {
     <div className={cn("flex flex-col gap-6")}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Recover Password</CardTitle>
+          <CardTitle className="text-2xl" data-testid="title">
+            Recover Password
+          </CardTitle>
           <CardDescription>
             Enter your email below to receive a recovery message
           </CardDescription>
@@ -78,8 +79,8 @@ export function ResetPassword({ resetPasswordState }: LoginFormProps) {
                 )}
               />
               <span>
-                <Button type="submit" className="m-3">
-                  Recover Password
+                <Button type="submit" className="m-3" data-testid="submit">
+                  Recover
                 </Button>
                 <Button
                   type="button"
