@@ -219,34 +219,34 @@ export default function SettingsPage() {
                 Authorization: `Bearer ${session?.access_token}`,
               },
             });
-          if (response.error) file = "";
+          if (!response.error) {
+            const { error } = await supabase
+              .from("Account")
+              .upsert({
+                profile_picture: file,
+                user_id: user?.id,
+              })
+              .select()
+              .single();
 
-          const { error } = await supabase
-            .from("Account")
-            .upsert({
-              profile_picture: file,
-              user_id: user?.id,
-            })
-            .select()
-            .single();
-
-          if (error) {
-            toast.error("Failed updating your profile", {
-              description: error.message,
-            });
-          } else {
-            toast.success("Profile updated successfully!");
-            const image = await supabase.storage
-              .from("profile_pictures")
-              .createSignedUrl(file, 3600);
-            if (image.data) {
-              userState.user.url = image.data.signedUrl;
-              dispatch({
-                type: actions.SET_USER,
-                payload: userState.user,
+            if (error) {
+              toast.error("Failed updating your profile", {
+                description: error.message,
               });
+            } else {
+              toast.success("Profile updated successfully!");
+              const image = await supabase.storage
+                .from("profile_pictures")
+                .createSignedUrl(file, 3600);
+              if (image.data) {
+                userState.user.url = image.data.signedUrl;
+                dispatch({
+                  type: actions.SET_USER,
+                  payload: userState.user,
+                });
+              }
+              navigate("/");
             }
-            navigate("/");
           }
         },
       },
