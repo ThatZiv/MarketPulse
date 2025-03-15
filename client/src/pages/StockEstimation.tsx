@@ -33,6 +33,7 @@ import { useGlobal } from "@/lib/GlobalProvider";
 import { StocksState } from "@/types/global_state";
 import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
+import { Button } from "@/components/ui/button";
 import { SentimentMeter } from "@/components/sentiment-meter";
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -244,8 +245,13 @@ export default function Stocks() {
       <GenerateStockLLM ticker={ticker} />
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
         <div className="relative">
-          <Link to="/stocks">
-            <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
+          <Link
+            className="absolute right-0 top-1/2 transform -translate-y-1/3 transition-transform duration-300 "
+            to={`/stocks?ticker=${ticker}`}
+          >
+            <Button variant="secondary" size="sm">
+              <MdEdit className="" /> Edit
+            </Button>
           </Link>
         </div>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
