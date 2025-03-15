@@ -41,10 +41,12 @@ import { useNavigate, useParams } from "react-router";
 import { Label } from "@/components/ui/label";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { actions } from "@/lib/constants";
+//import { profile } from "node:console";
+import { v4 as uuidv4 } from "uuid";
 
 export default function SettingsPage() {
-  const { supabase, user, signOut } = useSupabase();
-  const { dispatch } = useGlobal();
+  const { session, supabase, user, signOut } = useSupabase();
+  const { state: userState, dispatch } = useGlobal();
   const [state, setState] = React.useState<"loading" | "error" | "done">(
     "loading"
   );
@@ -98,6 +100,14 @@ export default function SettingsPage() {
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
     resolver: zodResolver(passwordFormSchema),
     defaultValues: { old_password: "", password: "", confirm_password: "" },
+  });
+
+  const pictureFormSchema = z.object({
+    image: z.instanceof(FileList).optional(),
+  });
+
+  const pictureForm = useForm<z.infer<typeof pictureFormSchema>>({
+    resolver: zodResolver(pictureFormSchema),
   });
 
   React.useEffect(() => {
@@ -194,6 +204,54 @@ export default function SettingsPage() {
       },
     });
   };
+  const fileRef = pictureForm.register("image");
+  const onPictureSubmit = async (values: z.infer<typeof pictureFormSchema>) => {
+    toast("Are you sure you want to modify your name?", {
+      action: {
+        label: "Confirm",
+        onClick: async () => {
+          let file = uuidv4();
+          const response = await supabase.storage
+            .from("profile_pictures")
+            .upload(file, values.image![0], {
+              upsert: true,
+              headers: {
+                Authorization: `Bearer ${session?.access_token}`,
+              },
+            });
+          if (response.error) file = "";
+
+          const { error } = await supabase
+            .from("Account")
+            .upsert({
+              profile_picture: file,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            toast.error("Failed updating your profile", {
+              description: error.message,
+            });
+          } else {
+            toast.success("Profile updated successfully!");
+            const image = await supabase.storage
+              .from("profile_pictures")
+              .createSignedUrl(file, 3600);
+            if (image.data) {
+              userState.user.url = image.data.signedUrl;
+              dispatch({
+                type: actions.SET_USER,
+                payload: userState.user,
+              });
+            }
+            navigate("/");
+          }
+        },
+      },
+    });
+  };
 
   const passwordValidations = [
     { text: "At least 8 characters", isValid: password.length >= 8 },
@@ -223,10 +281,11 @@ export default function SettingsPage() {
             }}
             className="w-[400px]"
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="account">Account</TabsTrigger>
               <TabsTrigger value="password">Password</TabsTrigger>
               <TabsTrigger value="preferences">Preferences</TabsTrigger>
+              <TabsTrigger value="picture">Profile Picture</TabsTrigger>
             </TabsList>
             <TabsContent value="account">
               <Card>
@@ -237,6 +296,7 @@ export default function SettingsPage() {
                     done.
                   </CardDescription>
                 </CardHeader>
+
                 <Form {...accountForm}>
                   <form
                     onSubmit={accountForm.handleSubmit((values) =>
@@ -275,10 +335,6 @@ export default function SettingsPage() {
                             </FormItem>
                           )}
                         />
-                      </div>
-                      <div className="grid w-full max-w-sm items-center gap-1.5 space-y-1">
-                        <Label htmlFor="picture">Avatar</Label>
-                        <Input id="picture" type="file" accept="image/*" />
                       </div>
                     </CardContent>
                     <CardFooter>
@@ -505,6 +561,58 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="picture">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Account</CardTitle>
+                  <CardDescription>
+                    Make changes to your account here. Click save when you're
+                    done.
+                  </CardDescription>
+                </CardHeader>
+
+                <Form {...pictureForm}>
+                  <form
+                    onSubmit={pictureForm.handleSubmit((values) =>
+                      onPictureSubmit(values)
+                    )}
+                  >
+                    <CardContent className="space-y-2">
+                      <div className="space-y-1">
+                        <FormField
+                          control={pictureForm.control}
+                          name="image"
+                          rules={{ required: "File is required" }}
+                          render={() => (
+                            <FormItem>
+                              <FormLabel>Avatar</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  {...fileRef}
+                                />
+                              </FormControl>
+                              <FormDescription></FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        className="mt-4 w-full flex justify-center"
+                      >
+                        <SaveIcon />
+                        <>Save Changes</>
+                      </Button>
+                    </CardFooter>
+                  </form>
+                </Form>
               </Card>
             </TabsContent>
           </Tabs>

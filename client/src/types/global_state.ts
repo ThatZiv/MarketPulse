@@ -13,6 +13,7 @@ export interface GlobalState {
     id: string;
     email: string;
     name: string;
+    url: string;
   };
   stocks: { [stock_ticker: string]: StocksState };
   predictions: { [stock_ticker: string]: PredictionDatapoint[] };
