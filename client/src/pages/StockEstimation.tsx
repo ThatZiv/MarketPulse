@@ -35,6 +35,8 @@ import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
 import { Button } from "@/components/ui/button";
 import { SentimentMeter } from "@/components/sentiment-meter";
+import { Skeleton } from "@/components/ui/skeleton";
+
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
   { stock_ticker: "F", stock_name: "Ford" },
@@ -53,7 +55,7 @@ interface StockResponse {
   desired_investiture: number;
 }
 
-const sentimentFooter = (score:number, meter:string): string =>{
+const sentimentFooter = (score: number, meter: string): string => {
   let trend = "";
   if (meter == "hype") {
     trend = "social media";
@@ -76,7 +78,7 @@ const sentimentFooter = (score:number, meter:string): string =>{
     return `Positive sentiment in ${trend} around the stock`;
   } else if (score > 85 && score <= 100) {
     return `Strongly Positive sentiment in ${trend} around the stock`;
-  }else{
+  } else {
     return "N/A";
   }
 }
@@ -207,12 +209,10 @@ export default function Stocks() {
   }, [stocks]);
   useEffect(() => {
     if (meters.hype.value) {
-      console.log("Hype: ",meters.hype.value)
       const hype_temp = ((meters.hype.value + 6) / 12) * 100
       setHypeMeter(hype_temp);
     }
     if (meters.impact.value || meters.impact.value == 0) {
-      console.log("Impact: ",meters.impact.value)
       const impact_temp = ((meters.impact.value + 6) / 12) * 100
       setImpactMeter(impact_temp);
     }
@@ -312,38 +312,63 @@ export default function Stocks() {
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <div className="grid grid-cols-6 gap-2">
           <div className="col-span-6 xl:col-span-3">
-          {moment(meters.hype.date).isValid() && (
-            <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
-              <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-                <div className="grid flex-1 gap-1 sm:text-left">
-                  <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
-                    Hype Meter
-                  </CardTitle>
-                  <CardDescription>
-                    <i>Hype Meter</i> analyzes social media sentiment to
-                    capture the public's view of a stock. A higher
-                    score indicates more positive outlook on the stock among
-                    social media users.
-                    <Separator className="my-2" />
-                    <div className="text-xs">
-                    As of {moment(meters.hype.date).calendar()}{" "}
-                    </div>
-                  </CardDescription>
+            {moment(meters.hype.date).isValid() ? (
+              <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                  <div className="grid flex-1 gap-1 sm:text-left">
+                    <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
+                      Hype Meter
+                    </CardTitle>
+                    <CardDescription>
+                      <i>Hype Meter</i> analyzes social media sentiment to
+                      capture the public's view of a stock. A higher
+                      score indicates more positive outlook on the stock among
+                      social media users.
+                      <Separator className="my-2" />
+                      <div className="text-xs">
+                        As of {moment(meters.hype.date).calendar()}{" "}
+                      </div>
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                  <SentimentMeter score={hype_meter} />
                 </div>
-              </CardHeader>
-              <div className="flex flex-col md:flex-row items-center justify-center py-8">
-              <SentimentMeter score={hype_meter} /> 
-              </div>
-              <CardFooter className="flex justify-center">
-              <p className="gap-2 font-medium leading-none">
-              {sentimentFooter(hype_meter, "hype")}
-                </p>
-              </CardFooter>
-            </Card>
-            )}
+                <CardFooter className="flex justify-center">
+                  <p className="gap-2 font-medium leading-none">
+                    {sentimentFooter(hype_meter, "hype")}
+                  </p>
+                </CardFooter>
+              </Card>
+            ) :
+              (
+                  <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                    <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
+                      Hype Meter
+                    </div>
+                    <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
+                      <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
+                        <i>Hype Meter</i> analyzes social media sentiment to
+                        capture the public's view of a stock. A higher
+                        score indicates more positive outlook on the stock among
+                        social media users.
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
+                      <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                        <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
+                      </div>
+                      <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                      <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                    </div>
+                    <div className="text-sm text-center text-black dark:text-white p-2">
+                      Hype Meter Data currently not available. Please Try Again Later.
+                    </div>
+                  </div>
+              )}
           </div>
           <div className="col-span-6 xl:col-span-3">
-          {moment(meters.hype.date).isValid() && (
+            {moment(meters.hype.date).isValid() ? (
               <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
                 <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                   <div className="grid flex-1 gap-1 sm:text-left">
@@ -357,21 +382,46 @@ export default function Stocks() {
                       positive impact on the stock.
                       <Separator className="my-2" />
                       <div className="text-xs">
-                      As of {moment(meters.impact?.date).calendar()}{" "}
+                        As of {moment(meters.impact?.date).calendar()}{" "}
                       </div>
                     </CardDescription>
                   </div>
                 </CardHeader>
                 <div className="flex flex-col md:flex-row items-center justify-center py-8">
-                <SentimentMeter score={impact_meter} />
+                  <SentimentMeter score={impact_meter} />
                 </div>
                 <CardFooter className="flex justify-center">
-                <p className="gap-2 font-medium leading-none">
-                  {sentimentFooter(impact_meter, "impact")}
-                </p>
-              </CardFooter>
+                  <p className="gap-2 font-medium leading-none">
+                    {sentimentFooter(impact_meter, "impact")}
+                  </p>
+                </CardFooter>
               </Card>
-              )}
+            ):
+            (
+                <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                  <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
+                  Impact Factor
+                  </div>
+                  <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
+                    <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
+                    <i>Impact Factor</i> scores how major news events like
+                      elections, natural disasters, and regulations influence
+                      stock performance. A higher score indicates a more
+                      positive impact on the stock.
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
+                    <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                      <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
+                    </div>
+                    <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                    <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                  </div>
+                  <div className="text-sm text-center text-black dark:text-white p-2">
+                  Impact Factor Data currently not available. Please Try Again Later.
+                  </div>
+                </div>
+            )}
           </div>
         </div>
       </div>
