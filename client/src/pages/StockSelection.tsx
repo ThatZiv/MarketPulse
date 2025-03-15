@@ -103,7 +103,7 @@ export default function StockPage() {
               today.setHours(23, 59, 59, 999);
               return selectedDate <= today;
             }, "Date cannot be in the future"),
-          shares: z.number().min(0.01, "Shares must be at least 0.01"),
+          shares: z.number(),
           pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
         })
       ),
@@ -149,7 +149,9 @@ export default function StockPage() {
       ...newPurchases[index],
       [field]:
         field === "shares" || field === "pricePurchased"
-          ? value === "" ? null : Number(value)
+          ? value === ""
+            ? null
+            : Number(value)
           : value,
     };
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
@@ -161,6 +163,7 @@ export default function StockPage() {
     const { data, error } = await supabase
       .from("User_Stock_Purchases")
       .select("date, amount_purchased, price_purchased")
+      .order("date", { ascending: true })
       .eq("user_id", user.id)
       .eq("stock_id", ticker);
 
@@ -387,7 +390,6 @@ export default function StockPage() {
                       id={`shares-${index}`}
                       type="number"
                       step="0.01"
-                      min="0.01"
                       required
                       value={purchase.shares ?? ""}
                       onChange={(e) =>
@@ -457,7 +459,8 @@ export default function StockPage() {
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  cashToInvest: e.target.value === "" ? null : Number(e.target.value),
+                  cashToInvest:
+                    e.target.value === "" ? null : Number(e.target.value),
                 }))
               }
               required
