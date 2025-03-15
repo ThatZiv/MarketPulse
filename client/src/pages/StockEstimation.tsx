@@ -206,10 +206,12 @@ export default function Stocks() {
   }, [stocks]);
   useEffect(() => {
     if (meters.hype.value) {
+      console.log("Hype: ",meters.hype.value)
       const hype_temp = ((meters.hype.value + 6) / 12) * 100
       setHypeMeter(hype_temp);
     }
-    if (meters.impact.value) {
+    if (meters.impact.value || meters.impact.value == 0) {
+      console.log("Impact: ",meters.impact.value)
       const impact_temp = ((meters.impact.value + 6) / 12) * 100
       setImpactMeter(impact_temp);
     }
