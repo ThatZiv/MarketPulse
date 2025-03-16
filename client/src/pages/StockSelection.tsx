@@ -8,6 +8,10 @@ import {
   ArrowUp,
   TrendingUp,
   Box,
+  Trash,
+  Plus,
+  Undo,
+  X,
 } from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
@@ -36,6 +40,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+import InfoTooltip from "@/components/InfoTooltip";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -181,19 +186,10 @@ export default function StockPage() {
 
   const handlePurchaseChange = (
     index: number,
-    field: "date" | "shares" | "pricePurchased",
+    field: "date" | "shares" | "pricePurchased" | "type",
     value: string
   ) => {
     const newPurchases = [...formData.purchases];
-    newPurchases[index] = {
-      ...newPurchases[index],
-      [field]:
-        field === "shares" || field === "pricePurchased"
-          ? value === ""
-            ? null
-            : Number(value)
-          : value,
-    };
     newPurchases[index] = {
       ...newPurchases[index],
       [field]:
@@ -453,7 +449,54 @@ export default function StockPage() {
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
+                  <div id={`type-${index}`} className="flex-1 flex flex-col">
+                    {index === 0 && (
+                      <label htmlFor={`type-${index}`} className="text-sm mb-1">
+                        Type
+                      </label>
+                    )}
+                    <Select
+                      disabled={purchase.shares === null}
+                      value={
+                        purchase.shares !== null
+                          ? purchase.shares > 0
+                            ? "buy"
+                            : "sell"
+                          : "buy"
+                      }
+                      onValueChange={(value: string) => {
+                        if (purchase.shares === null) return;
 
+                        handlePurchaseChange(
+                          index,
+                          "shares",
+                          String(
+                            value == "buy"
+                              ? Math.abs(purchase.shares)
+                              : Math.abs(purchase.shares) * -1
+                          )
+                        );
+
+                        // handlePurchaseChange(
+                        //   index,
+                        //   "shares",
+                        //   String(value === "sell" && purchase.shares * -1)
+                        // );
+                      }}
+                      //  onValueChange={(value: string) =>
+                      required
+                    >
+                      <SelectTrigger className="border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 h-full focus:outline-none focus:ring-2 focus:ring-primary">
+                        <SelectValue placeholder="Select Option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="buy">Buy</SelectItem>
+                          <SelectItem value="sell">Sell</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="flex-1 flex flex-col">
                     {index === 0 && (
                       <label
@@ -468,7 +511,11 @@ export default function StockPage() {
                       type="number"
                       step="0.01"
                       required
-                      value={purchase.shares ?? ""}
+                      value={
+                        purchase.shares === null
+                          ? ""
+                          : Math.abs(purchase.shares)
+                      }
                       onChange={(e) =>
                         handlePurchaseChange(index, "shares", e.target.value)
                       }
@@ -482,11 +529,10 @@ export default function StockPage() {
                         htmlFor={`price-${index}`}
                         className="text-sm mb-1"
                       >
-                        Price Purchased/Sold
+                        Price ($)
                       </label>
                     )}
-                    <div className="flex justify-center items-center ml-1">
-                      <span className="mr--8">$</span>
+                    <div className="flex justify-center items-center">
                       <input
                         id={`price-${index}`}
                         type="number"
@@ -501,7 +547,7 @@ export default function StockPage() {
                             e.target.value
                           )
                         }
-                        className="w-full border-l-0 border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full  border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
                   </div>
@@ -512,7 +558,7 @@ export default function StockPage() {
                     variant="destructive"
                     className="self-end mb-1"
                   >
-                    Remove
+                    <Trash className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
@@ -522,10 +568,11 @@ export default function StockPage() {
                   onClick={addPurchaseEntry}
                   className="mt-2"
                 >
-                  Add Purchase
+                  Add Purchase <Plus className="h-4 w-4" />
                 </Button>
                 {previousPurchases != formData.purchases && (
                   <Button type="button" onClick={resetPurchaseEntries}>
+                    <Undo className="h-4 w-4" />
                     Revert Changes
                   </Button>
                 )}
@@ -540,7 +587,7 @@ export default function StockPage() {
                         Current Profit <TrendingUp className="ml-2 h-4 w-4" />
                       </span>
 
-                      <span className="text-xs">Based on last sell</span>
+                      <span className="text-xs">Based on last sale</span>
                     </TableHead>
                     <TableHead>
                       <span className="flex justify-start items-center">
@@ -556,7 +603,7 @@ export default function StockPage() {
                     </TableHead>
                     <TableHead>
                       <span className="flex justify-start items-center">
-                        Total Shares
+                        Current Shares
                         <Box className="ml-2 h-4 w-4" />
                       </span>
                     </TableHead>
@@ -585,13 +632,18 @@ export default function StockPage() {
                       {PurchaseHistoryCalculator.toDollar(calc.getTotalSold())}
                     </TableCell>
                     <TableCell
-                      className={
+                      className={`${
                         calc.getTotalShares() < 0 ? "text-red-600" : ""
-                      }
+                      } flex items-center gap-2`}
                     >
                       {calc.getTotalShares().toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
+                      {calc.getTotalShares() < 0 && (
+                        <InfoTooltip Icon={X} size="md">
+                          You cannot sell more shares than you own.
+                        </InfoTooltip>
+                      )}
                     </TableCell>
                   </TableRow>
                 </TableBody>
