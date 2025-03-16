@@ -9,9 +9,11 @@ import Stock_Chart from "@/components/stock_chart_demo";
 //   HoverCardContent,
 //   HoverCardTrigger,
 // } from "@/components/ui/hover-card";
+
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
+import { IoTrash } from "react-icons/io5";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
 import { type Stock } from "@/types/stocks";
@@ -36,6 +38,7 @@ import Recommendation from "@/components/recommendation-chart";
 import { Button } from "@/components/ui/button";
 import { SentimentMeter } from "@/components/sentiment-meter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DeleteStock } from "@/components/delete-stock";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -244,16 +247,16 @@ export default function Stocks() {
       </h1>
       <GenerateStockLLM ticker={ticker} />
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
-        <div className="relative">
+        <div className="flex justify-end right-0 gap-4 py-2">
           <Link
-            className="absolute right-0 top-1/2 transform -translate-y-1/3 transition-transform duration-300 "
             to={`/stocks?ticker=${ticker}`}
           >
             <Button variant="secondary" size="sm">
               <MdEdit className="" /> Edit
             </Button>
           </Link>
-        </div>
+          <DeleteStock ticker={ticker_name ? ticker_name[ticker as keyof typeof ticker_name] : undefined} />
+          </div>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
             <h3 className="lg:text-2xl text-md">Shares Owned</h3>
