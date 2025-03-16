@@ -142,7 +142,6 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         .join(" ")
         .trim();
     } else if (user?.email) {
-      console.log("user: ", user);
       return user.email;
     }
     return "User";
