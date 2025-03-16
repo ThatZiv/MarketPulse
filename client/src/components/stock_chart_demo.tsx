@@ -114,7 +114,7 @@ export default function Stock_Chart({ ticker }: props) {
   return (
     <>
       {isLoading || isError ? (
-        <Card className="w-full p-4">
+        <Card className="w-full p-4 border border-black dark:border-white ">
           {isLoading && (
             <div
               role="status"
@@ -141,7 +141,7 @@ export default function Stock_Chart({ ticker }: props) {
           )}
         </Card>
       ) : (
-        <Card className="w-full border border-black dark:border-white ">
+        <Card className="w-full border border-black dark:border-white">
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
               <CardTitle>{ticker} Historical Prices</CardTitle>
