@@ -162,12 +162,12 @@ export default function Predictions({
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {};
     const colors = [
-      "#F5A79F",
+      "#6644e2",
       "#E2C541",
       "#BF0F52",
       "#92E98C",
       "#479BC6",
-      "#6644e2",
+      "#ea580c",
     ];
     for (const { name } of predictions ?? []) {
       config[name] = {

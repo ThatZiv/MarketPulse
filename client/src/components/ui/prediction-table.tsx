@@ -159,10 +159,15 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                     else {
                       return (
                         <TableCell key={`${i}:${j}`}>
-                          <ColoredRow
-                            row={Object.values(row)}
-                            value={Number(value)}
-                          />
+                          {j === Object.values(row).length - 1 ? (
+                            // last column is for AVERAGE model!
+                            <p className="text-orange-600 ">{valueStr}</p>
+                          ) : (
+                            <ColoredRow
+                              row={Object.values(row)}
+                              value={Number(value)}
+                            />
+                          )}
                         </TableCell>
                       );
                     }
