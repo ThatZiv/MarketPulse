@@ -190,6 +190,13 @@ export default function StockPage() {
     value: string
   ) => {
     const newPurchases = [...formData.purchases];
+    if (field === "date") {
+      // ignore if date is already in use (PK unique con)
+      if (newPurchases.some((purchase) => purchase.date === value)) {
+        toast.error("Date already in use");
+        return;
+      }
+    }
     newPurchases[index] = {
       ...newPurchases[index],
       [field]:
