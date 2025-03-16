@@ -35,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -167,49 +168,15 @@ export default function StockPage() {
     }));
   };
 
-  const totals: {
-    value: number;
-    shares: number;
-    bought: number;
-    sold: number;
-    profit: number;
-  } = useMemo(() => {
-    const res = {
-      value: 0,
-      shares: formData.purchases.reduce(
-        (acc, purchase) => acc + (purchase.shares ?? 0),
-        0
-      ),
-      bought: formData.purchases
-        .filter((purchase) => purchase.shares !== null && purchase?.shares > 0)
-        .reduce(
-          (acc, purchase) =>
-            acc + (purchase.pricePurchased ?? 0) * (purchase.shares ?? 0),
-          0
-        ),
-      sold: formData.purchases
-        .filter((purchase) => purchase.shares !== null && purchase?.shares < 0)
-        .reduce(
-          (acc, purchase) =>
-            acc + (purchase.pricePurchased ?? 0) * (purchase.shares ?? 0) * -1,
-          0
-        ),
-      profit: 0,
-    };
-
-    // can't have a profit if you haven't sold anything yet
-    if (res.sold > 0) {
-      for (const purchase of formData.purchases.reverse()) {
-        res.value += (purchase.pricePurchased ?? 0) * (purchase.shares ?? 0);
-        if (purchase.shares && purchase.shares < 0) {
-          // if sell
-          res.profit = res.value * -1;
-          res.value = 0;
-          continue;
-        }
-      }
-    }
-    return res;
+  const calc = useMemo(() => {
+    return new PurchaseHistoryCalculator(
+      // must convert to form data to db schema
+      formData.purchases.map((purchase) => ({
+        date: purchase.date,
+        amount_purchased: purchase.shares ?? 0,
+        price_purchased: purchase.pricePurchased ?? 0,
+      }))
+    );
   }, [formData.purchases]);
 
   const handlePurchaseChange = (
@@ -597,37 +564,29 @@ export default function StockPage() {
                     <TableCell>
                       <span
                         className={`${
-                          totals.profit > 0
+                          calc.getProfit() > 0
                             ? // totals.value * -1 is the value of profit
                               "text-green-600"
                             : "text-red-600"
                         }`}
                       >
-                        $
-                        {totals.profit.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
+                        {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
                       </span>
                     </TableCell>
                     <TableCell>
-                      $
-                      {totals.bought.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {PurchaseHistoryCalculator.toDollar(
+                        calc.getTotalBought()
+                      )}
                     </TableCell>
                     <TableCell>
-                      $
-                      {totals.sold.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {PurchaseHistoryCalculator.toDollar(calc.getTotalSold())}
                     </TableCell>
                     <TableCell
-                      className={totals.shares < 0 ? "text-red-600" : ""}
+                      className={
+                        calc.getTotalShares() < 0 ? "text-red-600" : ""
+                      }
                     >
-                      {totals.shares.toLocaleString(undefined, {
+                      {calc.getTotalShares().toLocaleString(undefined, {
                         maximumFractionDigits: 2,
                       })}
                     </TableCell>
