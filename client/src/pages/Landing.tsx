@@ -14,6 +14,9 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Pencil } from "lucide-react";
 
+import InfoTooltip from "@/components/InfoTooltip";
+import moment from "moment";
+
 interface StockResponse {
   Stocks: {
     stock_id: number;
@@ -26,6 +29,8 @@ interface StockResponse {
 interface StockCardProps {
   stock: StockResponse;
 }
+
+const { toDollar } = PurchaseHistoryCalculator;
 
 export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
@@ -54,45 +59,69 @@ export default function Landing() {
       }),
   });
 
-  // coroutine that gets the user's stock transactions to global state
-  useQuery({
-    queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
-    queryFn: () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("User_Stock_Purchases")
-          .select("Stocks (stock_ticker), *")
-          .eq("user_id", user?.id)
-          .order("date", { ascending: false })
-          .then(({ data, error }) => {
-            if (error) {
-              reject(error);
-              return;
-            }
-            const allTransactions: {
-              [ticker: string]: Array<
-                PurchaseHistoryDatapoint & { Stocks: { stock_ticker: string } }
-              >;
-            } = {};
-            data?.forEach((transaction) => {
-              if (!allTransactions[transaction.Stocks.stock_ticker]) {
-                allTransactions[transaction.Stocks.stock_ticker] = [];
+  // global coroutine to cache in state
+  useQueries({
+    queries: [
+      {
+        queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
+        queryFn: async () => {
+          supabase
+            .from("User_Stock_Purchases")
+            .select("Stocks (stock_ticker), *")
+            .eq("user_id", user?.id)
+            .order("date", { ascending: false })
+            .then(({ data, error }) => {
+              if (error) {
+                throw error;
               }
-              allTransactions[transaction.Stocks.stock_ticker].push(
-                transaction
+              const allTransactions: {
+                [ticker: string]: Array<
+                  PurchaseHistoryDatapoint & {
+                    Stocks: { stock_ticker: string };
+                  }
+                >;
+              } = {};
+              data?.forEach((transaction) => {
+                if (!allTransactions[transaction.Stocks.stock_ticker]) {
+                  allTransactions[transaction.Stocks.stock_ticker] = [];
+                }
+                allTransactions[transaction.Stocks.stock_ticker].push(
+                  transaction
+                );
+              });
+              Object.entries(allTransactions).forEach(
+                ([ticker, transactions]) => {
+                  dispatch({
+                    type: actions.SET_USER_STOCK_TRANSACTIONS,
+                    payload: { data: transactions, stock_ticker: ticker },
+                  });
+                }
               );
             });
-            Object.entries(allTransactions).forEach(
-              ([ticker, transactions]) => {
-                dispatch({
-                  type: actions.SET_USER_STOCK_TRANSACTIONS,
-                  payload: { data: transactions, stock_ticker: ticker },
-                });
-              }
-            );
-            resolve(data || []);
+
+          return null;
+        },
+      },
+      ...(stocks?.map((stock) => ({
+        queryKey: [cache_keys.STOCK_DATA_REALTIME, stock.Stocks.stock_ticker],
+        refetchInterval: () => 1000 * 60 * 5,
+        queryFn: () => {
+          api?.getStockRealtime(stock.Stocks.stock_ticker).then((data) => {
+            dispatch({
+              type: actions.SET_STOCK_PRICE,
+              payload: {
+                stock_ticker: stock.Stocks.stock_ticker,
+                data: data[data.length - 1].stock_close,
+                timestamp: new Date(
+                  data[data.length - 1].time_stamp.join(" ") + " UTC"
+                ).getTime(),
+              },
+            });
           });
-      }),
+          return null;
+        },
+      })) || []),
+    ],
   });
 
   const stockImages = useQueries({
@@ -132,7 +161,7 @@ export default function Landing() {
     );
   }
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full">
       <h1 className="text-4xl text-center flex-1 tracking-tight">
         Welcome <b>{displayName || "User"}</b>
       </h1>
@@ -185,11 +214,12 @@ function StockCard({
   colors,
 }: StockCardProps & { img: string; colors: string[] }) {
   const {
-    state: { history },
+    state: { history, stocks },
   } = useGlobal();
   const navigate = useNavigate();
   const ticker = stock.Stocks.stock_ticker;
   const userStockHistory = history[ticker];
+  const thisStock = stocks[ticker];
   const calc = useMemo(
     () => new PurchaseHistoryCalculator(userStockHistory ?? []),
     [userStockHistory]
@@ -197,8 +227,7 @@ function StockCard({
   const [hovered, setHovered] = useState(false);
 
   return (
-    <Link
-      to={`/stocks/${ticker}`}
+    <span
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -228,7 +257,6 @@ function StockCard({
         >
           {hovered && (
             <>
-              {" "}
               {userStockHistory ? (
                 <>
                   <Separator className="mb-4 border-2 dark:border-gray-300 border-gray-800" />
@@ -236,20 +264,88 @@ function StockCard({
                     {stock.Stocks.stock_name}
                   </p>
                   <div className="flex flex-col items-center w-full">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {calc.getTotalShares()}
-                      </span>{" "}
-                      share{calc.getTotalShares() === 1 ? "" : "s"} owned
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                          {calc.getTotalShares()}
+                        </span>{" "}
+                        share{calc.getTotalShares() === 1 ? "" : "s"} currently
+                        owned
+                        <InfoTooltip side="right">
+                          This is the total number of shares you own for this
+                          stock. It is calculated by taking the difference
+                          between all your purchased stocks and those that were
+                          sold.
+                        </InfoTooltip>
+                      </div>
                     </p>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      <span className="text-xl font-semibold text-gray-900 dark:text-white">
-                        {PurchaseHistoryCalculator.toDollar(
-                          calc.getTotalBought()
+                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                      <div className="flex items-center gap-1">
+                        <span
+                          className={`text-xl font-semibold ${
+                            calc.getProfit() < 0
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {toDollar(calc.getProfit())}
+                        </span>
+                        <span className="inline">last sale profit</span>
+                        <InfoTooltip side="right">
+                          This is the profit you have made from this stock based
+                          on your last sale. It is calculated by summing up the
+                          cost of your purchases, and if a sale occurs, takes
+                          the difference between your total purchased amount and{" "}
+                          <strong>last</strong> sale amount. If you never sold,
+                          this value will remain zero.
+                        </InfoTooltip>
+                      </div>
+                    </p>
+                    {thisStock?.current_price && (
+                      <>
+                        <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xl animate-pulse font-semibold text-gray-900 dark:text-white">
+                              {toDollar(
+                                calc.getTotalValue(thisStock.current_price)
+                              )}
+                            </span>
+                            <span className="inline">current value</span>
+                            <InfoTooltip side="right">
+                              This is the current value of your shares based on
+                              the current price of the stock.
+                            </InfoTooltip>
+                          </div>
+                        </p>
+                        {calc.getTotalShares() > 0 && (
+                          <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                            <div className="flex items-center gap-1">
+                              <span
+                                className={`text-xl animate-pulse font-semibold ${
+                                  calc.getTotalProfit(thisStock.current_price) <
+                                  0
+                                    ? "text-red-600"
+                                    : "text-green-600"
+                                }`}
+                              >
+                                {toDollar(
+                                  calc.getTotalProfit(thisStock.current_price)
+                                )}
+                              </span>
+                              <span className="inline">potential profit</span>
+                              <InfoTooltip side="right">
+                                This is the potential profit you would make if
+                                you sold all your shares at the current price.
+                              </InfoTooltip>
+                            </div>
+                          </p>
                         )}
-                      </span>{" "}
-                      purchased
-                    </p>
+                        <p className="text-[10px] font-light">
+                          Based on prices from{" "}
+                          {moment(thisStock?.timestamp).fromNow()}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </>
               ) : (
@@ -257,21 +353,21 @@ function StockCard({
                   No purchase history
                 </p>
               )}
-              <div className="flex items-center mt-2 gap-1">
+              <div className="flex flex-col md:items-center mt-2 gap-1 w-full">
                 <Button
                   variant="secondary"
                   className="hover:invert flex items-center"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    navigate(`/stocks/?ticker=${ticker}`);
+                    navigate(`/stocks?ticker=${ticker}`);
                   }}
                 >
                   <Pencil />
                   Edit
                 </Button>
                 <Button
-                  variant="default"
+                  variant="secondary"
                   style={{
                     backgroundColor: colors[0],
                     color: colors[1] ?? "white",
@@ -291,6 +387,6 @@ function StockCard({
           )}
         </div>
       </div>
-    </Link>
+    </span>
   );
 }

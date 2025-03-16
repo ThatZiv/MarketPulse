@@ -54,6 +54,9 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
         payload: {
           stock_ticker,
           data: data[data.length - 1].stock_close,
+          timestamp: new Date(
+            data[data.length - 1].time_stamp.join(" ") + " UTC"
+          ).getTime(),
         },
       });
       return data;

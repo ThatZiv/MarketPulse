@@ -45,6 +45,9 @@ const GlobalReducer = (
       if (typeof action.payload.data !== "number") {
         throw new Error("Expected number for payload.data");
       }
+      if (typeof action.payload.timestamp !== "number") {
+        throw new Error("Expected number for payload.timestamp");
+      }
       return {
         ...state,
         stocks: {
@@ -52,7 +55,7 @@ const GlobalReducer = (
           [ticker]: {
             ...state.stocks[ticker],
             current_price: action.payload.data,
-            timestamp: Date.now(),
+            timestamp: action.payload.timestamp,
           },
         },
       };

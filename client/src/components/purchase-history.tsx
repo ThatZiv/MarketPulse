@@ -31,6 +31,7 @@ import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 import moment from "moment";
 import { Skeleton } from "./ui/skeleton";
 import { useGlobal } from "@/lib/GlobalProvider";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 // const chartData = [
 //   { month: "January", visitors: 186 },
 //   { month: "February", visitors: 205 },
@@ -176,7 +177,7 @@ export default function PurchaseHistory({
           </div>
         ) : (
           <div className="flex gap-2 font-medium leading-none">
-            ${currentValue}{" "}
+            {PurchaseHistoryCalculator.toDollar(currentValue)}
             {currentValue > 0 ? (
               <TrendingUp className="h-4 w-4" />
             ) : (
