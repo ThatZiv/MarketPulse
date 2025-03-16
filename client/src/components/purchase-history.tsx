@@ -92,7 +92,7 @@ export default function PurchaseHistory({
     if (!purchases) return points;
     for (const { date, amount_purchased, price_purchased } of purchases) {
       points.push({
-        date: moment(date).calendar(),
+        date: moment(date).format("MMM DD"),
         amount_purchased,
         price_purchased,
       });
@@ -145,7 +145,12 @@ export default function PurchaseHistory({
                   }}
                 />
                 <Bar dataKey="amount_purchased" name="Shares">
-                  <LabelList position="top" dataKey="date" fillOpacity={1} />
+                  <LabelList
+                    className="text-sm sm:text-md"
+                    position="bottom"
+                    dataKey="date"
+                    fillOpacity={3}
+                  />
                   {chartData.map((item) => (
                     <Cell
                       key={item.date}
