@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  ArrowDown,
+  ArrowUp,
+  TrendingUp,
+  Box,
+} from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +26,15 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -28,7 +44,7 @@ const getTodayISOString = () => {
   return `${year}-${month}-${day}`;
 };
 
-interface StockFormData {
+export interface StockFormData {
   ticker: string;
   hasStocks: string;
   purchases: {
@@ -56,6 +72,11 @@ export default function StockPage() {
     purchases: [],
     cashToInvest: null,
   });
+
+  const [previousPurchases, setPreviousPurchases] = useState<
+    StockFormData["purchases"]
+  >([]);
+
   const [error, setError] = useState<string>();
   const {
     value: stocks,
@@ -139,6 +160,58 @@ export default function StockPage() {
     }));
   };
 
+  const resetPurchaseEntries = () => {
+    setFormData((prev) => ({
+      ...prev,
+      purchases: previousPurchases,
+    }));
+  };
+
+  const totals: {
+    value: number;
+    shares: number;
+    bought: number;
+    sold: number;
+    profit: number;
+  } = useMemo(() => {
+    const res = {
+      value: 0,
+      shares: formData.purchases.reduce(
+        (acc, purchase) => acc + (purchase.shares ?? 0),
+        0
+      ),
+      bought: formData.purchases
+        .filter((purchase) => purchase.shares !== null && purchase?.shares > 0)
+        .reduce(
+          (acc, purchase) =>
+            acc + (purchase.pricePurchased ?? 0) * (purchase.shares ?? 0),
+          0
+        ),
+      sold: formData.purchases
+        .filter((purchase) => purchase.shares !== null && purchase?.shares < 0)
+        .reduce(
+          (acc, purchase) =>
+            acc + (purchase.pricePurchased ?? 0) * (purchase.shares ?? 0) * -1,
+          0
+        ),
+      profit: 0,
+    };
+
+    // can't have a profit if you haven't sold anything yet
+    if (res.sold > 0) {
+      for (const purchase of formData.purchases.reverse()) {
+        res.value += (purchase.pricePurchased ?? 0) * (purchase.shares ?? 0);
+        if (purchase.shares && purchase.shares < 0) {
+          // if sell
+          res.profit = res.value * -1;
+          res.value = 0;
+          continue;
+        }
+      }
+    }
+    return res;
+  }, [formData.purchases]);
+
   const handlePurchaseChange = (
     index: number,
     field: "date" | "shares" | "pricePurchased",
@@ -154,6 +227,18 @@ export default function StockPage() {
             : Number(value)
           : value,
     };
+    newPurchases[index] = {
+      ...newPurchases[index],
+      [field]:
+        field === "shares" || field === "pricePurchased"
+          ? value === ""
+            ? null
+            : Number(value)
+          : value,
+    };
+    newPurchases.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
 
@@ -171,17 +256,19 @@ export default function StockPage() {
       console.error("Error fetching purchase history:", error);
       return;
     }
-
+    const purchases = data.map((purchase) => ({
+      date: purchase.date.split("T")[0],
+      shares: purchase.amount_purchased,
+      pricePurchased: purchase.price_purchased,
+    }));
     setFormData((prev) => ({
       ...prev,
       ticker,
       hasStocks: data.length > 0 ? "yes" : "no",
-      purchases: data.map((purchase) => ({
-        date: purchase.date.split("T")[0],
-        shares: purchase.amount_purchased,
-        pricePurchased: purchase.price_purchased,
-      })),
+      purchases,
     }));
+
+    setPreviousPurchases(purchases);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -191,6 +278,17 @@ export default function StockPage() {
     if (!result.success) {
       result.error.errors.reverse().forEach((err) => setError(err.message));
       return;
+    }
+
+    let totalShares = 0;
+    for (const purchase of formData.purchases) {
+      totalShares += purchase.shares ?? 0;
+      if (totalShares < 0) {
+        setError(
+          `You cannot sell more shares than you own on ${purchase.date}`
+        );
+        return;
+      }
     }
 
     const updateStock = new Promise((resolve, reject) => {
@@ -217,6 +315,27 @@ export default function StockPage() {
             return;
           }
 
+          const purchasesData = formData.purchases.map((purchase) => ({
+            user_id: user?.id,
+            stock_id: formData.ticker,
+            date: purchase.date,
+            amount_purchased: purchase.shares,
+            price_purchased: purchase.pricePurchased,
+          }));
+
+          let currentShares = 0;
+          for (const purchase of purchasesData) {
+            currentShares += purchase.amount_purchased ?? 0;
+            if (currentShares < 0) {
+              reject(
+                new Error(
+                  `You cannot sell more shares than you own on ${purchase.date}`
+                )
+              );
+              return;
+            }
+          }
+
           supabase
             .from("User_Stock_Purchases")
             .delete()
@@ -227,14 +346,6 @@ export default function StockPage() {
                 reject(deleteError);
                 return;
               }
-
-              const purchasesData = formData.purchases.map((purchase) => ({
-                user_id: user?.id,
-                stock_id: formData.ticker,
-                date: purchase.date,
-                amount_purchased: purchase.shares,
-                price_purchased: purchase.pricePurchased,
-              }));
 
               supabase
                 .from("User_Stock_Purchases")
@@ -435,9 +546,95 @@ export default function StockPage() {
                   </Button>
                 </div>
               ))}
-              <Button type="button" onClick={addPurchaseEntry} className="mt-2">
-                Add Purchase
-              </Button>
+              <div className="flex justify-between">
+                <Button
+                  type="button"
+                  onClick={addPurchaseEntry}
+                  className="mt-2"
+                >
+                  Add Purchase
+                </Button>
+                {previousPurchases != formData.purchases && (
+                  <Button type="button" onClick={resetPurchaseEntries}>
+                    Revert Changes
+                  </Button>
+                )}
+              </div>
+              <Separator className="my-2" />
+              <Table>
+                <TableHeader>
+                  {/* <TableCaption className="w-full">Totals</TableCaption> */}
+                  <TableRow>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Current Profit <TrendingUp className="ml-2 h-4 w-4" />
+                      </span>
+
+                      <span className="text-xs">Based on last sell</span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Total Purchased
+                        <ArrowDown className="ml-2 h-4 w-4" />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Total Sold
+                        <ArrowUp className="ml-2 h-4 w-4" />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Total Shares
+                        <Box className="ml-2 h-4 w-4" />
+                      </span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <span
+                        className={`${
+                          totals.profit > 0
+                            ? // totals.value * -1 is the value of profit
+                              "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        $
+                        {totals.profit.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      $
+                      {totals.bought.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      $
+                      {totals.sold.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell
+                      className={totals.shares < 0 ? "text-red-600" : ""}
+                    >
+                      {totals.shares.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              {}
             </div>
           )}
 
