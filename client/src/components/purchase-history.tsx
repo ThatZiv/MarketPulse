@@ -1,4 +1,3 @@
-import { TrendingDown, TrendingUp } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -32,6 +31,15 @@ import moment from "moment";
 import { Skeleton } from "./ui/skeleton";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { SelectSeparator } from "./ui/select";
 // const chartData = [
 //   { month: "January", visitors: 186 },
 //   { month: "February", visitors: 205 },
@@ -68,6 +76,7 @@ export default function PurchaseHistory({
   } = useQuery<Array<PurchaseHistoryDatapoint>>({
     queryKey: [cache_keys.USER_STOCK_TRANSACTION, ticker],
     queryFn: async () => {
+      // TODO: take from global state (read-thru cache)
       const { data, error } = await supabase
         .from("User_Stock_Purchases")
         .select("*")
@@ -101,11 +110,8 @@ export default function PurchaseHistory({
     return points;
   }, [purchases]);
 
-  const currentValue = useMemo(() => {
-    if (!purchases || purchases.length === 0) return 0;
-    return purchases.reduce((acc, { amount_purchased, price_purchased }) => {
-      return acc + amount_purchased * price_purchased;
-    }, 0);
+  const calc = useMemo(() => {
+    return new PurchaseHistoryCalculator(purchases ?? []);
   }, [purchases]);
   return (
     <Card className="border border-black dark:border-white rounded-md md:p-4 mt-4">
@@ -127,7 +133,7 @@ export default function PurchaseHistory({
             <CardDescription>
               Since {moment(purchases[0].date).calendar()}
             </CardDescription>
-            <ChartContainer config={chartConfig}>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <BarChart accessibilityLayer data={chartData}>
                 <CartesianGrid vertical={false} />
                 <ChartTooltip
@@ -165,6 +171,35 @@ export default function PurchaseHistory({
                 </Bar>
               </BarChart>
             </ChartContainer>
+            <SelectSeparator />
+            <Table className="w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Shares</TableHead>
+                  <TableHead>Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="text-left">
+                {purchases.map((purchase) => (
+                  <TableRow key={purchase.date}>
+                    <TableCell>
+                      {moment(purchase.date).format("MMMM DD, yyyy")}
+                    </TableCell>
+                    <TableCell>
+                      {purchase.amount_purchased > 0 ? "Buy" : "Sell"}
+                    </TableCell>
+                    <TableCell>{Math.abs(purchase.amount_purchased)}</TableCell>
+                    <TableCell>
+                      {PurchaseHistoryCalculator.toDollar(
+                        purchase.price_purchased
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </>
         ) : (
           <h1>No purchase history available</h1>
@@ -176,13 +211,15 @@ export default function PurchaseHistory({
             <div>Error loading purchase history</div>
           </div>
         ) : (
-          <div className="flex gap-2 font-medium leading-none">
-            {PurchaseHistoryCalculator.toDollar(currentValue)}
-            {currentValue > 0 ? (
-              <TrendingUp className="h-4 w-4" />
-            ) : (
-              <TrendingDown className="h-4 w-4" />
-            )}
+          <div className="flex gap-1 font-medium leading-none">
+            <span
+              className={
+                calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
+              }
+            >
+              {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+            </span>
+            was {calc.getProfit() > 0 ? "made" : "lost"} from your last sale.
           </div>
         )}
       </CardFooter>
