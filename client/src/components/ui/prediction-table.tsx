@@ -24,23 +24,6 @@ import { actions } from "@/lib/constants";
 interface PredictionTableProps {
   ticker: string;
 }
-function Average(row: { row: (number | string)[] }) {
-  let average = 0;
-  let count = 0;
-  //console.log(row.row[1]);
-
-  row.row.forEach((x: number | string) => {
-    if (!isNaN(Number(x))) {
-      average += Number(x);
-      count += 1;
-    }
-  });
-  //console.log(average);
-  average = average / count;
-
-  const output = "$" + Number(average).toFixed(2);
-  return <TableCell>{output}</TableCell>;
-}
 
 function ColoredRow(row: { row: (number | string)[]; value: number }) {
   let greatest = true;
@@ -56,7 +39,6 @@ function ColoredRow(row: { row: (number | string)[]; value: number }) {
       }
     }
   });
-  //console.log(average);
 
   const valueStr = "$" + Number(row.value).toFixed(2);
   if (greatest) {
@@ -163,7 +145,6 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                 <TableCell key={key}>{capitalizeFirstLetter(key)}</TableCell>
               );
             })}
-            {model === "" ? <TableCell>Average</TableCell> : <></>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -178,10 +159,15 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                     else {
                       return (
                         <TableCell key={`${i}:${j}`}>
-                          <ColoredRow
-                            row={Object.values(row)}
-                            value={Number(value)}
-                          />
+                          {j === Object.values(row).length - 1 ? (
+                            // last column is for AVERAGE model!
+                            <p className="text-orange-600 ">{valueStr}</p>
+                          ) : (
+                            <ColoredRow
+                              row={Object.values(row)}
+                              value={Number(value)}
+                            />
+                          )}
                         </TableCell>
                       );
                     }
@@ -190,7 +176,6 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                   }
                   return <TableCell key={`${i}:${j}`}>{valueStr}</TableCell>;
                 })}
-                {model === "" ? <Average row={Object.values(row)} /> : <></>}
               </TableRow>
             ))
             .slice(0, days)}
