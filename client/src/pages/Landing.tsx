@@ -6,7 +6,15 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { extractColors } from "extract-colors";
 import { Link } from "react-router";
 import { cache_keys } from "@/lib/constants";
-
+import {
+  IoMdInformationCircleOutline,
+  IoMdInformationCircle,
+} from "react-icons/io";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 interface StockResponse {
   Stocks: {
     stock_name: string;
@@ -136,33 +144,42 @@ function StockCard({
 }: StockCardProps & { img: string; colors: string[] }) {
   return (
     <Link to={`/stocks/${stock.Stocks.stock_ticker}`}>
-      <div
-        className="bg-white dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 duration-200 ease-in-out"
-        style={{
-          border: `4px solid ${colors[0]}`,
-        }}
-      >
-        <div className="flex justify-center mb-4">
-          <img
-            src={img}
-            alt={stock.Stocks.stock_name}
-            className="w-20 h-20 object-cover rounded-lg shadow-md"
-          />
-        </div>
+      <HoverCard>
+        <HoverCardTrigger>
 
-        <h3 className="text-xl font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
-          {stock.Stocks.stock_ticker}
-        </h3>
+          <div
+            className="bg-white dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 duration-200 ease-in-out"
+            style={{
+              border: `4px solid ${colors[0]}`,
+            }}
+          >
+            <div className="flex justify-center mb-4">
+              <img
+                src={img}
+                alt={stock.Stocks.stock_name}
+                className="w-20 h-20 object-cover rounded-lg shadow-md"
+              />
+            </div>
 
-        <Separator className="mb-4  border-2 dark:border-gray-300 border-gray-800" />
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
+              {stock.Stocks.stock_ticker}
+            </h3>
 
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-          <span className="text-xl font-semibold text-gray-900 dark:text-white">
-            {stock.shares_owned.toLocaleString()}
-          </span>{" "}
-          shares owned
-        </p>
-      </div>
+            <Separator className="mb-4  border-2 dark:border-gray-300 border-gray-800" />
+
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                {stock.shares_owned.toLocaleString()}
+              </span>{" "}
+              shares owned
+            </p>
+          </div>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-auto rounded-lg p-2.5">
+          {stock.Stocks.stock_name}
+      </HoverCardContent> 
+      </HoverCard>
+      
     </Link>
   );
 }
