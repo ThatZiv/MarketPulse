@@ -4,11 +4,19 @@ import { useSupabase } from "@/database/SupabaseProvider";
 import { useApi } from "@/lib/ApiProvider";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { extractColors } from "extract-colors";
-import { Link } from "react-router";
-import { cache_keys } from "@/lib/constants";
+import { Link, useNavigate } from "react-router";
+import { actions, cache_keys } from "@/lib/constants";
+import { type PurchaseHistoryDatapoint } from "@/types/global_state";
+import { useGlobal } from "@/lib/GlobalProvider";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+import { useMemo, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Pencil } from "lucide-react";
 
 interface StockResponse {
   Stocks: {
+    stock_id: number;
     stock_name: string;
     stock_ticker: string;
   };
@@ -22,6 +30,7 @@ interface StockCardProps {
 export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
   const api = useApi();
+  const { dispatch } = useGlobal();
 
   const {
     data: stocks,
@@ -33,13 +42,54 @@ export default function Landing() {
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name, stock_ticker), shares_owned")
+          .select("Stocks (*), shares_owned")
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
           .then(({ data, error }) => {
             if (error) reject(error);
             // @ts-expect-error Stocks will never expand to an array
+            resolve(data || []);
+          });
+      }),
+  });
+
+  // coroutine that gets the user's stock transactions to global state
+  useQuery({
+    queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
+    queryFn: () =>
+      new Promise((resolve, reject) => {
+        supabase
+          .from("User_Stock_Purchases")
+          .select("Stocks (stock_ticker), *")
+          .eq("user_id", user?.id)
+          .order("date", { ascending: false })
+          .then(({ data, error }) => {
+            if (error) {
+              reject(error);
+              return;
+            }
+            const allTransactions: {
+              [ticker: string]: Array<
+                PurchaseHistoryDatapoint & { Stocks: { stock_ticker: string } }
+              >;
+            } = {};
+            data?.forEach((transaction) => {
+              if (!allTransactions[transaction.Stocks.stock_ticker]) {
+                allTransactions[transaction.Stocks.stock_ticker] = [];
+              }
+              allTransactions[transaction.Stocks.stock_ticker].push(
+                transaction
+              );
+            });
+            Object.entries(allTransactions).forEach(
+              ([ticker, transactions]) => {
+                dispatch({
+                  type: actions.SET_USER_STOCK_TRANSACTIONS,
+                  payload: { data: transactions, stock_ticker: ticker },
+                });
+              }
+            );
             resolve(data || []);
           });
       }),
@@ -134,10 +184,26 @@ function StockCard({
   img,
   colors,
 }: StockCardProps & { img: string; colors: string[] }) {
+  const {
+    state: { history },
+  } = useGlobal();
+  const navigate = useNavigate();
+  const ticker = stock.Stocks.stock_ticker;
+  const userStockHistory = history[ticker];
+  const calc = useMemo(
+    () => new PurchaseHistoryCalculator(userStockHistory ?? []),
+    [userStockHistory]
+  );
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <Link to={`/stocks/${stock.Stocks.stock_ticker}`}>
+    <Link
+      to={`/stocks/${ticker}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <div
-        className="bg-white dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 duration-200 ease-in-out"
+        className="bg-white hover:bg-slate-200 hover:p-8 dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all hover:scale-105 transform duration-500 ease-in-out"
         style={{
           border: `4px solid ${colors[0]}`,
         }}
@@ -151,17 +217,79 @@ function StockCard({
         </div>
 
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
-          {stock.Stocks.stock_ticker}
+          {ticker}
         </h3>
 
-        <Separator className="mb-4  border-2 dark:border-gray-300 border-gray-800" />
-
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-          <span className="text-xl font-semibold text-gray-900 dark:text-white">
-            {stock.shares_owned.toLocaleString()}
-          </span>{" "}
-          shares owned
-        </p>
+        {/* Transition for the hovered content */}
+        <div
+          className={`flex flex-col items-center overflow-hidden transition-all duration-700 ease-in-out ${
+            hovered ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          {hovered && (
+            <>
+              {" "}
+              {userStockHistory ? (
+                <>
+                  <Separator className="mb-4 border-2 dark:border-gray-300 border-gray-800" />
+                  <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {stock.Stocks.stock_name}
+                  </p>
+                  <div className="flex flex-col items-center w-full">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {calc.getTotalShares()}
+                      </span>{" "}
+                      share{calc.getTotalShares() === 1 ? "" : "s"} owned
+                    </p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                      <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                        {PurchaseHistoryCalculator.toDollar(
+                          calc.getTotalBought()
+                        )}
+                      </span>{" "}
+                      purchased
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                  No purchase history
+                </p>
+              )}
+              <div className="flex items-center mt-2 gap-1">
+                <Button
+                  variant="secondary"
+                  className="hover:invert flex items-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/stocks/?ticker=${ticker}`);
+                  }}
+                >
+                  <Pencil />
+                  Edit
+                </Button>
+                <Button
+                  variant="default"
+                  style={{
+                    backgroundColor: colors[0],
+                    color: colors[1] ?? "white",
+                  }}
+                  className={`flex items-center hover:bg-gray-900 hover:text-white dark:hover:bg-gray-300 dark:hover:text-black`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/stocks/${ticker}`);
+                  }}
+                >
+                  Visit
+                  <ArrowRight />
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </Link>
   );

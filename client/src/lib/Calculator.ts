@@ -69,7 +69,7 @@ export class PurchaseHistoryCalculator {
       );
     let curr = 0;
     if (this.totalSold > 0) {
-      for (const purchase of this.purchases.reverse()) {
+      for (const purchase of this.purchases) {
         curr +=
           (purchase.price_purchased ?? 0) * (purchase.amount_purchased ?? 0);
         if (purchase.amount_purchased && purchase.amount_purchased < 0) {
@@ -86,10 +86,16 @@ export class PurchaseHistoryCalculator {
     return this.totalShares;
   }
 
+  /**
+   * @returns {number} total $ bought
+   *  */
   getTotalBought(): number {
     return this.totalBought;
   }
 
+  /**
+   * @returns {number} total $ sold
+   *  */
   getTotalSold(): number {
     return this.totalSold;
   }

@@ -482,25 +482,28 @@ export default function StockPage() {
                         htmlFor={`price-${index}`}
                         className="text-sm mb-1"
                       >
-                        Price Purchased
+                        Price Purchased/Sold
                       </label>
                     )}
-                    <input
-                      id={`price-${index}`}
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      required
-                      value={purchase.pricePurchased ?? ""}
-                      onChange={(e) =>
-                        handlePurchaseChange(
-                          index,
-                          "pricePurchased",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+                    <div className="flex justify-center items-center ml-1">
+                      <span className="mr--8">$</span>
+                      <input
+                        id={`price-${index}`}
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                        value={purchase.pricePurchased ?? ""}
+                        onChange={(e) =>
+                          handlePurchaseChange(
+                            index,
+                            "pricePurchased",
+                            e.target.value
+                          )
+                        }
+                        className="w-full border-l-0 border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
                   </div>
 
                   <Button
