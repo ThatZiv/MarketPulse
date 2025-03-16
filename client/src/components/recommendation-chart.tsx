@@ -78,7 +78,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     const lastPrediction = predictions[lookAhead];
     if (!lastPrediction) return undefined;
     const futurePrices = Object.keys(lastPrediction)
-      .filter((key) => key !== "day" && key !== "transformer")
+      .filter((key) => key !== "day")
       // if model view is present, we'll only show that model
       .filter((key) => (model ? key == model : key))
       .map((key) => Number(lastPrediction[key]));
