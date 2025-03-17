@@ -259,7 +259,6 @@ export default function Stocks() {
                 {currentStock && ticker && (
                   <Recommendation stock_ticker={ticker} />
                 )}
-                <Separator orientation="vertical" className="mx-2" />
               </div>
               <div className="col-span-6 lg:col-span-4">
                 {currentStock && (

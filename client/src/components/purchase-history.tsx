@@ -213,16 +213,35 @@ export default function PurchaseHistory({
         ) : (
           purchases &&
           purchases?.length > 0 && (
-            <div className="flex gap-1 font-medium leading-none">
-              <span
-                className={
-                  calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
-                }
-              >
-                {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
-              </span>
-              was {calc.getProfit() > 0 ? "made" : "lost"} from your last sale.
-            </div>
+            <>
+              <div className="flex gap-1 font-medium leading-none">
+                <span
+                  className={
+                    calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
+                  }
+                >
+                  {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+                </span>
+                was {calc.getProfit() > 0 ? "made" : "lost"} from your last
+                sale.
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-bold">
+                  {PurchaseHistoryCalculator.toDollar(calc.getAveragePrice())}{" "}
+                </span>
+                average price per share.
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-bold">
+                  {PurchaseHistoryCalculator.toDollar(calc.getTotalSpent())}
+                </span>{" "}
+                has been spent in total.
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-bold">{calc.getTotalShares()}</span>{" "}
+                shares currently owned.
+              </div>
+            </>
           )
         )}
       </CardFooter>
