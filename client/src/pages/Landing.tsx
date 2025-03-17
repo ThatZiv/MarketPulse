@@ -286,9 +286,9 @@ function StockCard({
               speed={15}
               className="text-center flex items-center justify-center gap-2"
             >
+              <Dot className="text-gray-500" />
               {thisStock?.current_price && (
                 <>
-                  <Dot className="text-gray-500" />
                   <span className="text-sm ">
                     {toDollar(thisStock.current_price)} per share,
                   </span>
