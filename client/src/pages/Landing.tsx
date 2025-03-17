@@ -7,14 +7,20 @@ import { extractColors } from "extract-colors";
 import { Link } from "react-router";
 import { cache_keys } from "@/lib/constants";
 import {
-  IoMdInformationCircleOutline,
-  IoMdInformationCircle,
-} from "react-icons/io";
-import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LiaSortSolid } from "react-icons/lia";
+
 interface StockResponse {
   Stocks: {
     stock_name: string;
@@ -30,7 +36,7 @@ interface StockCardProps {
 export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
   const api = useApi();
-
+  const [sort, setSort] = useState("None");
   const {
     data: stocks,
     error: stocksError,
@@ -52,6 +58,23 @@ export default function Landing() {
           });
       }),
   });
+  let sortedStocks: StockResponse[] = [];
+  const validStocks = Array.isArray(stocks) ? stocks : [];
+
+  if (validStocks.length > 0) {
+    sortedStocks = [...validStocks];
+
+    if (sort === "A-Z") {
+      sortedStocks.sort((item1, item2) =>
+        item1.Stocks.stock_name.localeCompare(item2.Stocks.stock_name)
+      );
+    } else if (sort === "Z-A") {
+      sortedStocks.sort((item1, item2) =>
+        item2.Stocks.stock_name.localeCompare(item1.Stocks.stock_name)
+      );
+    }
+  }
+
 
   const stockImages = useQueries({
     queries:
@@ -114,15 +137,45 @@ export default function Landing() {
                 <Skeleton className="w-32 h-[100px]" />
               </>
             ) : (
-              <div className="flex flex-row flex-wrap items-center justify-center gap-6">
-                {stocks?.map((stock, index) => (
-                  <StockCard
-                    key={stock?.Stocks?.stock_name}
-                    stock={stock}
-                    img={stockImages[index] ?? ""}
-                    colors={stockColors[index] ?? []}
-                  />
-                ))}
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col justify-end items-end gap-6">
+                  <div className="flex flex-col justify-center items-start">
+                    <h3 className="flex items-center">
+                      <LiaSortSolid className="ml-2" /> Sort:
+                    </h3>
+                    <Select value={sort} onValueChange={setSort}>
+                      <SelectTrigger
+                        className="w-[160px] rounded-lg sm:ml-auto dark:border-white"
+                      >
+                        <SelectValue placeholder="None Selected" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="None" className="rounded-lg">
+                          None
+                        </SelectItem>
+                        <SelectItem value="A-Z" className="rounded-lg">
+                          A-Z
+                        </SelectItem>
+                        <SelectItem value="Z-A" className="rounded-lg">
+                          Z-A
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                </div>
+
+
+                <div className="flex flex-row flex-wrap items-center justify-center gap-6">
+                  {sortedStocks?.map((stock, index) => (
+                    <StockCard
+                      key={stock?.Stocks?.stock_name}
+                      stock={stock}
+                      img={stockImages[index] ?? ""}
+                      colors={stockColors[index] ?? []}
+                    />
+                  ))}
+                </div>
               </div>
             )}
             <Link
@@ -177,9 +230,9 @@ function StockCard({
         </HoverCardTrigger>
         <HoverCardContent className="w-auto rounded-lg p-2.5">
           {stock.Stocks.stock_name}
-      </HoverCardContent> 
+        </HoverCardContent>
       </HoverCard>
-      
+
     </Link>
   );
 }
