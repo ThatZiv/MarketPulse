@@ -10,9 +10,10 @@ import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import React, { useMemo, useState } from "react";
+import Marquee from "react-fast-marquee";
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Pencil } from "lucide-react";
+import { ArrowRight, Dot, Pencil } from "lucide-react";
 
 import InfoTooltip from "@/components/InfoTooltip";
 import moment from "moment";
@@ -245,11 +246,13 @@ function StockCard({
   const isShown = activeCard === stock.Stocks.stock_id;
   return (
     <span
-      className={`${isShown && "w-[350px]"} `}
+      className={`${isShown && "w-[350px] "} `}
       onClick={() => setActiveCard(stock.Stocks.stock_id)}
     >
       <div
-        className="bg-white cursor-pointer hover:bg-slate-200  dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out"
+        className={`bg-white cursor-pointer hover:bg-slate-200 ${
+          !isShown && "h-[200px]"
+        } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
         style={{
           border: `4px solid ${colors[0]}`,
         }}
@@ -275,8 +278,60 @@ function StockCard({
             </Button>
           </div>
         )} */}
+        {!isShown && (
+          // marquee preview data
+          <div className="max-w-[125px] text-xs">
+            <Marquee
+              pauseOnHover
+              speed={15}
+              className="text-center flex items-center justify-center gap-2"
+            >
+              {thisStock?.current_price && (
+                <>
+                  <Dot className="text-gray-500" />
+                  <span className="text-sm ">
+                    {toDollar(thisStock.current_price)} per share,
+                  </span>
+                  {userStockHistory && (
+                    <span className="text-sm ">
+                      {toDollar(calc.getTotalValue(thisStock.current_price))}{" "}
+                      total value,{" "}
+                    </span>
+                  )}
+                </>
+              )}
+
+              {userStockHistory && (
+                <>
+                  <span className={`text-xs mr-2`}>
+                    <span
+                      className={`${
+                        calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
+                      } text-sm`}
+                    >
+                      {toDollar(calc.getProfit())}
+                    </span>{" "}
+                    {calc.getProfit() < 0 ? "loss" : "profit"},
+                  </span>
+                  <span className={`text-xs `}>
+                    <span className="text-sm">{calc.getTotalShares()} </span>
+                    shares,
+                  </span>{" "}
+                  {calc.getTotalShares() > 0 && (
+                    <span className={`text-[8px] `}>
+                      <span className="text-sm">
+                        {toDollar(calc.getAveragePrice())}{" "}
+                      </span>
+                      average cost per share{" "}
+                    </span>
+                  )}
+                </>
+              )}
+            </Marquee>
+          </div>
+        )}
         <div
-          className={`flex flex-col items-center overflow-hidden transition-all duration-700 ease-in-out ${
+          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${
             isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
