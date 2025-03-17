@@ -140,12 +140,13 @@ export default function Landing() {
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col justify-end items-end gap-6">
                   <div className="flex flex-col justify-center items-start">
-                    <h3 className="flex items-center">
-                      <LiaSortSolid className="ml-2" /> Sort:
-                    </h3>
+                    <div className="flex items-center">
+                      <LiaSortSolid className="ml-2" /> 
+                      <h3 className="">Sort:</h3>
+                    </div>
                     <Select value={sort} onValueChange={setSort}>
                       <SelectTrigger
-                        className="w-[160px] rounded-lg sm:ml-auto dark:border-white"
+                        className="md:w-[160px] rounded-lg sm:ml-auto dark:border-white w-[1rem]"
                       >
                         <SelectValue placeholder="None Selected" />
                       </SelectTrigger>
