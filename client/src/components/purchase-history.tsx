@@ -211,16 +211,19 @@ export default function PurchaseHistory({
             <div>Error loading purchase history</div>
           </div>
         ) : (
-          <div className="flex gap-1 font-medium leading-none">
-            <span
-              className={
-                calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
-              }
-            >
-              {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
-            </span>
-            was {calc.getProfit() > 0 ? "made" : "lost"} from your last sale.
-          </div>
+          purchases &&
+          purchases?.length > 0 && (
+            <div className="flex gap-1 font-medium leading-none">
+              <span
+                className={
+                  calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
+                }
+              >
+                {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+              </span>
+              was {calc.getProfit() > 0 ? "made" : "lost"} from your last sale.
+            </div>
+          )
         )}
       </CardFooter>
     </Card>

@@ -9,7 +9,7 @@ import { actions, cache_keys } from "@/lib/constants";
 import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Pencil } from "lucide-react";
@@ -28,6 +28,8 @@ interface StockResponse {
 
 interface StockCardProps {
   stock: StockResponse;
+  activeCard: number;
+  setActiveCard: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const { toDollar } = PurchaseHistoryCalculator;
@@ -36,7 +38,7 @@ export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
   const api = useApi();
   const { dispatch } = useGlobal();
-
+  const [activeCard, setActiveCard] = useState(-1);
   const {
     data: stocks,
     error: stocksError,
@@ -147,6 +149,12 @@ export default function Landing() {
       (img) => img?.sort((a, b) => b.area - a.area).map((color) => color.hex)
     );
 
+  const handleClickOut = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setActiveCard(-1);
+    }
+  };
+
   const loading = stocksStatus === "pending";
 
   if (stocksError) {
@@ -161,7 +169,7 @@ export default function Landing() {
     );
   }
   return (
-    <div className="min-h-screen w-full">
+    <div onClick={handleClickOut} className="min-h-screen w-full">
       <h1 className="text-4xl text-center flex-1 tracking-tight">
         Welcome <b>{displayName || "User"}</b>
       </h1>
@@ -185,10 +193,15 @@ export default function Landing() {
                 <Skeleton className="w-32 h-[100px]" />
               </>
             ) : (
-              <div className="flex flex-row flex-wrap items-center justify-center gap-6">
+              <div
+                onClick={handleClickOut}
+                className="flex flex-row flex-wrap items-center justify-center gap-6"
+              >
                 {stocks?.map((stock, index) => (
                   <StockCard
                     key={stock?.Stocks?.stock_name}
+                    activeCard={activeCard}
+                    setActiveCard={setActiveCard}
                     stock={stock}
                     img={stockImages[index] ?? ""}
                     colors={stockColors[index] ?? []}
@@ -208,14 +221,18 @@ export default function Landing() {
     </div>
   );
 }
+
 function StockCard({
   stock,
   img,
   colors,
+  activeCard,
+  setActiveCard,
 }: StockCardProps & { img: string; colors: string[] }) {
   const {
     state: { history, stocks },
   } = useGlobal();
+
   const navigate = useNavigate();
   const ticker = stock.Stocks.stock_ticker;
   const userStockHistory = history[ticker];
@@ -224,15 +241,15 @@ function StockCard({
     () => new PurchaseHistoryCalculator(userStockHistory ?? []),
     [userStockHistory]
   );
-  const [hovered, setHovered] = useState(false);
 
+  const isShown = activeCard === stock.Stocks.stock_id;
   return (
     <span
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className={`${isShown && "w-[350px]"} `}
+      onClick={() => setActiveCard(stock.Stocks.stock_id)}
     >
       <div
-        className="bg-white hover:bg-slate-200 hover:p-8 dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all hover:scale-105 transform duration-500 ease-in-out"
+        className="bg-white cursor-pointer hover:bg-slate-200  dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out"
         style={{
           border: `4px solid ${colors[0]}`,
         }}
@@ -248,14 +265,22 @@ function StockCard({
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white uppercase tracking-wide mb-3">
           {ticker}
         </h3>
-
-        {/* Transition for the hovered content */}
+        {/* {isShown && (
+          <div className="flex items-stretch flex-row justify-between ">
+            <Button variant="outline" className="hover:invert" onClick={() => setActiveCard()}>
+              <ArrowLeft />
+            </Button>
+            <Button variant="secondary" className="hover:invert">
+              Next
+            </Button>
+          </div>
+        )} */}
         <div
           className={`flex flex-col items-center overflow-hidden transition-all duration-700 ease-in-out ${
-            hovered ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+            isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          {hovered && (
+          {isShown && (
             <>
               {userStockHistory ? (
                 <>
