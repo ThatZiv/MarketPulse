@@ -290,7 +290,7 @@ function StockCard({
               {thisStock?.current_price && (
                 <>
                   <span className="text-sm ">
-                    {toDollar(thisStock.current_price)} per share,
+                    {toDollar(thisStock.current_price)} per share,{" "}
                   </span>
                   {userStockHistory && (
                     <span className="text-sm ">
@@ -303,7 +303,7 @@ function StockCard({
 
               {userStockHistory && (
                 <>
-                  <span className={`text-xs mr-2`}>
+                  <span className={`text-xs mx-1`}>
                     <span
                       className={`${
                         calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
