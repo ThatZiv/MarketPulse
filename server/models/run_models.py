@@ -81,4 +81,3 @@ def run_models():
     except  exc.SQLAlchemyError as e:
         print(e)
     session.close()
-
