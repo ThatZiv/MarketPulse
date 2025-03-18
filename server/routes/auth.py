@@ -34,7 +34,6 @@ def create_session():
     except exc.OperationalError:
         with current_app.config["MUTEX"]:
             session = sessionmaker(bind=get_engine())
-       
     return session()
 
 def stock_query_single(query, session):
