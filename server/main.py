@@ -7,16 +7,17 @@ import flask_jwt_extended as jw
 from flask import Flask, request, jsonify, Response
 from dotenv import load_dotenv
 from flask_cors import CORS
-from sqlalchemy import select
+from sqlalchemy import select, exc
 from sqlalchemy.orm import sessionmaker
 from flask_jwt_extended import jwt_required
 from flask_caching import Cache
 from flask_apscheduler import APScheduler
-from engine import get_engine
+from engine import get_engine, global_engine
 from database.tables import Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import stock_thread
+import threading
 
 load_dotenv()
 
@@ -34,19 +35,14 @@ def dump_datetime(value):
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
 
-def create_session():
-    session = sessionmaker(bind=get_engine())
-    return session()
-
 def stock_query_single(query, session):
     return session.connection().execute(query).first()
 
 def create_app():
 
     ap = Flask(__name__)
-
+    ap.config["MUTEX"] = threading.Lock()
     ap.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
-
     ap.register_blueprint(auth_bp, url_prefix='/auth')
     CORS(ap, supports_credentials=True)
     jwt = jw.JWTManager()
@@ -57,10 +53,22 @@ def create_app():
     if not LEGACY:
         scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
     scheduler.start()
+    
     return ap
 
 app = create_app()
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+def create_session():
+    
+    try:
+        session = sessionmaker(bind=global_engine())
+    except exc.OperationalError as e:
+        with app.config["MUTEX"]:
+            session = sessionmaker(bind=get_engine())
+            pass
+    return session()
+
 
 @app.route('/test', methods=['GET', 'POST'])
 @jwt_required()
@@ -73,8 +81,13 @@ def realtime():
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
+        
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-        output_id = stock_query_single(s_id, session)
+       
+        try:
+            output_id = stock_query_single(s_id, session)
+        except exc.OperationalError as e:
+            return Response(status=503, mimetype='application/json')
         if output_id:
             cache_output = cache.get(output_id)
             if cache_output is not None:

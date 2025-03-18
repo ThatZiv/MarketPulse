@@ -59,7 +59,7 @@ def test_base_request(monkeypatch):
     assert reddit.base_request("url", "params", "Auth")==-1
 
 def test_request_comment(monkeypatch):
-    with open("request_comment.pkl", "rb") as f:
+    with open("test_data/request_comment.pkl", "rb") as f:
         output = pickle.load(f)
 
     def mock_get(url, headers, params, timeout):
@@ -82,7 +82,7 @@ def test_reddit_request(monkeypatch):
     monkeypatch.setattr(os.environ, "get", mock_enviorn)
     monkeypatch.setattr(reddit, "reddit_auth", mock_auth)
 
-    with open("request_search.pkl", "rb") as f1, open("request_after.pkl", "rb") as f2, open("request_comment_json.pkl", "rb") as f3:
+    with open("test_data/request_search.pkl", "rb") as f1, open("test_data/request_after.pkl", "rb") as f2, open("test_data/request_comment_json.pkl", "rb") as f3:
         with patch('database.reddit.request_search', return_value = pickle.load(f1)) as mock_1, patch('database.reddit.request_after', return_value = pickle.load(f2)) as mock_2, patch('database.reddit.request_comment', return_value = pickle.load(f3)) as mock_3:
             # output has 200 status code
             assert reddit.reddit_request("subreddit", "topic", 1, 1, "datec") != 0
@@ -92,7 +92,7 @@ def test_daily_reddit_request(monkeypatch):
     monkeypatch.setattr(reddit, "reddit_auth", mock_auth)
     dates = [{'time_stamp': Timestamp('2025-03-15 00:00:00-0400', tz='America/New_York'), 'ticker': 'TSLA', 'search': 'Tesla', 'stock_id': 1, 'stock_close': 240.67999267578125, 'stock_volume': 111894747, 'stock_open': 248.125, 'stock_high': 248.2899932861328, 'stock_low': 233.52999877929688, 'news_data': 0, 'sentiment_data': 0}]
 
-    with open("request_search.pkl", "rb") as f1, open("request_after.pkl", "rb") as f2, open("request_comment_json.pkl", "rb") as f3:
+    with open("test_data/request_search.pkl", "rb") as f1, open("test_data/request_after.pkl", "rb") as f2, open("test_data/request_comment_json.pkl", "rb") as f3:
         with patch('models.sentiment_hf.sentiment_model', return_value = torch.tensor([[1,3,.5]])) as mock_4, patch('database.reddit.request_search', return_value = pickle.load(f1)) as mock_1, patch('database.reddit.request_after', return_value = pickle.load(f2)) as mock_2, patch('database.reddit.request_comment', return_value = pickle.load(f3)) as mock_3:
             dates = [{'time_stamp': Timestamp('2025-03-15 00:00:00-0400', tz='America/New_York'), 'ticker': 'TSLA', 'search': 'Tesla', 'stock_id': 1, 'stock_close': 240.67999267578125, 'stock_volume': 111894747, 'stock_open': 248.125, 'stock_high': 248.2899932861328, 'stock_low': 233.52999877929688, 'news_data': 0, 'sentiment_data': 0}]
             assert not reddit.daily_reddit_request("test", dates)

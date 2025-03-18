@@ -5,6 +5,7 @@
 import threading
 from datetime import date, datetime
 import requests
+from flask import current_app
 from sqlalchemy import select, func, exc
 from sqlalchemy.orm import sessionmaker
 from engine import get_engine
@@ -12,10 +13,25 @@ from database.ddg_news import add_news
 from database.reddit import daily_reddit_request
 from database.yfinanceapi import add_daily_data
 from database.tables import Stocks, Stock_Info
+import pickle
 
 def stock_thread():
     thread = threading.Thread(target=load_stocks)
     thread.start()
+
+# Functions added to simplify test mocks
+def create_session():
+    try:
+        session = sessionmaker(bind=global_engine())
+    except exc.OperationalError as e:
+        with current_app.config["MUTEX"]:
+            session = sessionmaker(bind=get_engine())
+            pass
+    return session()
+
+
+def stock_query_all(query, session):
+    return session.connection().execute(query).all()
 
 def load_stocks():
     print("Starting job")
@@ -25,9 +41,9 @@ def load_stocks():
                         Stocks.stock_ticker, Stocks.search).select_from(Stock_Info).join(Stocks,
                         Stocks.stock_id == Stock_Info.stock_id).group_by(Stock_Info.stock_id,
                         Stocks.stock_ticker, Stocks.search)
-    session = sessionmaker(bind=get_engine())
-    session = session()
-    recent = session.connection().execute(stock_q).all()
+    session = create_session()
+    recent = stock_query_all(stock_q, session)
+    
     #print(recent)
 
     for stock in recent:
@@ -36,7 +52,7 @@ def load_stocks():
         diff = date.today() - stock[0]
         if diff.days > 0:
             extra_data = add_daily_data(stock[2], diff.days)
-
+            
             # Type casting to match types that can be added to the database
             retype=[]
             retype.append(extra_data["Close"].astype(float).tolist())
@@ -67,7 +83,9 @@ def load_stocks():
         if len(stock_data)>0:
             try:
                 reddit = daily_reddit_request("Stocks", stock_data)
+
                 news = add_news(stock_data)
+                
             except requests.exceptions.ConnectionError as e:
                 print(e)
         for i in stock_data:

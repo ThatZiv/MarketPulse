@@ -10,7 +10,7 @@ from models.forecast.xgboost import XGBoost
 from models.zav2 import Transformer
 
 
-f = open('stock_data.pkl', 'rb')
+f = open('test_data/stock_data.pkl', 'rb')
 data = pickle.load(f)
 f.close()
 

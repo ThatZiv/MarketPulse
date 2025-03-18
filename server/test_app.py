@@ -1,4 +1,6 @@
 # pylint: disable=all
+import os as os
+import dotenv
 import pickle
 import pytest
 import flask_jwt_extended as jw
@@ -24,10 +26,18 @@ def mock_ticker(query, session):
             self.stock_id = stock_id
     return Output()
 
+def mock_enviorn(a):
+    return "secret_key"
+
+def mock_env():
+    return "testing"
+
 @pytest.fixture
-def client():
+def client(monkeypatch):
     with app.test_client() as client:
         with app.app_context():
+            #Not the real jwt secret generated with node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+            app.config["JWT_SECRET_KEY"] = "8041d3df0459ab455e1c79394b6335911ef96927e821bab8479daf93efc60b64"
             yield client
 
 def test_logo(client):
@@ -54,7 +64,7 @@ def test_stockrealtime(client, monkeypatch):
     response = client.get('/stockrealtime', headers = headers)
     assert response.status_code == 400
 
-    with open("rt_stock_data.pkl", "rb") as f:
+    with open("test_data/rt_stock_data.pkl", "rb") as f:
         monkeypatch.setattr(yf, "real_time_data", pickle.load(f))
         response = client.get('/stockrealtime?ticker=TSLA', headers = headers)
         assert response.status_code == 200
@@ -62,7 +72,7 @@ def test_stockrealtime(client, monkeypatch):
 
 def test_stockchart(client, monkeypatch):
     def mock_stock_chart(a, b):
-        f = open('stock_chart', 'rb')
+        f = open('test_data/stock_chart', 'rb')
         data = pickle.load(f)
         f.close()
         return data
@@ -85,7 +95,7 @@ def test_stockchart(client, monkeypatch):
 
 def test_forecast(client, monkeypatch):
     def mock_forecast(a, b):
-        f = open('forecast', 'rb')
+        f = open('test_data/forecast', 'rb')
         data = pickle.load(f)
         f.close()
         return data

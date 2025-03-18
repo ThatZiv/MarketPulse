@@ -8,14 +8,15 @@ import json
 
 import flask_jwt_extended as jw
 import requests
-from flask import Blueprint, Response, jsonify, request, send_file
-from sqlalchemy import desc, select
+from flask import Blueprint, Response, jsonify, request, send_file, current_app
+from sqlalchemy import desc, select, exc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from database.tables import Stock_Info, Stock_Predictions, Stocks
-from engine import get_engine
+from engine import get_engine, global_engine
 from routes.llm import llm_bp
+
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
@@ -28,7 +29,12 @@ def dump_datetime(value):
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
 
 def create_session():
-    session = sessionmaker(bind=get_engine())
+    try:
+        session = sessionmaker(bind=global_engine())
+    except exc.OperationalError as e:
+        with current_app.config["MUTEX"]:
+            session = sessionmaker(bind=get_engine())
+            pass
     return session()
 
 def stock_query_single(query, session):
@@ -76,6 +82,7 @@ def ticker_logo():
 @jw.jwt_required()
 def chart():
     if request.method == 'GET':
+        session = None
         try:
             session = create_session()
             ticker = request.args['ticker']
@@ -106,11 +113,10 @@ def chart():
         except (SQLAlchemyError, requests.RequestException) as e:
             print(e)
             session.close()
-            return Response(status=500)
+            return Response(status=503)
         finally:
             if session:
                 session.close()
-    session.close()
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
@@ -145,4 +151,4 @@ def forecast_route():
         session.close()
         return Response(status=400, mimetype='application/json')
     session.close()
-    return Response(status=500, mimetype='application/json')
+    return Response(status=503, mimetype='application/json')

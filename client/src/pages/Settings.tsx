@@ -183,8 +183,8 @@ export default function SettingsPage() {
                 Authorization: `Bearer ${session?.access_token}`,
               },
             });
-          if (response.error) file = "";
-
+          if (!response.error) 
+                {
           const { error } = await supabase
             .from("Account")
             .upsert({
@@ -209,8 +209,15 @@ export default function SettingsPage() {
                 .join(" ")
                 .trim(),
             });
-            navigate("/");
+            navigate("/");}
           }
+          else
+          {
+            toast.error("Failed updating your profile", {
+              description: response.error.message,
+            }); 
+          }
+
         },
       },
     });

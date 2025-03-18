@@ -19,7 +19,7 @@ export default function Avatar() {
     if (state.user.url === "") {
       setImageStatus("loading");
       const image_url = async () => {
-        const { data, error } = await supabase
+        const {data} = await supabase
           .from("Account")
           .select("profile_picture")
           .eq("user_id", user?.id);

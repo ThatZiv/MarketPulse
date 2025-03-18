@@ -11,6 +11,7 @@ from datetime import date
 from sqlalchemy import select, exc
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from flask import current_app
 from models.forecast.models import ForecastModels
 from models.forecast.attention_lstm import AttentionLSTM
 from models.forecast.cnn_lstm import CNNLSTMTransformer
@@ -23,9 +24,12 @@ from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine
 
 def run_models():
-
-
-    session = sessionmaker(bind=get_engine())
+    try:
+        session = sessionmaker(bind=global_engine())
+    except exc.OperationalError as e:
+        with current_app.config["MUTEX"]:
+            session = sessionmaker(bind=get_engine())
+            pass
     session = session()
     stock_list = select(Stocks)
 
