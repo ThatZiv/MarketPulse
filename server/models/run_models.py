@@ -21,7 +21,7 @@ from models.forecast.azad import AzSarima
 from models.forecast.xgboost import XGBoost
 from models.zav2 import Transformer
 from database.tables import Stock_Info, Stock_Predictions, Stocks
-from engine import get_engine
+from engine import get_engine, global_engine
 
 def run_models():
     try:
@@ -29,7 +29,6 @@ def run_models():
     except exc.OperationalError:
         with current_app.config["MUTEX"]:
             session = sessionmaker(bind=get_engine())
-            pass
     session = session()
     stock_list = select(Stocks)
 
