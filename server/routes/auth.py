@@ -142,6 +142,21 @@ def forecast_route():
             for column in columns:
                 forecast_data = output_dict[column]
                 out.append(json.loads(forecast_data))
+
+            # "model" for average of all models
+            forecast_window = len(out[0]['forecast'])
+            model_len = len(out)
+            avg_model = {'name': 'average', 'forecast': [0] * forecast_window}
+
+            for j in range(forecast_window):
+                day_avg = 0
+                for i in range(model_len):
+                    model = out[i]
+                    day_avg += model['forecast'][j]
+                day_avg /= model_len
+                avg_model['forecast'][j] = day_avg
+
+            out.append(avg_model)
             session.close()
             return jsonify({
                 "stock_id": output_dict["stock_id"],

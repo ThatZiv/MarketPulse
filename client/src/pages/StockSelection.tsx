@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
@@ -33,22 +33,28 @@ interface StockFormData {
   hasStocks: string;
   purchases: {
     date: string;
-    shares: number;
-    pricePurchased: number;
+    shares: number | null;
+    pricePurchased: number | null;
   }[];
-  cashToInvest: number;
+  cashToInvest: number | null;
 }
 
 export default function StockPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, supabase } = useSupabase();
+
+  const title = useMemo(
+    () => (searchParams.has("ticker") ? "Edit Stock" : "Add New Stock"),
+    [searchParams]
+  );
 
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
     purchases: [],
-    cashToInvest: 0,
+    cashToInvest: null,
   });
   const [error, setError] = useState<string>();
   const {
@@ -68,6 +74,17 @@ export default function StockPage() {
       }),
     [supabase]
   );
+
+  useEffect(() => {
+    if (searchParams.has("ticker") && stocks) {
+      const ticker = (searchParams.get("ticker") as string).toUpperCase();
+      const stock = stocks.find((stock) => stock.stock_ticker === ticker);
+      if (stock) {
+        setFormData((prev) => ({ ...prev, ticker: stock.stock_id.toString() }));
+        fetchPurchaseHistory(stock.stock_id.toString());
+      }
+    }
+  }, [searchParams, stocks]);
 
   const formSchema = z
     .object({
@@ -110,7 +127,7 @@ export default function StockPage() {
       ...prev,
       purchases: [
         ...prev.purchases,
-        { date: "", shares: 0, pricePurchased: 0 },
+        { date: "", shares: null, pricePurchased: null },
       ],
     }));
   };
@@ -132,7 +149,7 @@ export default function StockPage() {
       ...newPurchases[index],
       [field]:
         field === "shares" || field === "pricePurchased"
-          ? Number(value)
+          ? value === "" ? null : Number(value)
           : value,
     };
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
@@ -256,7 +273,7 @@ export default function StockPage() {
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
         <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
-          Add New Stock
+          {title}
         </h1>
       </header>
 
@@ -372,7 +389,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.shares}
+                      value={purchase.shares ?? ""}
                       onChange={(e) =>
                         handlePurchaseChange(index, "shares", e.target.value)
                       }
@@ -395,7 +412,7 @@ export default function StockPage() {
                       step="0.01"
                       min="0.01"
                       required
-                      value={purchase.pricePurchased}
+                      value={purchase.pricePurchased ?? ""}
                       onChange={(e) =>
                         handlePurchaseChange(
                           index,
@@ -436,11 +453,11 @@ export default function StockPage() {
               min="0"
               step="0.01"
               className="w-full bg-white dark:bg-black dark:text-white border ring-offset-background rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-              value={formData.cashToInvest}
+              value={formData.cashToInvest ?? ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  cashToInvest: Number(e.target.value),
+                  cashToInvest: e.target.value === "" ? null : Number(e.target.value),
                 }))
               }
               required

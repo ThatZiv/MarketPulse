@@ -111,7 +111,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
                   .filter((x) => x)
                   .join(" ")
                   .trim()
-              : "User",
+              : "",
           });
         }
         setStatus("success");
@@ -134,12 +134,17 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   }, [supabase]);
 
   const displayName = React.useMemo(() => {
-    if (!account) return user?.email ?? "User"; // keeping this for backwards compatibility
-    if (state.user.name) return state.user.name;
-    return [account?.first_name, account?.last_name]
-      .filter((x) => x)
-      .join(" ")
-      .trim();
+    if (state.user.name) {
+      return state.user.name;
+    } else if (account?.first_name && account?.last_name) {
+      return [account?.first_name, account?.last_name]
+        .filter((x) => x)
+        .join(" ")
+        .trim();
+    } else if (user?.email) {
+      return user.email;
+    }
+    return "User";
   }, [state.user.name, account, user]);
 
   React.useEffect(() => {

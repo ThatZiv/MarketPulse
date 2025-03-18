@@ -10,7 +10,7 @@ import Stock_Chart from "@/components/stock_chart_demo";
 //   HoverCardTrigger,
 // } from "@/components/ui/hover-card";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
@@ -20,10 +20,10 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import RadialChart from "@/components/radial-chart";
 import { GenerateStockLLM } from "@/components/llm/stock-llm";
 import { cache_keys } from "@/lib/constants";
 import Predictions from "@/components/predictions";
@@ -33,6 +33,9 @@ import { useGlobal } from "@/lib/GlobalProvider";
 import { StocksState } from "@/types/global_state";
 import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
+import { Button } from "@/components/ui/button";
+import { SentimentMeter } from "@/components/sentiment-meter";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -52,11 +55,40 @@ interface StockResponse {
   desired_investiture: number;
 }
 
+const sentimentFooter = (score: number, meter: string): string => {
+  let trend = "";
+  if (meter == "hype") {
+    trend = "social media";
+  }
+  else if (meter == "impact") {
+    trend = "news";
+  }
+
+  if (score >= 0 && score <= 15) {
+    return `Strongly Negative sentiment in ${trend} around the stock`;
+  } else if (score > 15 && score <= 30) {
+    return `Negative sentiment in ${trend} around the stock`;
+  } else if (score > 30 && score <= 45) {
+    return `Slightly Negative sentiment in ${trend} around the stock`;
+  } else if (score > 45 && score <= 55) {
+    return `Neutral sentiment in ${trend} around the stock`;
+  } else if (score > 55 && score <= 70) {
+    return `Slightly Positive sentiment in ${trend} around the stock`;
+  } else if (score > 70 && score <= 85) {
+    return `Positive sentiment in ${trend} around the stock`;
+  } else if (score > 85 && score <= 100) {
+    return `Strongly Positive sentiment in ${trend} around the stock`;
+  } else {
+    return "N/A";
+  }
+}
 export default function Stocks() {
   const { supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
   const { state } = useGlobal();
   const navigate = useNavigate();
+  const [hype_meter, setHypeMeter] = useState(0);
+  const [impact_meter, setImpactMeter] = useState(0);
   const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
     queryKey: [cache_keys.USER_STOCKS, ticker],
     queryFn: async () => {
@@ -175,6 +207,16 @@ export default function Stocks() {
       return;
     }
   }, [stocks]);
+  useEffect(() => {
+    if (meters.hype.value) {
+      const hype_temp = ((meters.hype.value + 6) / 12) * 100
+      setHypeMeter(hype_temp);
+    }
+    if (meters.impact.value || meters.impact.value == 0) {
+      const impact_temp = ((meters.impact.value + 6) / 12) * 100
+      setImpactMeter(impact_temp);
+    }
+  }, [meters.hype.value, meters.impact.value]);
 
   if (stocksError) {
     return (
@@ -203,8 +245,13 @@ export default function Stocks() {
       <GenerateStockLLM ticker={ticker} />
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
         <div className="relative">
-          <Link to="/stocks">
-            <MdEdit className="absolute right-0 top-1/2 transform -translate-y-1/2 transition-transform duration-300 hover:scale-125" />
+          <Link
+            className="absolute right-0 top-1/2 transform -translate-y-1/3 transition-transform duration-300 "
+            to={`/stocks?ticker=${ticker}`}
+          >
+            <Button variant="secondary" size="sm">
+              <MdEdit className="" /> Edit
+            </Button>
           </Link>
         </div>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
@@ -232,7 +279,6 @@ export default function Stocks() {
           </div>
         </div>
       </div>
-
       <div className="flex flex-col md:items-center pt-4">
         <Stock_Chart ticker={ticker ?? ""} />
       </div>
@@ -266,8 +312,8 @@ export default function Stocks() {
       <div className="flex flex-col md:items-center gap-4 mt-4 w-full">
         <div className="grid grid-cols-6 gap-2">
           <div className="col-span-6 xl:col-span-3">
-            {moment(meters.hype.date).isValid() && (
-              <Card className="border border-black dark:border-white rounded-md md:p-4">
+            {moment(meters.hype.date).isValid() ? (
+              <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
                 <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                   <div className="grid flex-1 gap-1 sm:text-left">
                     <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
@@ -275,9 +321,9 @@ export default function Stocks() {
                     </CardTitle>
                     <CardDescription>
                       <i>Hype Meter</i> analyzes social media sentiment to
-                      forecast stock market trends. A higher score indicates
-                      more positive outlook on the stock among social media
-                      users.
+                      capture the public's view of a stock. A higher
+                      score indicates more positive outlook on the stock among
+                      social media users.
                       <Separator className="my-2" />
                       <div className="text-xs">
                         As of {moment(meters.hype.date).calendar()}{" "}
@@ -285,15 +331,45 @@ export default function Stocks() {
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <div className="flex flex-col md:flex-row items-center justify-center">
-                  <RadialChart score={meters.hype.value} />
+                <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                  <SentimentMeter score={hype_meter} />
                 </div>
+                <CardFooter className="flex justify-center">
+                  <p className="gap-2 font-medium leading-none">
+                    {sentimentFooter(hype_meter, "hype")}
+                  </p>
+                </CardFooter>
               </Card>
-            )}
+            ) :
+              (
+                  <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                    <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
+                      Hype Meter
+                    </div>
+                    <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
+                      <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
+                        <i>Hype Meter</i> analyzes social media sentiment to
+                        capture the public's view of a stock. A higher
+                        score indicates more positive outlook on the stock among
+                        social media users.
+                      </div>
+                    </div>
+                    <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
+                      <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                        <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
+                      </div>
+                      <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                      <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                    </div>
+                    <div className="text-sm text-center text-black dark:text-white p-2">
+                      Hype Meter Data currently not available. Please Try Again Later.
+                    </div>
+                  </div>
+              )}
           </div>
           <div className="col-span-6 xl:col-span-3">
-            {moment(meters.hype.date).isValid() && (
-              <Card className="border border-black dark:border-white rounded-md md:p-4">
+            {moment(meters.hype.date).isValid() ? (
+              <Card className="border border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
                 <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
                   <div className="grid flex-1 gap-1 sm:text-left">
                     <CardTitle className="text-center font-semibold text-md md:text-lg lg:text-xl">
@@ -311,10 +387,40 @@ export default function Stocks() {
                     </CardDescription>
                   </div>
                 </CardHeader>
-                <div className="flex flex-col md:flex-row items-center justify-center">
-                  <RadialChart score={meters.impact.value} />
+                <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                  <SentimentMeter score={impact_meter} />
                 </div>
+                <CardFooter className="flex justify-center">
+                  <p className="gap-2 font-medium leading-none">
+                    {sentimentFooter(impact_meter, "impact")}
+                  </p>
+                </CardFooter>
               </Card>
+            ):
+            (
+                <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                  <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
+                  Impact Factor
+                  </div>
+                  <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
+                    <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
+                    <i>Impact Factor</i> scores how major news events like
+                      elections, natural disasters, and regulations influence
+                      stock performance. A higher score indicates a more
+                      positive impact on the stock.
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
+                    <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                      <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
+                    </div>
+                    <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                    <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                  </div>
+                  <div className="text-sm text-center text-black dark:text-white p-2">
+                  Impact Factor Data currently not available. Please Try Again Later.
+                  </div>
+                </div>
             )}
           </div>
         </div>
