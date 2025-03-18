@@ -4,7 +4,7 @@
 # pylint: disable=line-too-long
 # pylint: disable=duplicate-code
 
-import threading
+
 import copy
 import json
 from datetime import date
@@ -82,6 +82,3 @@ def run_models():
         print(e)
     session.close()
 
-def model_thread():
-    thread = threading.Thread(target=run_models)
-    thread.start()

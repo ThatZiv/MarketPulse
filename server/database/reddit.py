@@ -65,7 +65,7 @@ def base_request(url, params, auth):
         "Authorization": f"Bearer {auth}",
         "User-Agent": user_agent
         }
-    output = -1
+    output = []
     try:
         output = requests.get(url, headers=request_headers, params=params, timeout = 5)
     except requests.exceptions.HTTPError as e:
@@ -113,10 +113,10 @@ def request_comment(lists_url, lists_name, comment_limit, auth):
         if output.status_code == 200:
             return output.json()[1]["data"]["children"]
     except KeyError:
-        return -1
+        return []
     except AttributeError:
-        return -1
-    return -1
+        return []
+    return []
 # period can be hour, day, week, month, year, all
 def reddit_request(subreddit, topic, thread_limit, comment_limit, period):
     auth = reddit_auth()

@@ -2,22 +2,18 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 
-import threading
+import pickle
 from datetime import date, datetime
 import requests
 from flask import current_app
 from sqlalchemy import select, func, exc
 from sqlalchemy.orm import sessionmaker
-from engine import get_engine
+from engine import get_engine, global_engine
 from database.ddg_news import add_news
 from database.reddit import daily_reddit_request
 from database.yfinanceapi import add_daily_data
 from database.tables import Stocks, Stock_Info
-import pickle
 
-def stock_thread():
-    thread = threading.Thread(target=load_stocks)
-    thread.start()
 
 # Functions added to simplify test mocks
 def create_session():

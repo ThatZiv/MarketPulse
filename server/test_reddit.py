@@ -35,28 +35,28 @@ def test_base_request(monkeypatch):
             raise requests.exceptions.Timeout
 
     monkeypatch.setattr(requests , "get", MockTimeoutError)
-    assert reddit.base_request("url", "params", "Auth")==-1
+    assert reddit.base_request("url", "params", "Auth")==[]
 
     class MockHttpError:
         def __init__(self, *args, **kargs):
             raise requests.exceptions.Timeout
 
     monkeypatch.setattr(requests , "get", MockHttpError)
-    assert reddit.base_request("url", "params", "Auth")==-1
+    assert reddit.base_request("url", "params", "Auth")==[]
 
     class MockConnectionError:
         def __init__(self, *args, **kargs):
             raise requests.ConnectionError
 
     monkeypatch.setattr(requests , "get", MockConnectionError)
-    assert reddit.base_request("url", "params", "Auth")==-1
+    assert reddit.base_request("url", "params", "Auth")==[]
 
     class MockRequestException:
         def __init__(self, *args, **kargs):
             raise requests.exceptions.RequestException
 
     monkeypatch.setattr(requests , "get", MockRequestException)
-    assert reddit.base_request("url", "params", "Auth")==-1
+    assert reddit.base_request("url", "params", "Auth")==[]
 
 def test_request_comment(monkeypatch):
     with open("test_data/request_comment.pkl", "rb") as f:
@@ -72,10 +72,10 @@ def test_request_comment(monkeypatch):
     monkeypatch.setattr(requests , "get", mock_get)
 
     # outputs the json when given a correct response
-    assert reddit.request_comment("url", "name", 10, 'Auth') != -1
+    assert reddit.request_comment("url", "name", 10, 'Auth') != []
 
     output = 5
-    assert reddit.request_comment("url", "name", 10, 'Auth') == -1
+    assert reddit.request_comment("url", "name", 10, 'Auth') == []
 
 def test_reddit_request(monkeypatch):
     monkeypatch.setattr(dotenv, "load_dotenv", mock_env)

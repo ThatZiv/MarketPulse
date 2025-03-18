@@ -16,14 +16,14 @@ from engine import get_engine, global_engine
 from database.tables import Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
-from load_data import stock_thread
+from load_data import load_stocks
 import threading
 
 load_dotenv()
 
 LEGACY = os.environ.get("LEGACY") == "true"
 if not LEGACY:
-    from models.run_models import model_thread
+    from models.run_models import run_models
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
@@ -49,9 +49,18 @@ def create_app():
     jwt.init_app(ap)
     scheduler = APScheduler()
     scheduler.init_app(ap)
-    scheduler.add_job(func=stock_thread, trigger='cron', hour='23', id="load_stocks")
+    def stock_job():
+        with app.app_context():
+            load_stocks()
+    
+    def model_job():
+        with app.app_context():
+            run_models()
+        
+
+    scheduler.add_job(func=stock_job, trigger='cron', hour='21', minute ='0' ,id="load_stocks")
     if not LEGACY:
-        scheduler.add_job(func=model_thread, trigger='cron', hour='0', id="model_predictions")
+        scheduler.add_job(func=model_job, trigger='cron', hour='21', minute ='30' ,id="model_predictions")
     scheduler.start()
     
     return ap
