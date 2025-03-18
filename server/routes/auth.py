@@ -31,7 +31,7 @@ def dump_datetime(value):
 def create_session():
     try:
         session = sessionmaker(bind=global_engine())
-    except exc.OperationalError as e:
+    except exc.OperationalError:
         with current_app.config["MUTEX"]:
             session = sessionmaker(bind=get_engine())
             pass
