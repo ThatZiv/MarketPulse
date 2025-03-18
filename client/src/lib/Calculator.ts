@@ -71,6 +71,7 @@ export class PurchaseHistoryCalculator {
             -1,
         0
       );
+    this.profit = 0;
     let curr = 0;
     if (this.totalSold > 0) {
       for (const purchase of this.purchases) {
