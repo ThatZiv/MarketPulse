@@ -38,7 +38,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useNavigate, useParams } from "react-router";
-import { Label } from "@/components/ui/label";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { actions } from "@/lib/constants";
 //import { profile } from "node:console";
@@ -174,7 +173,7 @@ export default function SettingsPage() {
       action: {
         label: "Confirm",
         onClick: async () => {
-          let file = uuidv4();
+          const file = uuidv4();
           const response = await supabase.storage
             .from("profile_pictures")
             .upload(file, values.image![0], {
