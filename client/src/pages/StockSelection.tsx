@@ -250,15 +250,10 @@ export default function StockPage() {
       return;
     }
 
-    let totalShares = 0;
-    for (const purchase of formData.purchases) {
-      totalShares += purchase.shares ?? 0;
-      if (totalShares < 0) {
-        setError(
-          `You cannot sell more shares than you own on ${purchase.date}`
-        );
-        return;
-      }
+    const badDay = calc.isInvalidHistory();
+    if (badDay) {
+      setError(`You cannot sell more shares than you own on ${badDay}`);
+      return;
     }
 
     const updateStock = new Promise((resolve, reject) => {
@@ -293,17 +288,13 @@ export default function StockPage() {
             price_purchased: purchase.pricePurchased,
           }));
 
-          let currentShares = 0;
-          for (const purchase of purchasesData) {
-            currentShares += purchase.amount_purchased ?? 0;
-            if (currentShares < 0) {
-              reject(
-                new Error(
-                  `You cannot sell more shares than you own on ${purchase.date}`
-                )
-              );
-              return;
-            }
+          //duplicate check
+          const badDay = calc.isInvalidHistory();
+          if (badDay) {
+            reject(
+              new Error(`You cannot sell more shares than you own on ${badDay}`)
+            );
+            return;
           }
 
           supabase

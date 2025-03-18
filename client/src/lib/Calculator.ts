@@ -27,6 +27,10 @@ export class PurchaseHistoryCalculator {
    * @param purchases - array of purchase history datapoints
    */
   constructor(purchases: PurchaseHistoryDatapoint[]) {
+    this.setPurchases(purchases);
+  }
+
+  public setPurchases(purchases: PurchaseHistoryDatapoint[]) {
     this.purchases = purchases.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
@@ -80,6 +84,22 @@ export class PurchaseHistoryCalculator {
         }
       }
     }
+  }
+
+  /**
+   * checks if the purchase history is valid at all points in time
+   * @description check if selling more shares than owned
+   * @returns {null|string} returns the date of the first invalid history entry, or null if all history is valid
+   * */
+  isInvalidHistory(): null | string {
+    let currentShares = 0;
+    for (const purchase of this.purchases) {
+      currentShares += purchase.amount_purchased ?? 0;
+      if (currentShares < 0) {
+        return purchase.date;
+      }
+    }
+    return null;
   }
 
   getTotalShares(): number {
