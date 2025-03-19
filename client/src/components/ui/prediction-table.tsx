@@ -58,7 +58,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
 
   const data = predictions[ticker];
   if (!data || data.length === 0) {
-    return <div>No data available</div>;
+    return <div>Prediction table is currently unavailable</div>;
   }
 
   const setModel = (value: string) => {

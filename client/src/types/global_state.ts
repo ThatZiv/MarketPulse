@@ -1,6 +1,11 @@
 import { type StockDataItem } from "./stocks";
 
 export type PredictionDatapoint = Record<string, string | number>;
+export type PurchaseHistoryDatapoint = {
+  date: string;
+  amount_purchased: number;
+  price_purchased: number;
+};
 
 export interface StocksState {
   stock_name: string;
@@ -17,6 +22,7 @@ export interface GlobalState {
   };
   stocks: { [stock_ticker: string]: StocksState };
   predictions: { [stock_ticker: string]: PredictionDatapoint[] };
+  history: { [stock_ticker: string]: PurchaseHistoryDatapoint[] };
   views: {
     predictions: {
       timeWindow: number;

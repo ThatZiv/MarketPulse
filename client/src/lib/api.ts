@@ -209,7 +209,9 @@ export default class Api implements IApi {
       });
       return resp.data;
     } catch (error) {
-      this.handleError(error as AxiosError);
+      // this.handleError(error as AxiosError);
+      // FIXME: pool errors spam
+      console.log(error);
       throw error;
     }
   }
