@@ -17,7 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 
 export function NavMain({
   items,
@@ -48,10 +48,10 @@ export function NavMain({
                 }  `}
                 tooltip={item.title}
               >
-                <a href={item.url}>
+                <Link to={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
               {item.items?.length ? (
                 <>
@@ -72,9 +72,9 @@ export function NavMain({
                           }`}
                         >
                           <SidebarMenuSubButton asChild>
-                            <a href={subItem.url}>
+                            <Link to={subItem.url}>
                               <span>{subItem.title}</span>
-                            </a>
+                            </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
