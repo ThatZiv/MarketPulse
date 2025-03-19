@@ -14,22 +14,39 @@ import { IoTrash } from "react-icons/io5";
 import { Input } from "@/components/ui/input"
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSupabase } from "@/database/SupabaseProvider";
+import { useGlobal } from "@/lib/GlobalProvider";
 
 interface DeleteStockProps {
     ticker?: string;
 }
 export function DeleteStock({ ticker }: DeleteStockProps) {
+    const { supabase } = useSupabase();
+    const { state } = useGlobal();
     const [inputValue, setInputValue] = useState("");
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (inputValue === ticker) {
             console.log(inputValue + " deleted " + ticker);
-            console.log("Stock deleted");
+            
+            const { data, error } = await supabase
+            .from('User_Stock_Purchases')
+            .delete()
+            .match({ user_id: state.user.id, stock_id: 'your_stock_id' });
+
+            if (error) {
+                console.error('Error deleting records:', error);
+            } else {
+                console.log('Records deleted successfully:', data);
+                console.log("Stock deleted");
+            }
         } else {
-            toast.error("Stock name does not match. Please enter the correct stock name.");
+            toast.error("Stock name does not match. Please enter the correct stock name to delete.");
             setInputValue("");
         }
+
     };
+    
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
