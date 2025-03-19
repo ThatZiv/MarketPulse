@@ -358,7 +358,7 @@ function StockCard({
                           sold.
                         </InfoTooltip>
                       </div>
-                    </p>
+                    </div>
                     <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
                         <span
