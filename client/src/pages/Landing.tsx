@@ -398,7 +398,7 @@ function StockCard({
                           </div>
                         </p>
                         {calc.getTotalShares() > 0 && (
-                          <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                          <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                             <div className="flex items-center gap-1">
                               <span
                                 className={`text-xl animate-pulse font-semibold ${
