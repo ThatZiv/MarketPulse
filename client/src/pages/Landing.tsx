@@ -380,7 +380,7 @@ function StockCard({
                           this value will remain zero.
                         </InfoTooltip>
                       </div>
-                    </p>
+                    </div>
                     {thisStock?.current_price && (
                       <>
                         <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
