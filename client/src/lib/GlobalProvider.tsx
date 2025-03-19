@@ -7,6 +7,7 @@ const initialState: GlobalState = {
     id: "",
     email: "",
     name: "",
+    url: "",
   },
   stocks: {},
   predictions: {},

@@ -1,8 +1,7 @@
 # pylint: disable=all
 from sqlalchemy import create_engine, Table, Column, MetaData,  ForeignKey, String, PrimaryKeyConstraint, Float, Date, inspect
 from sqlalchemy.dialects.postgresql import JSONB, INTEGER
-from sqlalchemy.orm import mapped_column, relationship
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import mapped_column, relationship, declarative_base
 
 
 Base = declarative_base()

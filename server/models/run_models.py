@@ -4,13 +4,14 @@
 # pylint: disable=line-too-long
 # pylint: disable=duplicate-code
 
-import threading
+
 import copy
 import json
 from datetime import date
 from sqlalchemy import select, exc
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from flask import current_app
 from models.forecast.models import ForecastModels
 from models.forecast.attention_lstm import AttentionLSTM
 from models.forecast.cnn_lstm import CNNLSTMTransformer
@@ -20,12 +21,14 @@ from models.forecast.azad import AzSarima
 from models.forecast.xgboost import XGBoost
 from models.zav2 import Transformer
 from database.tables import Stock_Info, Stock_Predictions, Stocks
-from engine import get_engine
+from engine import get_engine, global_engine
 
 def run_models():
-
-
-    session = sessionmaker(bind=get_engine())
+    try:
+        session = sessionmaker(bind=global_engine())
+    except exc.OperationalError:
+        with current_app.config["MUTEX"]:
+            session = sessionmaker(bind=get_engine())
     session = session()
     stock_list = select(Stocks)
 
@@ -78,7 +81,3 @@ def run_models():
     except  exc.SQLAlchemyError as e:
         print(e)
     session.close()
-
-def model_thread():
-    thread = threading.Thread(target=run_models)
-    thread.start()
