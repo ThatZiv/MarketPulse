@@ -6,11 +6,6 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { extractColors } from "extract-colors";
 import { Link } from "react-router";
 import { cache_keys } from "@/lib/constants";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { useState } from "react";
 import {
   Select,
@@ -198,9 +193,6 @@ function StockCard({
 }: StockCardProps & { img: string; colors: string[] }) {
   return (
     <Link to={`/stocks/${stock.Stocks.stock_ticker}`}>
-      <HoverCard>
-        <HoverCardTrigger>
-
           <div
             className="bg-white dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 duration-200 ease-in-out"
             style={{
@@ -228,11 +220,6 @@ function StockCard({
               shares owned
             </p>
           </div>
-        </HoverCardTrigger>
-        <HoverCardContent className="w-auto rounded-lg p-2.5">
-          {stock.Stocks.stock_name}
-        </HoverCardContent>
-      </HoverCard>
 
     </Link>
   );
