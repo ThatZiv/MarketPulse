@@ -359,7 +359,7 @@ function StockCard({
                         </InfoTooltip>
                       </div>
                     </p>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                    <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
                         <span
                           className={`text-xl font-semibold ${
