@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")!).render(
         <GlobalProvider>
           <SupabaseProvider>
             <ApiProvider>
-              <TooltipProvider>
+              <TooltipProvider delayDuration={100}>
                 <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
                   <App />
                   <Toaster />

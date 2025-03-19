@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  ArrowDown,
+  ArrowUp,
+  TrendingUp,
+  Box,
+  Trash,
+  Plus,
+  Undo,
+  X,
+} from "lucide-react";
 import useAsync from "@/hooks/useAsync";
 import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +30,17 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+import InfoTooltip from "@/components/InfoTooltip";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -28,7 +50,7 @@ const getTodayISOString = () => {
   return `${year}-${month}-${day}`;
 };
 
-interface StockFormData {
+export interface StockFormData {
   ticker: string;
   hasStocks: string;
   purchases: {
@@ -56,6 +78,11 @@ export default function StockPage() {
     purchases: [],
     cashToInvest: null,
   });
+
+  const [previousPurchases, setPreviousPurchases] = useState<
+    StockFormData["purchases"]
+  >([]);
+
   const [error, setError] = useState<string>();
   const {
     value: stocks,
@@ -103,7 +130,7 @@ export default function StockPage() {
               today.setHours(23, 59, 59, 999);
               return selectedDate <= today;
             }, "Date cannot be in the future"),
-          shares: z.number().min(0.01, "Shares must be at least 0.01"),
+          shares: z.number(),
           pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
         })
       ),
@@ -139,19 +166,49 @@ export default function StockPage() {
     }));
   };
 
+  const resetPurchaseEntries = () => {
+    setFormData((prev) => ({
+      ...prev,
+      purchases: previousPurchases,
+    }));
+  };
+
+  const calc = useMemo(() => {
+    return new PurchaseHistoryCalculator(
+      // must convert to form data to db schema
+      formData.purchases.map((purchase) => ({
+        date: purchase.date,
+        amount_purchased: purchase.shares ?? 0,
+        price_purchased: purchase.pricePurchased ?? 0,
+      }))
+    );
+  }, [formData.purchases]);
+
   const handlePurchaseChange = (
     index: number,
-    field: "date" | "shares" | "pricePurchased",
+    field: "date" | "shares" | "pricePurchased" | "type",
     value: string
   ) => {
     const newPurchases = [...formData.purchases];
+    if (field === "date") {
+      // ignore if date is already in use (PK unique con)
+      if (newPurchases.some((purchase) => purchase.date === value)) {
+        toast.error("Date already in use");
+        return;
+      }
+    }
     newPurchases[index] = {
       ...newPurchases[index],
       [field]:
         field === "shares" || field === "pricePurchased"
-          ? value === "" ? null : Number(value)
+          ? value === ""
+            ? null
+            : Number(value)
           : value,
     };
+    newPurchases.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
 
@@ -161,6 +218,7 @@ export default function StockPage() {
     const { data, error } = await supabase
       .from("User_Stock_Purchases")
       .select("date, amount_purchased, price_purchased")
+      .order("date", { ascending: true })
       .eq("user_id", user.id)
       .eq("stock_id", ticker);
 
@@ -168,17 +226,19 @@ export default function StockPage() {
       console.error("Error fetching purchase history:", error);
       return;
     }
-
+    const purchases = data.map((purchase) => ({
+      date: purchase.date.split("T")[0],
+      shares: purchase.amount_purchased,
+      pricePurchased: purchase.price_purchased,
+    }));
     setFormData((prev) => ({
       ...prev,
       ticker,
       hasStocks: data.length > 0 ? "yes" : "no",
-      purchases: data.map((purchase) => ({
-        date: purchase.date.split("T")[0],
-        shares: purchase.amount_purchased,
-        pricePurchased: purchase.price_purchased,
-      })),
+      purchases,
     }));
+
+    setPreviousPurchases(purchases);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,6 +247,12 @@ export default function StockPage() {
     const result = formSchema.safeParse(formData);
     if (!result.success) {
       result.error.errors.reverse().forEach((err) => setError(err.message));
+      return;
+    }
+
+    const badDay = calc.isInvalidHistory();
+    if (badDay) {
+      setError(`You cannot sell more shares than you own on ${badDay}`);
       return;
     }
 
@@ -214,6 +280,23 @@ export default function StockPage() {
             return;
           }
 
+          const purchasesData = formData.purchases.map((purchase) => ({
+            user_id: user?.id,
+            stock_id: formData.ticker,
+            date: purchase.date,
+            amount_purchased: purchase.shares,
+            price_purchased: purchase.pricePurchased,
+          }));
+
+          //duplicate check
+          const badDay = calc.isInvalidHistory();
+          if (badDay) {
+            reject(
+              new Error(`You cannot sell more shares than you own on ${badDay}`)
+            );
+            return;
+          }
+
           supabase
             .from("User_Stock_Purchases")
             .delete()
@@ -224,14 +307,6 @@ export default function StockPage() {
                 reject(deleteError);
                 return;
               }
-
-              const purchasesData = formData.purchases.map((purchase) => ({
-                user_id: user?.id,
-                stock_id: formData.ticker,
-                date: purchase.date,
-                amount_purchased: purchase.shares,
-                price_purchased: purchase.pricePurchased,
-              }));
 
               supabase
                 .from("User_Stock_Purchases")
@@ -250,12 +325,11 @@ export default function StockPage() {
         await queryClient.invalidateQueries({
           queryKey: [cache_keys.USER_STOCKS],
         });
+        await navigate("/");
         return "Stock data saved successfully";
       },
       error: (err) => `Failed to save stock data: ${err.message}`,
     });
-
-    navigate("/");
   };
 
   if (stocksError) {
@@ -373,7 +447,54 @@ export default function StockPage() {
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
+                  <div id={`type-${index}`} className="flex-1 flex flex-col">
+                    {index === 0 && (
+                      <label htmlFor={`type-${index}`} className="text-sm mb-1">
+                        Type
+                      </label>
+                    )}
+                    <Select
+                      disabled={purchase.shares === null}
+                      value={
+                        purchase.shares !== null
+                          ? purchase.shares > 0
+                            ? "buy"
+                            : "sell"
+                          : "buy"
+                      }
+                      onValueChange={(value: string) => {
+                        if (purchase.shares === null) return;
 
+                        handlePurchaseChange(
+                          index,
+                          "shares",
+                          String(
+                            value == "buy"
+                              ? Math.abs(purchase.shares)
+                              : Math.abs(purchase.shares) * -1
+                          )
+                        );
+
+                        // handlePurchaseChange(
+                        //   index,
+                        //   "shares",
+                        //   String(value === "sell" && purchase.shares * -1)
+                        // );
+                      }}
+                      //  onValueChange={(value: string) =>
+                      required
+                    >
+                      <SelectTrigger className="border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 h-full focus:outline-none focus:ring-2 focus:ring-primary">
+                        <SelectValue placeholder="Select Option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectItem value="buy">Buy</SelectItem>
+                          <SelectItem value="sell">Sell</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className="flex-1 flex flex-col">
                     {index === 0 && (
                       <label
@@ -387,9 +508,12 @@ export default function StockPage() {
                       id={`shares-${index}`}
                       type="number"
                       step="0.01"
-                      min="0.01"
                       required
-                      value={purchase.shares ?? ""}
+                      value={
+                        purchase.shares === null
+                          ? ""
+                          : Math.abs(purchase.shares)
+                      }
                       onChange={(e) =>
                         handlePurchaseChange(index, "shares", e.target.value)
                       }
@@ -403,25 +527,27 @@ export default function StockPage() {
                         htmlFor={`price-${index}`}
                         className="text-sm mb-1"
                       >
-                        Price Purchased
+                        Price ($)
                       </label>
                     )}
-                    <input
-                      id={`price-${index}`}
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      required
-                      value={purchase.pricePurchased ?? ""}
-                      onChange={(e) =>
-                        handlePurchaseChange(
-                          index,
-                          "pricePurchased",
-                          e.target.value
-                        )
-                      }
-                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+                    <div className="flex justify-center items-center">
+                      <input
+                        id={`price-${index}`}
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                        value={purchase.pricePurchased ?? ""}
+                        onChange={(e) =>
+                          handlePurchaseChange(
+                            index,
+                            "pricePurchased",
+                            e.target.value
+                          )
+                        }
+                        className="w-full  border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
                   </div>
 
                   <Button
@@ -430,13 +556,97 @@ export default function StockPage() {
                     variant="destructive"
                     className="self-end mb-1"
                   >
-                    Remove
+                    <Trash className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
-              <Button type="button" onClick={addPurchaseEntry} className="mt-2">
-                Add Purchase
-              </Button>
+              <div className="flex justify-between">
+                <Button
+                  type="button"
+                  onClick={addPurchaseEntry}
+                  className="mt-2"
+                >
+                  Add Purchase <Plus className="h-4 w-4" />
+                </Button>
+                {previousPurchases != formData.purchases && (
+                  <Button type="button" onClick={resetPurchaseEntries}>
+                    <Undo className="h-4 w-4" />
+                    Revert Changes
+                  </Button>
+                )}
+              </div>
+              <Separator className="my-2" />
+              <Table>
+                <TableHeader>
+                  {/* <TableCaption className="w-full">Totals</TableCaption> */}
+                  <TableRow>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Current Profit <TrendingUp className="ml-2 h-4 w-4" />
+                      </span>
+
+                      <span className="text-xs">Based on last sale</span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Total Purchased
+                        <ArrowDown className="ml-2 h-4 w-4" />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Total Sold
+                        <ArrowUp className="ml-2 h-4 w-4" />
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="flex justify-start items-center">
+                        Current Shares
+                        <Box className="ml-2 h-4 w-4" />
+                      </span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>
+                      <span
+                        className={`${
+                          calc.getProfit() > 0
+                            ? // totals.value * -1 is the value of profit
+                              "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {PurchaseHistoryCalculator.toDollar(
+                        calc.getTotalBought()
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {PurchaseHistoryCalculator.toDollar(calc.getTotalSold())}
+                    </TableCell>
+                    <TableCell
+                      className={`${
+                        calc.getTotalShares() < 0 ? "text-red-600" : ""
+                      } flex items-center gap-2`}
+                    >
+                      {calc.getTotalShares().toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                      {calc.getTotalShares() < 0 && (
+                        <InfoTooltip Icon={X} size="md">
+                          You cannot sell more shares than you own.
+                        </InfoTooltip>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              {}
             </div>
           )}
 
@@ -457,7 +667,8 @@ export default function StockPage() {
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  cashToInvest: e.target.value === "" ? null : Number(e.target.value),
+                  cashToInvest:
+                    e.target.value === "" ? null : Number(e.target.value),
                 }))
               }
               required

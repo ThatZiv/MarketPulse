@@ -8,14 +8,15 @@ import json
 
 import flask_jwt_extended as jw
 import requests
-from flask import Blueprint, Response, jsonify, request, send_file
-from sqlalchemy import desc, select
+from flask import Blueprint, Response, jsonify, request, send_file, current_app
+from sqlalchemy import desc, select, exc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
 
 from database.tables import Stock_Info, Stock_Predictions, Stocks
-from engine import get_engine
+from engine import get_engine, global_engine
 from routes.llm import llm_bp
+
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
@@ -27,6 +28,19 @@ def dump_datetime(value):
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
 
+def create_session():
+    try:
+        session = sessionmaker(bind=global_engine())
+    except exc.OperationalError:
+        with current_app.config["MUTEX"]:
+            session = sessionmaker(bind=get_engine())
+    return session()
+
+def stock_query_single(query, session):
+    return session.connection().execute(query).first()
+
+def stock_query_all(query, session):
+    return session.connection().execute(query).all()
 
 @auth_bp.route('/private', methods=['GET', 'POST'])
 @jw.jwt_required()
@@ -67,18 +81,19 @@ def ticker_logo():
 @jw.jwt_required()
 def chart():
     if request.method == 'GET':
+        session = None
         try:
-            session_a = sessionmaker(bind=get_engine())
-            session = session_a()
+            session = create_session()
             ticker = request.args['ticker']
             limit = request.args.get('limit', 7)
             s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-            output_id = session.connection().execute(s_id).first()
+            output_id = stock_query_single(s_id, session)
             #validating the ticker from the frontend
             if output_id:
                 stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id)\
                     .order_by(desc(Stock_Info.time_stamp)).limit(limit)
-                output = session.connection().execute(stock_data).all()
+                output = stock_query_all(stock_data, session)
+
                 json_output = []
                 for i in output:
                     json_output.append({'stock_id' : i.stock_id,
@@ -97,11 +112,10 @@ def chart():
         except (SQLAlchemyError, requests.RequestException) as e:
             print(e)
             session.close()
-            return Response(status=500)
+            return Response(status=503)
         finally:
             if session:
                 session.close()
-    session.close()
     return Response(status=401, mimetype='application/json')
 
 # Has been tested with out any data
@@ -112,17 +126,15 @@ def forecast_route():
     if not ticker:
         return Response(status=400, mimetype='application/json')
     if request.method == 'GET':
-        session_a = sessionmaker(bind=get_engine())
-        session = session_a()
+        session = create_session()
         ticker = request.args['ticker']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-        output_id = session.connection().execute(s_id).first()
+        output_id = stock_query_single(s_id, session)
         if output_id :
             forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
-            output = session.connection().execute(forecast).first()
+            output = stock_query_single(forecast, session)
             out = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
-            print()
             # pylint: disable=protected-access
             output_dict = output._mapping
             # pylint: enable=protected-access
@@ -153,4 +165,4 @@ def forecast_route():
         session.close()
         return Response(status=400, mimetype='application/json')
     session.close()
-    return Response(status=500, mimetype='application/json')
+    return Response(status=503, mimetype='application/json')
