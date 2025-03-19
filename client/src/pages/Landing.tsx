@@ -383,7 +383,7 @@ function StockCard({
                     </div>
                     {thisStock?.current_price && (
                       <>
-                        <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                        <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                           <div className="flex items-center gap-1">
                             <span className="text-xl animate-pulse font-semibold text-gray-900 dark:text-white">
                               {toDollar(
