@@ -344,7 +344,7 @@ function StockCard({
                     {stock.Stocks.stock_name}
                   </p>
                   <div className="flex flex-col items-center w-full">
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                    <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
                         <span className="text-xl font-semibold text-gray-900 dark:text-white">
                           {calc.getTotalShares()}
