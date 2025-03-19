@@ -1,14 +1,5 @@
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
-// import {
-//   IoMdInformationCircleOutline,
-//   IoMdInformationCircle,
-// } from "react-icons/io";
-// import {
-//   HoverCard,
-//   HoverCardContent,
-//   HoverCardTrigger,
-// } from "@/components/ui/hover-card";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
@@ -37,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import PurchaseHistory from "@/components/purchase-history";
 import { SentimentMeter } from "@/components/sentiment-meter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 
 const staticStockData = [
   { stock_ticker: "TSLA", stock_name: "Tesla" },
@@ -218,6 +210,12 @@ export default function Stocks() {
     }
   }, [meters.hype.value, meters.impact.value]);
 
+  const calc = useMemo(
+    () =>
+      new PurchaseHistoryCalculator(ticker ? state.history[ticker] ?? [] : []),
+    [state.history, ticker]
+  );
+
   if (stocksError) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
@@ -259,11 +257,7 @@ export default function Stocks() {
             <h3 className="lg:text-2xl text-md">Shares Owned</h3>
             <Separator />
             <p className="lg:text-4xl md:text-3xl text-2xl">
-              {stocks?.find(
-                (stock) =>
-                  stock?.Stocks?.stock_name ===
-                  ticker_name?.[ticker as keyof typeof ticker_name]
-              )?.shares_owned ?? "N/A"}
+              {calc.getTotalShares()}{" "}
             </p>
           </div>
           <div className="flex flex-col">
