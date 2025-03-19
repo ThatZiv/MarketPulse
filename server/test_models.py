@@ -21,7 +21,7 @@ def test_attention_lstm():
     model.train(copy.deepcopy(data))
     output = model.run(copy.deepcopy(data), 7)
 
-    assert isinstance(output[0], float)
+    assert all(isinstance(val, float) for val in output)
 
 # Testing CNNLSTMTransformer
 def cnnlstmtransformer():
