@@ -196,6 +196,7 @@ export function ResetPasswordForm() {
                 className="dark:text-white m-2"
                 onClick={() => signOut()}
                 type="button"
+                data-testid="reset"
               >
                 Back
               </Button>

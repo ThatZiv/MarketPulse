@@ -82,7 +82,7 @@ def stock_scrap(stock_id, engine):
 def add_news(dates):
     answers = []
     for day in dates:
-        time.sleep(5)
+        time.sleep(10)
         try:
             day["time_stamp"] = day["time_stamp"].strftime("%Y-%m-%d")
             results = DDGS().text(f"{day['search']} news", max_results=5,
@@ -112,6 +112,7 @@ def add_news(dates):
             print(e)
             continue
         except RatelimitException as e:
+            time.sleep(10)
             print(e)
             continue
         except TimeoutException as e:
