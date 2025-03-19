@@ -418,7 +418,7 @@ function StockCard({
                                 you sold all your shares at the current price.
                               </InfoTooltip>
                             </div>
-                          </p>
+                          </div>
                         )}
                         <p className="text-[10px] font-light">
                           Based on prices from{" "}
