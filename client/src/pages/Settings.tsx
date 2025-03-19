@@ -169,7 +169,7 @@ export default function SettingsPage() {
   const fileRef = accountForm.register("image");
   const onAccountSubmit = async (values: AccountFormValues) => {
     console.log(values.image);
-    toast("Are you sure you want to modify your name?", {
+    toast("Are you sure you want to confirm these changes?", {
       action: {
         label: "Confirm",
         onClick: async () => {
