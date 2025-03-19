@@ -47,7 +47,8 @@ export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
   const api = useApi();
   const { dispatch } = useGlobal();
-  const [activeCard, setActiveCard] = useState(-1);  const [sort, setSort] = useState("None");
+  const [activeCard, setActiveCard] = useState(-1); 
+  const [sort, setSort] = useState("None");
   const {
     data: stocks,
     error: stocksError,
@@ -154,7 +155,7 @@ export default function Landing() {
 
   const stockImages = useQueries({
     queries:
-      stocks?.map((stock) => ({
+      sortedStocks?.map((stock) => ({
         queryKey: ["stock", stock.Stocks.stock_ticker],
         queryFn: () => api?.getStockLogo(stock.Stocks.stock_ticker),
         staleTime: Infinity,
@@ -223,7 +224,7 @@ export default function Landing() {
                 <div className="flex flex-col justify-end items-end gap-6">
                   <div className="flex flex-col justify-center items-start">
                     <div className="flex items-center">
-                      <LiaSortSolid className="ml-2" /> 
+                      <LiaSortSolid className="ml-2" />
                       <h3 className="">Sort:</h3>
                     </div>
                     <Select value={sort} onValueChange={setSort}>
@@ -250,14 +251,14 @@ export default function Landing() {
 
 
                 <div
-                onClick={handleClickOut}
-                className="flex flex-row flex-wrap items-center justify-center gap-6"
-              >
+                  onClick={handleClickOut}
+                  className="flex flex-row flex-wrap items-center justify-center gap-6"
+                >
                   {sortedStocks?.map((stock, index) => (
                     <StockCard
                       key={stock?.Stocks?.stock_name}
-                    activeCard={activeCard}
-                    setActiveCard={setActiveCard}
+                      activeCard={activeCard}
+                      setActiveCard={setActiveCard}
                       stock={stock}
                       img={stockImages[index] ?? ""}
                       colors={stockColors[index] ?? []}
@@ -306,9 +307,8 @@ function StockCard({
       onClick={() => setActiveCard(stock.Stocks.stock_id)}
     >
       <div
-        className={`bg-white cursor-pointer hover:bg-slate-200 ${
-          !isShown && "h-[200px]"
-        } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
+        className={`bg-white cursor-pointer hover:bg-slate-200 ${!isShown && "h-[200px]"
+          } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
         style={{
           border: `4px solid ${colors[0]}`,
         }}
@@ -361,9 +361,8 @@ function StockCard({
                 <>
                   <span className={`text-xs mx-1`}>
                     <span
-                      className={`${
-                        calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
-                      } text-sm`}
+                      className={`${calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
+                        } text-sm`}
                     >
                       {toDollar(calc.getProfit())}
                     </span>{" "}
@@ -387,9 +386,8 @@ function StockCard({
           </div>
         )}
         <div
-          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${
-            isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           {isShown && (
             <>
@@ -418,11 +416,10 @@ function StockCard({
                     <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
                         <span
-                          className={`text-xl font-semibold ${
-                            calc.getProfit() < 0
+                          className={`text-xl font-semibold ${calc.getProfit() < 0
                               ? "text-red-600"
                               : "text-green-600"
-                          }`}
+                            }`}
                         >
                           {toDollar(calc.getProfit())}
                         </span>
@@ -457,12 +454,11 @@ function StockCard({
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                             <div className="flex items-center gap-1">
                               <span
-                                className={`text-xl animate-pulse font-semibold ${
-                                  calc.getTotalProfit(thisStock.current_price) <
-                                  0
+                                className={`text-xl animate-pulse font-semibold ${calc.getTotalProfit(thisStock.current_price) <
+                                    0
                                     ? "text-red-600"
                                     : "text-green-600"
-                                }`}
+                                  }`}
                               >
                                 {toDollar(
                                   calc.getTotalProfit(thisStock.current_price)
