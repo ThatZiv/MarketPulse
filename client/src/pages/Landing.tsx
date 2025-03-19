@@ -396,7 +396,7 @@ function StockCard({
                               the current price of the stock.
                             </InfoTooltip>
                           </div>
-                        </p>
+                        </div>
                         {calc.getTotalShares() > 0 && (
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                             <div className="flex items-center gap-1">
