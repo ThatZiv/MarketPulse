@@ -50,6 +50,9 @@ export default function Landing() {
   const [activeCard, setActiveCard] = useState(-1); 
   const [sort, setSort] = useState("None");
   const {
+    state: { history },
+  } = useGlobal();
+  const {
     data: stocks,
     error: stocksError,
     status: stocksStatus,
@@ -149,6 +152,20 @@ export default function Landing() {
       sortedStocks.sort((item1, item2) =>
         item2.Stocks.stock_name.localeCompare(item1.Stocks.stock_name)
       );
+    } else if (sort === "Shares:L-H"){
+      sortedStocks.sort((item1, item2) =>{
+        const sum1 = history[item1.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
+        const sum2 = history[item2.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
+        return sum1 - sum2;
+    });
+      console.log(sortedStocks);
+    }
+    else if (sort === "Shares:H-L"){
+      sortedStocks.sort((item1, item2) =>{
+        const sum1 = history[item1.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
+        const sum2 = history[item2.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
+        return sum2 - sum1;
+    });
     }
   }
 
@@ -242,6 +259,12 @@ export default function Landing() {
                         </SelectItem>
                         <SelectItem value="Z-A" className="rounded-lg">
                           Z-A
+                        </SelectItem>
+                        <SelectItem value="Shares:L-H" className="rounded-lg">
+                          Current Shares Owned: Low to High
+                        </SelectItem>
+                        <SelectItem value="Shares:H-L" className="rounded-lg">
+                        Current Shares Owned: High to Low
                         </SelectItem>
                       </SelectContent>
                     </Select>
