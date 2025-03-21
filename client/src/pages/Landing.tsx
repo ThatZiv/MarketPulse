@@ -11,10 +11,8 @@ import { useGlobal } from "@/lib/GlobalProvider";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import React, { useMemo, useState } from "react";
 import Marquee from "react-fast-marquee";
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Dot, Pencil } from "lucide-react";
-
 import InfoTooltip from "@/components/InfoTooltip";
 import moment from "moment";
 import {
@@ -47,7 +45,7 @@ export default function Landing() {
   const { supabase, displayName, user } = useSupabase();
   const api = useApi();
   const { dispatch } = useGlobal();
-  const [activeCard, setActiveCard] = useState(-1); 
+  const [activeCard, setActiveCard] = useState(-1);
   const [sort, setSort] = useState("None");
   const {
     state: { history },
@@ -152,20 +150,19 @@ export default function Landing() {
       sortedStocks.sort((item1, item2) =>
         item2.Stocks.stock_name.localeCompare(item1.Stocks.stock_name)
       );
-    } else if (sort === "Shares:L-H"){
-      sortedStocks.sort((item1, item2) =>{
-        const sum1 = history[item1.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
-        const sum2 = history[item2.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
+    } else if (sort === "Shares:L-H") {
+      sortedStocks.sort((item1, item2) => {
+        const sum1 = (history[item1.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        const sum2 = (history[item2.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
         return sum1 - sum2;
-    });
-      console.log(sortedStocks);
+      });
     }
-    else if (sort === "Shares:H-L"){
-      sortedStocks.sort((item1, item2) =>{
-        const sum1 = history[item1.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
-        const sum2 = history[item2.Stocks.stock_ticker].reduce((sum, stock) => sum + stock.amount_purchased, 0);
+    else if (sort === "Shares:H-L") {
+      sortedStocks.sort((item1, item2) => {
+        const sum1 = (history[item1.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        const sum2 = (history[item2.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
         return sum2 - sum1;
-    });
+      });
     }
   }
 
@@ -264,7 +261,7 @@ export default function Landing() {
                           Current Shares Owned: Low to High
                         </SelectItem>
                         <SelectItem value="Shares:H-L" className="rounded-lg">
-                        Current Shares Owned: High to Low
+                          Current Shares Owned: High to Low
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -440,8 +437,8 @@ function StockCard({
                       <div className="flex items-center gap-1">
                         <span
                           className={`text-xl font-semibold ${calc.getProfit() < 0
-                              ? "text-red-600"
-                              : "text-green-600"
+                            ? "text-red-600"
+                            : "text-green-600"
                             }`}
                         >
                           {toDollar(calc.getProfit())}
@@ -478,9 +475,9 @@ function StockCard({
                             <div className="flex items-center gap-1">
                               <span
                                 className={`text-xl animate-pulse font-semibold ${calc.getTotalProfit(thisStock.current_price) <
-                                    0
-                                    ? "text-red-600"
-                                    : "text-green-600"
+                                  0
+                                  ? "text-red-600"
+                                  : "text-green-600"
                                   }`}
                               >
                                 {toDollar(
