@@ -23,20 +23,30 @@ interface DeleteStockProps {
     ticker?: string;
     stock_id?: number;
 }
+const deleteStock = async ({ stock_id, user_id,supabase }: { stock_id: number, user_id: string, supabase:any }): Promise<void> => {
+    const { error: purchasesError } = await supabase
+        .from('User_Stock_Purchases')
+        .delete()
+        .match({ user_id: user_id, stock_id: stock_id });
+    if (purchasesError) {
+        console.error('Error deleting records:', purchasesError.message);
+    }
+    const { error: stocksError } = await supabase
+        .from('User_Stocks')
+        .delete()
+        .match({ user_id: user_id, stock_id: stock_id });
+
+    if (stocksError) {
+        console.error('Error deleting from User_Stocks:', stocksError.message);
+    }
+    console.log('Records deleted successfully from both tables:');
+
+};
 export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
-    const { supabase,user } = useSupabase();
+    const { user,supabase } = useSupabase();
     const queryClient = useQueryClient();
     const [inputValue, setInputValue] = useState("");
-    const deleteStock = async (): Promise<void> => {
-        const { data, error } = await supabase
-            .from('User_Stock_Purchases')
-            .delete()
-            .match({ user_id: user?.id, stock_id: stock_id });
-        if (error) {
-            console.error('Error deleting records:', error.message);
-            throw new Error("Error deleting records");
-        }
-    };
+
     const mutation = useMutation({
         mutationFn: deleteStock,
         onSuccess: () => {
@@ -52,7 +62,18 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
     const handleDelete = async () => {
         if (inputValue === ticker) {
             console.log(inputValue + " deleted " + ticker);
-            mutation.mutate();
+            if (stock_id === undefined || stock_id === null) {
+                console.error("Invalid stock_id");
+                toast.error("Invalid stock selection.");
+                return;
+            }
+        
+            if (!user?.id) {
+                console.error("User is not authenticated");
+                toast.error("You must be logged in to delete stocks.");
+                return;
+            }
+            mutation.mutate({ stock_id: stock_id ?? 0, user_id: user?.id ?? '',supabase });
         } else {
             toast.error("Stock name does not match. Please enter the correct stock name to delete.");
             setInputValue("");
