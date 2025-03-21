@@ -3,7 +3,6 @@ import Stock_Chart from "@/components/stock_chart_demo";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
-import { IoTrash } from "react-icons/io5";
 import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
 import { type Stock } from "@/types/stocks";
@@ -33,11 +32,11 @@ import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import { DeleteStock } from "@/components/delete-stock";
 
 const staticStockData = [
-  { stock_ticker: "TSLA", stock_name: "Tesla" },
-  { stock_ticker: "F", stock_name: "Ford" },
-  { stock_ticker: "GM", stock_name: "General Motors" },
-  { stock_ticker: "TM", stock_name: "Toyota Motor Corporation" },
-  { stock_ticker: "STLA", stock_name: "Stellantis N.V." },
+  { stock_ticker: "TSLA", stock_name: "Tesla",stock_id:1 },
+  { stock_ticker: "F", stock_name: "Ford", stock_id:2 },
+  { stock_ticker: "GM", stock_name: "General Motors",stock_id:3 },
+  { stock_ticker: "TM", stock_name: "Toyota Motor Corporation",stock_id:4 },
+  { stock_ticker: "STLA", stock_name: "Stellantis N.V.", stock_id:5},
 ];
 
 interface StockResponse {
@@ -252,7 +251,7 @@ export default function Stocks() {
               <MdEdit className="" /> Edit
             </Button>
           </Link>
-          <DeleteStock ticker={ticker_name ? ticker_name[ticker as keyof typeof ticker_name] : undefined} />
+          <DeleteStock stock_id={currentStock?.Stocks.stock_id} ticker={ticker_name ? ticker_name[ticker as keyof typeof ticker_name] : undefined} />
           </div>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
