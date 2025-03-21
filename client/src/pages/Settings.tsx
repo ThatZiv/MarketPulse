@@ -173,6 +173,8 @@ export default function SettingsPage() {
       action: {
         label: "Confirm",
         onClick: async () => {
+          if(values.image!.length > 0)
+          {
           const file = uuidv4();
           const response = await supabase.storage
             .from("profile_pictures")
@@ -216,6 +218,34 @@ export default function SettingsPage() {
               description: response.error.message,
             }); 
           }
+        }
+        else
+        {
+          const { error } = await supabase
+            .from("Account")
+            .upsert({
+              first_name: values.first_name,
+              last_name: values.last_name,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            toast.error("Failed updating your profile", {
+              description: error.message,
+            });
+          } else {
+            toast.success("Profile updated successfully!");
+            dispatch({
+              type: actions.SET_USER_FULL_NAME,
+              payload: [values.first_name, values.last_name]
+                .filter((x) => x)
+                .join(" ")
+                .trim(),
+            });
+            navigate("/");}
+        }
 
         },
       },
