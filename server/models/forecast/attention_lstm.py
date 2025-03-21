@@ -19,7 +19,7 @@ from sqlalchemy import create_engine, select, exc
 from sqlalchemy.orm import sessionmaker
 from models.forecast.forecast_types import DataForecastType, DatasetType
 from models.forecast.model import ForecastModel
-from models.lstm_attention_7 import AttentionLstm
+from models.lstm_attention import AttentionLstm
 from database.tables import Stock_Info
 
 

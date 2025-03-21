@@ -43,13 +43,19 @@ def run_models():
         s_high = []
         s_low = []
         s_volume = []
+        s_sentiment_data = []
+        s_news_data = []
+
         for row in output:
             s_open.append(row[3])
             s_close.append(row[1])
             s_high.append(row[4])
             s_low.append(row[5])
             s_volume.append(row[2])
-        data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
+            s_sentiment_data.append(row[6])
+            s_news_data.append(row[7])
+
+        data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume, 'Sentiment_Data':s_sentiment_data, 'News_Data':s_news_data}
         data = pd.DataFrame(data)
         one_day = []
 
