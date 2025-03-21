@@ -47,8 +47,8 @@ class AttentionLstm:
             x.append(row)
             label = answer[i+shift]
             y.append(label)
-        print("row")
-        print(np.array(x).shape)
+        #print("row")
+        #print(np.array(x).shape)
 
         return np.array(x), np.array(y)
 
@@ -84,12 +84,12 @@ class AttentionLstm:
         data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
         data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min())
-        data = data.drop(columns=['Open', 'Volume'])
+        data = data.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
 
 
         valid_answer['Low'] = (valid_answer['Low'] - valid_answer['Low'].min())/ (valid_answer['Low'].max() - valid_answer['Low'].min())
         valid_answer['Open'] = (valid_answer['Open'] - valid_answer['Open'].min())/ (valid_answer['Open'].max() - valid_answer['Open'].min())
-        valid_answer = valid_answer.drop(columns=['Open', 'Volume'])
+        valid_answer = valid_answer.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
         answer = data
         #print(data)
 
@@ -115,6 +115,7 @@ class AttentionLstm:
         y_valid = answer[split_index:]
 
         x_train = x_train.reshape(-1, lookback, 3)
+
         x_test = x_test.reshape(-1, lookback, 3)
         x_valid = x_valid.reshape(-1, lookback, 3)
 

@@ -196,7 +196,7 @@ class XGBoostModel:
         This function trains the model for actual predictions.
         """
         df = df.copy()
-        drop_cols = ['Open','High','Low','Volume']
+        drop_cols = ['Open','High','Low','Volume','Sentiment_Data','News_Data']
         df = df.drop(columns=drop_cols)
         df = self.add_features(df)
         print(f"Added {self.ticker} features.")
@@ -221,7 +221,7 @@ class XGBoostModel:
         future_df = pd.DataFrame(index=future)
         future_df['isFuture'] = True
         df['isFuture'] = False
-        first_drop_cols = ['Low','High','Open','Volume']
+        first_drop_cols = ['Low','High','Open','Volume', 'Sentiment_Data', 'News_Data']
         df = df.drop(columns=first_drop_cols)
         df_and_future = pd.concat([df, future_df])
         df_and_future = df_and_future.fillna(value=0)
