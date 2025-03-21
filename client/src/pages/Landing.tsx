@@ -11,12 +11,18 @@ import { useGlobal } from "@/lib/GlobalProvider";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import React, { useMemo, useState } from "react";
 import Marquee from "react-fast-marquee";
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Dot, Pencil } from "lucide-react";
-
 import InfoTooltip from "@/components/InfoTooltip";
 import moment from "moment";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LiaSortSolid } from "react-icons/lia";
 
 interface StockResponse {
   Stocks: {
@@ -40,6 +46,10 @@ export default function Landing() {
   const api = useApi();
   const { dispatch } = useGlobal();
   const [activeCard, setActiveCard] = useState(-1);
+  const [sort, setSort] = useState("None");
+  const {
+    state: { history },
+  } = useGlobal();
   const {
     data: stocks,
     error: stocksError,
@@ -126,10 +136,40 @@ export default function Landing() {
       })) || []),
     ],
   });
+  let sortedStocks: StockResponse[] = [];
+  const validStocks = Array.isArray(stocks) ? stocks : [];
+
+  if (validStocks.length > 0) {
+    sortedStocks = [...validStocks];
+
+    if (sort === "A-Z") {
+      sortedStocks.sort((item1, item2) =>
+        item1.Stocks.stock_name.localeCompare(item2.Stocks.stock_name)
+      );
+    } else if (sort === "Z-A") {
+      sortedStocks.sort((item1, item2) =>
+        item2.Stocks.stock_name.localeCompare(item1.Stocks.stock_name)
+      );
+    } else if (sort === "Shares:L-H") {
+      sortedStocks.sort((item1, item2) => {
+        const sum1 = (history[item1.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        const sum2 = (history[item2.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        return sum1 - sum2;
+      });
+    }
+    else if (sort === "Shares:H-L") {
+      sortedStocks.sort((item1, item2) => {
+        const sum1 = (history[item1.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        const sum2 = (history[item2.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        return sum2 - sum1;
+      });
+    }
+  }
+
 
   const stockImages = useQueries({
     queries:
-      stocks?.map((stock) => ({
+      sortedStocks?.map((stock) => ({
         queryKey: ["stock", stock.Stocks.stock_ticker],
         queryFn: () => api?.getStockLogo(stock.Stocks.stock_ticker),
         staleTime: Infinity,
@@ -194,20 +234,57 @@ export default function Landing() {
                 <Skeleton className="w-32 h-[100px]" />
               </>
             ) : (
-              <div
-                onClick={handleClickOut}
-                className="flex flex-row flex-wrap items-center justify-center gap-6"
-              >
-                {stocks?.map((stock, index) => (
-                  <StockCard
-                    key={stock?.Stocks?.stock_name}
-                    activeCard={activeCard}
-                    setActiveCard={setActiveCard}
-                    stock={stock}
-                    img={stockImages[index] ?? ""}
-                    colors={stockColors[index] ?? []}
-                  />
-                ))}
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col justify-end items-end gap-6">
+                  <div className="flex flex-col justify-center items-start">
+                    <div className="flex items-center">
+                      <LiaSortSolid className="ml-2" />
+                      <h3 className="">Sort:</h3>
+                    </div>
+                    <Select value={sort} onValueChange={setSort}>
+                      <SelectTrigger
+                        className="md:w-[160px] rounded-lg sm:ml-auto dark:border-white w-[1rem]"
+                      >
+                        <SelectValue placeholder="None Selected" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="None" className="rounded-lg">
+                          None
+                        </SelectItem>
+                        <SelectItem value="A-Z" className="rounded-lg">
+                          A-Z
+                        </SelectItem>
+                        <SelectItem value="Z-A" className="rounded-lg">
+                          Z-A
+                        </SelectItem>
+                        <SelectItem value="Shares:L-H" className="rounded-lg">
+                          Current Shares Owned: Low to High
+                        </SelectItem>
+                        <SelectItem value="Shares:H-L" className="rounded-lg">
+                          Current Shares Owned: High to Low
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                </div>
+
+
+                <div
+                  onClick={handleClickOut}
+                  className="flex flex-row flex-wrap items-center justify-center gap-6"
+                >
+                  {sortedStocks?.map((stock, index) => (
+                    <StockCard
+                      key={stock?.Stocks?.stock_name}
+                      activeCard={activeCard}
+                      setActiveCard={setActiveCard}
+                      stock={stock}
+                      img={stockImages[index] ?? ""}
+                      colors={stockColors[index] ?? []}
+                    />
+                  ))}
+                </div>
               </div>
             )}
             <Link
@@ -250,9 +327,8 @@ function StockCard({
       onClick={() => setActiveCard(stock.Stocks.stock_id)}
     >
       <div
-        className={`bg-white cursor-pointer hover:bg-slate-200 ${
-          !isShown && "h-[200px]"
-        } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
+        className={`bg-white cursor-pointer hover:bg-slate-200 ${!isShown && "h-[200px]"
+          } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
         style={{
           border: `4px solid ${colors[0]}`,
         }}
@@ -305,9 +381,8 @@ function StockCard({
                 <>
                   <span className={`text-xs mx-1`}>
                     <span
-                      className={`${
-                        calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
-                      } text-sm`}
+                      className={`${calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
+                        } text-sm`}
                     >
                       {toDollar(calc.getProfit())}
                     </span>{" "}
@@ -331,9 +406,8 @@ function StockCard({
           </div>
         )}
         <div
-          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${
-            isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           {isShown && (
             <>
@@ -362,11 +436,10 @@ function StockCard({
                     <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
                         <span
-                          className={`text-xl font-semibold ${
-                            calc.getProfit() < 0
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
+                          className={`text-xl font-semibold ${calc.getProfit() < 0
+                            ? "text-red-600"
+                            : "text-green-600"
+                            }`}
                         >
                           {toDollar(calc.getProfit())}
                         </span>
@@ -401,12 +474,11 @@ function StockCard({
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                             <div className="flex items-center gap-1">
                               <span
-                                className={`text-xl animate-pulse font-semibold ${
-                                  calc.getTotalProfit(thisStock.current_price) <
+                                className={`text-xl animate-pulse font-semibold ${calc.getTotalProfit(thisStock.current_price) <
                                   0
-                                    ? "text-red-600"
-                                    : "text-green-600"
-                                }`}
+                                  ? "text-red-600"
+                                  : "text-green-600"
+                                  }`}
                               >
                                 {toDollar(
                                   calc.getTotalProfit(thisStock.current_price)
