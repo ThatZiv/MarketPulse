@@ -52,10 +52,6 @@ export default function Stock_Chart({ ticker }: props) {
   const api = useApi();
   const { dispatch } = useGlobal();
   const [timeRange, setTimeRange] = React.useState("14d");
-  // const timeRangeNum = React.useMemo(
-  //   () => Number(timeRange.match("[0-9]+")?.[0]),
-  //   [timeRange]
-  // );
   const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
     queryKey: [cache_keys.STOCK_DATA, ticker],
     queryFn: async () => {
