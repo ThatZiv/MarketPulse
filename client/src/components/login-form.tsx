@@ -64,7 +64,6 @@ export function LoginForm({
   }
 
   window.handleSignInWithGoogle = async (response: googleResponse) => {
-    console.log("Callback fired! Response:", response);
     await signInWithGoogle(response);
   };
 
@@ -73,7 +72,6 @@ export function LoginForm({
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     document.body.appendChild(script);
-    console.log("load");
   }, []);
 
   return (

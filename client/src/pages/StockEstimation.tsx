@@ -1,15 +1,5 @@
 import { useSupabase } from "@/database/SupabaseProvider";
 import Stock_Chart from "@/components/stock_chart_demo";
-// import {
-//   IoMdInformationCircleOutline,
-//   IoMdInformationCircle,
-// } from "react-icons/io";
-// import {
-//   HoverCard,
-//   HoverCardContent,
-//   HoverCardTrigger,
-// } from "@/components/ui/hover-card";
-
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
@@ -36,8 +26,10 @@ import { StocksState } from "@/types/global_state";
 import moment from "moment";
 import Recommendation from "@/components/recommendation-chart";
 import { Button } from "@/components/ui/button";
+import PurchaseHistory from "@/components/purchase-history";
 import { SentimentMeter } from "@/components/sentiment-meter";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import { DeleteStock } from "@/components/delete-stock";
 
 const staticStockData = [
@@ -62,8 +54,7 @@ const sentimentFooter = (score: number, meter: string): string => {
   let trend = "";
   if (meter == "hype") {
     trend = "social media";
-  }
-  else if (meter == "impact") {
+  } else if (meter == "impact") {
     trend = "news";
   }
 
@@ -84,7 +75,7 @@ const sentimentFooter = (score: number, meter: string): string => {
   } else {
     return "N/A";
   }
-}
+};
 export default function Stocks() {
   const { supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
@@ -212,14 +203,20 @@ export default function Stocks() {
   }, [stocks]);
   useEffect(() => {
     if (meters.hype.value) {
-      const hype_temp = ((meters.hype.value + 6) / 12) * 100
+      const hype_temp = ((meters.hype.value + 6) / 12) * 100;
       setHypeMeter(hype_temp);
     }
     if (meters.impact.value || meters.impact.value == 0) {
-      const impact_temp = ((meters.impact.value + 6) / 12) * 100
+      const impact_temp = ((meters.impact.value + 6) / 12) * 100;
       setImpactMeter(impact_temp);
     }
   }, [meters.hype.value, meters.impact.value]);
+
+  const calc = useMemo(
+    () =>
+      new PurchaseHistoryCalculator(ticker ? state.history[ticker] ?? [] : []),
+    [state.history, ticker]
+  );
 
   if (stocksError) {
     return (
@@ -262,11 +259,7 @@ export default function Stocks() {
             <h3 className="lg:text-2xl text-md">Shares Owned</h3>
             <Separator />
             <p className="lg:text-4xl md:text-3xl text-2xl">
-              {stocks?.find(
-                (stock) =>
-                  stock?.Stocks?.stock_name ===
-                  ticker_name?.[ticker as keyof typeof ticker_name]
-              )?.shares_owned ?? "N/A"}
+              {calc.getTotalShares()}{" "}
             </p>
           </div>
           <div className="flex flex-col">
@@ -301,7 +294,6 @@ export default function Stocks() {
                 {currentStock && ticker && (
                   <Recommendation stock_ticker={ticker} />
                 )}
-                <Separator orientation="vertical" className="mx-2" />
               </div>
               <div className="col-span-6 lg:col-span-4">
                 {currentStock && (
@@ -324,9 +316,9 @@ export default function Stocks() {
                     </CardTitle>
                     <CardDescription>
                       <i>Hype Meter</i> analyzes social media sentiment to
-                      capture the public's view of a stock. A higher
-                      score indicates more positive outlook on the stock among
-                      social media users.
+                      capture the public's view of a stock. A higher score
+                      indicates more positive outlook on the stock among social
+                      media users.
                       <Separator className="my-2" />
                       <div className="text-xs">
                         As of {moment(meters.hype.date).calendar()}{" "}
@@ -343,32 +335,31 @@ export default function Stocks() {
                   </p>
                 </CardFooter>
               </Card>
-            ) :
-              (
-                  <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
-                    <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
-                      Hype Meter
-                    </div>
-                    <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
-                      <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
-                        <i>Hype Meter</i> analyzes social media sentiment to
-                        capture the public's view of a stock. A higher
-                        score indicates more positive outlook on the stock among
-                        social media users.
-                      </div>
-                    </div>
-                    <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
-                      <div className="flex flex-col md:flex-row items-center justify-center py-8">
-                        <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
-                      </div>
-                      <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
-                      <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
-                    </div>
-                    <div className="text-sm text-center text-black dark:text-white p-2">
-                      Hype Meter Data currently not available. Please Try Again Later.
-                    </div>
+            ) : (
+              <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
+                  Hype Meter
+                </div>
+                <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
+                  <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
+                    <i>Hype Meter</i> analyzes social media sentiment to capture
+                    the public's view of a stock. A higher score indicates more
+                    positive outlook on the stock among social media users.
                   </div>
-              )}
+                </div>
+                <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
+                  <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                    <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
+                  </div>
+                  <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                  <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                </div>
+                <div className="text-sm text-center text-black dark:text-white p-2">
+                  Hype Meter Data currently not available. Please Try Again
+                  Later.
+                </div>
+              </div>
+            )}
           </div>
           <div className="col-span-6 xl:col-span-3">
             {moment(meters.hype.date).isValid() ? (
@@ -399,34 +390,42 @@ export default function Stocks() {
                   </p>
                 </CardFooter>
               </Card>
-            ):
-            (
-                <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
-                  <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
+            ) : (
+              <div className="border bg-white dark:bg-black border-black dark:border-white rounded-md md:p-4 overflow-x-auto h-full">
+                <div className="text-center font-semibold text-md md:text-lg lg:text-xl pt-2">
                   Impact Factor
-                  </div>
-                  <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
-                    <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
+                </div>
+                <div className="flex items-center gap-2 space-y-0 border-b py-2 sm:flex-row mb-2">
+                  <div className="sm:text-left text-black dark:text-white text-sm text-muted-foreground">
                     <i>Impact Factor</i> scores how major news events like
-                      elections, natural disasters, and regulations influence
-                      stock performance. A higher score indicates a more
-                      positive impact on the stock.
-                    </div>
-                  </div>
-                  <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
-                    <div className="flex flex-col md:flex-row items-center justify-center py-8">
-                      <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
-                    </div>
-                    <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
-                    <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
-                  </div>
-                  <div className="text-sm text-center text-black dark:text-white p-2">
-                  Impact Factor Data currently not available. Please Try Again Later.
+                    elections, natural disasters, and regulations influence
+                    stock performance. A higher score indicates a more positive
+                    impact on the stock.
                   </div>
                 </div>
+                <div className="flex flex-col justify-center border border-grey-500 dark:border-white rounded-xl shadow-md p-2">
+                  <div className="flex flex-col md:flex-row items-center justify-center py-8">
+                    <Skeleton className="w-64 h-32 bg-gray-200 dark:bg-gray-700 rounded-t-full" />
+                  </div>
+                  <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                  <Skeleton className="w-full h-3 my-2 flex justify-center items-center bg-gray-200 dark:bg-gray-700"></Skeleton>
+                </div>
+                <div className="text-sm text-center text-black dark:text-white p-2">
+                  Impact Factor Data currently not available. Please Try Again
+                  Later.
+                </div>
+              </div>
             )}
           </div>
         </div>
+      </div>
+      <div>
+        {currentStock && ticker && (
+          <PurchaseHistory
+            stock_id={currentStock.Stocks.stock_id}
+            ticker={ticker}
+          />
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,16 @@
   text-align: center;
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(0.8);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1
+}
+
 /* Only for gauge meters in StockEstimation.tsx */
 :root {
   --tick-label-color: black;

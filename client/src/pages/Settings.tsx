@@ -38,12 +38,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useNavigate, useParams } from "react-router";
-import { Label } from "@/components/ui/label";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { actions } from "@/lib/constants";
+//import { profile } from "node:console";
+import { v4 as uuidv4 } from "uuid";
 
 export default function SettingsPage() {
-  const { supabase, user, signOut } = useSupabase();
+  const { session, supabase, user, signOut } = useSupabase();
   const { dispatch } = useGlobal();
   const [state, setState] = React.useState<"loading" | "error" | "done">(
     "loading"
@@ -65,6 +66,7 @@ export default function SettingsPage() {
   const accountFormSchema = z.object({
     first_name: z.string().min(2).max(50),
     last_name: z.string().min(2).max(50),
+    image: z.instanceof(FileList).optional(),
   });
 
   const passwordFormSchema = z
@@ -164,14 +166,34 @@ export default function SettingsPage() {
     });
   };
 
+  const fileRef = accountForm.register("image");
   const onAccountSubmit = async (values: AccountFormValues) => {
-    toast("Are you sure you want to modify your name?", {
+    console.log(values.image);
+    toast("Are you sure you want to confirm these changes?", {
       action: {
         label: "Confirm",
         onClick: async () => {
+          if(values.image!.length > 0)
+          {
+          const file = uuidv4();
+          const response = await supabase.storage
+            .from("profile_pictures")
+            .upload(file, values.image![0], {
+              upsert: true,
+              headers: {
+                Authorization: `Bearer ${session?.access_token}`,
+              },
+            });
+          if (!response.error) 
+                {
           const { error } = await supabase
             .from("Account")
-            .upsert({ ...values, user_id: user?.id })
+            .upsert({
+              profile_picture: file,
+              first_name: values.first_name,
+              last_name: values.last_name,
+              user_id: user?.id,
+            })
             .select()
             .single();
 
@@ -188,8 +210,43 @@ export default function SettingsPage() {
                 .join(" ")
                 .trim(),
             });
-            navigate("/");
+            navigate("/");}
           }
+          else
+          {
+            toast.error("Failed updating your profile", {
+              description: response.error.message,
+            }); 
+          }
+        }
+        else
+        {
+          const { error } = await supabase
+            .from("Account")
+            .upsert({
+              first_name: values.first_name,
+              last_name: values.last_name,
+              user_id: user?.id,
+            })
+            .select()
+            .single();
+
+          if (error) {
+            toast.error("Failed updating your profile", {
+              description: error.message,
+            });
+          } else {
+            toast.success("Profile updated successfully!");
+            dispatch({
+              type: actions.SET_USER_FULL_NAME,
+              payload: [values.first_name, values.last_name]
+                .filter((x) => x)
+                .join(" ")
+                .trim(),
+            });
+            navigate("/");}
+        }
+
         },
       },
     });
@@ -237,6 +294,7 @@ export default function SettingsPage() {
                     done.
                   </CardDescription>
                 </CardHeader>
+
                 <Form {...accountForm}>
                   <form
                     onSubmit={accountForm.handleSubmit((values) =>
@@ -276,9 +334,26 @@ export default function SettingsPage() {
                           )}
                         />
                       </div>
-                      <div className="grid w-full max-w-sm items-center gap-1.5 space-y-1">
-                        <Label htmlFor="picture">Avatar</Label>
-                        <Input id="picture" type="file" accept="image/*" />
+                      <div className="space-y-1">
+                        <FormField
+                          control={accountForm.control}
+                          name="image"
+                          rules={{ required: "File is required" }}
+                          render={() => (
+                            <FormItem>
+                              <FormLabel>Avatar</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  {...fileRef}
+                                />
+                              </FormControl>
+                              <FormDescription></FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </CardContent>
                     <CardFooter>

@@ -13,6 +13,7 @@ import { actions, cache_keys } from "@/lib/constants";
 // import { type PieSectorDataItem } from "recharts/types/polar/Pie";
 import moment from "moment";
 import { Separator } from "./ui/separator";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 
 // const chartData = [
 //   { action: "buy", suggest: 50, fill: "var(--color-buy)" },
@@ -54,6 +55,9 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
         payload: {
           stock_ticker,
           data: data[data.length - 1].stock_close,
+          timestamp: new Date(
+            data[data.length - 1].time_stamp.join(" ") + " UTC"
+          ).getTime(),
         },
       });
       return data;
@@ -165,7 +169,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
                     isLoss ? "text-red-700" : "text-green-700"
                   }`}
                 >
-                  {isLoss ? "-" : "+"}${Math.abs(Number(profit))}
+                  {PurchaseHistoryCalculator.toDollar(Number(profit))}
                 </div>
                 <div className="justify-center w-full mb-4">
                   <div className="text-sm text-left">
