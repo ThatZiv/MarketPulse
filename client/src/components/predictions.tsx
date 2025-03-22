@@ -61,17 +61,23 @@ export default function Predictions({
     },
     enabled: !!stock_id && !!api,
   });
-  const predictions = data?.output;
+  
+  let predictions = null
+  if(data)
+  {
+  predictions = data[0].output;
+  }
+  
 
   const chartData = React.useMemo(() => {
     const points: Array<PredictionDatapoint> = [];
-    if (!predictions) return points;
+    if (!predictions || !data) return points;
 
     // TODO: make sure this works when:
     // - predictions are made on a weekend
     // - predictions are made on a friday
     //// predictions are made on a monday
-    let startDate = moment(new Date(data.created_at));
+    let startDate = moment(new Date(data[0].created_at));
 
     // initial weekend day check
     if (startDate.isoWeekday() === 6) {
