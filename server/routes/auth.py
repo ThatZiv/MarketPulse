@@ -5,7 +5,7 @@
 
 import os
 import json
-
+import copy
 import flask_jwt_extended as jw
 import requests
 from flask import Blueprint, Response, jsonify, request, send_file, current_app
@@ -128,40 +128,46 @@ def forecast_route():
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
+        lookback = request.args['lookback']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = stock_query_single(s_id, session)
         if output_id :
-            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at))
-            output = stock_query_single(forecast, session)
+            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at)).limit(lookback)
+            output = stock_query_all(forecast, session)
             out = []
+            out_array = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
-            # pylint: disable=protected-access
-            output_dict = output._mapping
-            # pylint: enable=protected-access
-            for column in columns:
-                forecast_data = output_dict[column]
-                out.append(json.loads(forecast_data))
-
-            # "model" for average of all models
-            forecast_window = len(out[0]['forecast'])
-            model_len = len(out)
-            avg_model = {'name': 'average', 'forecast': [0] * forecast_window}
-
-            for j in range(forecast_window):
-                day_avg = 0
-                for i in range(model_len):
-                    model = out[i]
-                    day_avg += model['forecast'][j]
-                day_avg /= model_len
-                avg_model['forecast'][j] = day_avg
-
-            out.append(avg_model)
             session.close()
-            return jsonify({
-                "stock_id": output_dict["stock_id"],
-                "created_at": output_dict["created_at"],
-                "output": out
-            })
+            for o in output:
+                # pylint: disable=protected-access
+                output_dict = o._mapping
+                out = []
+                # pylint: enable=protected-access
+                for column in columns:
+                    forecast_data = output_dict[column]
+                    out.append(json.loads(forecast_data))
+
+                # "model" for average of all models
+                forecast_window = len(out[0]['forecast'])
+                model_len = len(out)
+                avg_model = {'name': 'average', 'forecast': [0] * forecast_window}
+
+                for j in range(forecast_window):
+                    day_avg = 0
+                    for i in range(model_len):
+                        model = out[i]
+                        day_avg += model['forecast'][j]
+                    day_avg /= model_len
+                    avg_model['forecast'][j] = day_avg
+
+                out.append(avg_model)
+
+                out_array.append({
+                    "stock_id": output_dict["stock_id"],
+                    "created_at": output_dict["created_at"],
+                    "output": copy.deepcopy(out)
+                })
+            return jsonify(out_array)
         session.close()
         return Response(status=400, mimetype='application/json')
     session.close()
