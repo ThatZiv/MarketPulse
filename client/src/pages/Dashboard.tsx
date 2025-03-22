@@ -30,7 +30,7 @@ export default function Dashboard() {
   const paths = useMemo(() => location.pathname.split("/"), [location.pathname]);
 
   // Disclaimer addition
-  const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
 useEffect(() => {
   if (user) {
