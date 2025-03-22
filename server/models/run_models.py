@@ -22,7 +22,7 @@ from models.forecast.xgboost import XGBoost
 from models.zav2 import Transformer
 from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine, global_engine
-
+import pickle
 def run_models():
     try:
         session = sessionmaker(bind=global_engine())
@@ -69,6 +69,7 @@ def run_models():
 
         prediction = ForecastModels(one_day)
 
+        print (data)
         prediction.train_all(copy.deepcopy(data))
 
         pred = prediction.run_all(copy.deepcopy(data), 7)
@@ -82,8 +83,8 @@ def run_models():
 
         new_row = Stock_Predictions(stock_id=stock.stock_id, model_1=json.dumps(model_1), model_2=json.dumps(model_2), model_3=json.dumps(model_3), model_4=json.dumps(model_4), model_5=json.dumps(model_5), created_at = date.today())
         session.add(new_row)
-    try:
-        session.commit()
-    except  exc.SQLAlchemyError as e:
-        print(e)
+    #try:
+    #    session.commit()
+    #except  exc.SQLAlchemyError as e:
+    #    print(e)
     session.close()

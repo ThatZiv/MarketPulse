@@ -89,13 +89,15 @@ class AttentionLstm:
 
         valid_answer['Low'] = (valid_answer['Low'] - valid_answer['Low'].min())/ (valid_answer['Low'].max() - valid_answer['Low'].min())
         valid_answer['Open'] = (valid_answer['Open'] - valid_answer['Open'].min())/ (valid_answer['Open'].max() - valid_answer['Open'].min())
+        sentiment = (valid_answer['Sentiment_Data'] - valid_answer['Sentiment_Data'].min())/ (valid_answer['Sentiment_Data'].max() - valid_answer['Sentiment_Data'].min())
+        
         valid_answer = valid_answer.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
         answer = data
         #print(data)
 
         data2, answer = self.create_inout_sequences(data, 20, data)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
-        return data2, answer, valid_answer, multiple, minimum
+        return data2, answer, valid_answer, multiple, minimum, sentiment
 
     def get_data(self, data, answer, train_answer, split):
         lookback  = 20
@@ -209,20 +211,19 @@ class AttentionLstm:
         print("MSE: " + str(mse))
         print("RMSE: " + str(math.sqrt(mse)))
         print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
-        #plt.plot(anws)
-        #plt.plot(val, color = 'red')
-        #plt.show()
 
 
-    def forecast_seq(self, sequences, period = 7):
+    def forecast_seq(self, sequences, sentiment, period = 7):
         self.model.eval()
-        print(sequences[-1])
-
-        #print(output)
+        
+        average = sum(sentiment) / len(sentiment)
+        adjustment = .05 * (sentiment[len(sentiment)-1]-average)
         p = []
+        count=0
         for _ in range(period):
+            count+=1
             output = self.model(sequences)
-            p.append(output[-1][0].item())
+            p.append(output[-1][0].item()*(adjustment**count))
             temp = sequences[-1]
             temp = temp[1:]
             sequences[-1] = torch.cat((temp, output[-1].unsqueeze(0)), dim = 0 )
