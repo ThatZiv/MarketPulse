@@ -167,7 +167,6 @@ def forecast_route():
                     "created_at": output_dict["created_at"],
                     "output": copy.deepcopy(out)
                 })
-                print(out_array)
             return jsonify(out_array)
         session.close()
         return Response(status=400, mimetype='application/json')
