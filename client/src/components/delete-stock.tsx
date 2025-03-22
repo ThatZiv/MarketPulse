@@ -18,12 +18,13 @@ import { useSupabase } from "@/database/SupabaseProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
 import { useNavigate } from "react-router";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 interface DeleteStockProps {
     ticker?: string;
     stock_id?: number;
 }
-const deleteStock = async ({ stock_id, user_id,supabase }: { stock_id: number, user_id: string, supabase:any }): Promise<void> => {
+const deleteStock = async ({ stock_id, user_id, supabase }: { stock_id: number, user_id: string, supabase: SupabaseClient }): Promise<void> => {
     const { error: purchasesError } = await supabase
         .from('User_Stock_Purchases')
         .delete()
@@ -42,7 +43,7 @@ const deleteStock = async ({ stock_id, user_id,supabase }: { stock_id: number, u
     console.log('Stock successfully deleted');
 };
 export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
-    const { user,supabase } = useSupabase();
+    const { user, supabase } = useSupabase();
     const queryClient = useQueryClient();
     const [inputValue, setInputValue] = useState("");
     const navigate = useNavigate();
@@ -67,13 +68,13 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                 toast.error("Invalid stock selection.");
                 return;
             }
-        
+
             if (!user?.id) {
                 console.error("User is not authenticated");
                 toast.error("You must be logged in to delete stocks.");
                 return;
             }
-            mutation.mutate({ stock_id: stock_id ?? 0, user_id: user?.id ?? '',supabase });
+            mutation.mutate({ stock_id: stock_id ?? 0, user_id: user?.id ?? '', supabase });
             navigate("/", { replace: true });
         } else {
             toast.error("Stock name does not match. Please enter the correct stock name to delete.");
@@ -93,12 +94,12 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                         This action cannot be undone. This will permanently delete your
                         stock history and remove your data.
                     </AlertDialogDescription>
-                    <h2 className="text-md">Please enter the name of the stock you want to delete permanently. 
+                    <h2 className="text-md">Please enter the name of the stock you want to delete permanently.
                         This is to ensure that the deletion is intentional.</h2>
                     <Input type="text" placeholder={ticker} value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={()=>{setInputValue("");}}>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel onClick={() => { setInputValue(""); }}>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} className="bg-[#e50000] text-[#e50000]-foreground shadow hover:bg-[#e50000]/90 text-white border-1 dark:hover:border-white hover:border-black hover:border-2 dark:active:bg-[#e50000]/40 active:bg-[#e50000]/40">Delete</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
