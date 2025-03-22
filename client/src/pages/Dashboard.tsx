@@ -30,20 +30,23 @@ export default function Dashboard() {
   const paths = useMemo(() => location.pathname.split("/"), [location.pathname]);
 
   // Disclaimer addition
-  const [showDisclaimer, setShowDisclaimer] = useState(() => {
-    return localStorage.getItem("hasAgreedToDisclaimer") !== "true";
-  });
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
-  const handleAgreeDisclaimer = () => {
-    localStorage.setItem("hasAgreedToDisclaimer", "true");
+useEffect(() => {
+  if (user) {
+    const hasAgreed = localStorage.getItem(`hasAgreedToDisclaimer_${user.id}`);
+    setShowDisclaimer(hasAgreed !== "true");
+  }
+}, [user]);
+
+
+const handleAgreeDisclaimer = () => {
+  if (user) {
+    localStorage.setItem(`hasAgreedToDisclaimer_${user.id}`, "true");
     setShowDisclaimer(false);
-  };
+  }
+};
 
-  useEffect(() => {
-    if (!user) {
-      localStorage.removeItem("hasAgreedToDisclaimer");
-    }
-  }, [user]);
 
   return (
     <SidebarProvider>

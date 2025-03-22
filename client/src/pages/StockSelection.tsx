@@ -128,8 +128,9 @@ export default function StockPage() {
               const selectedDate = new Date(date);
               const today = new Date();
               today.setHours(23, 59, 59, 999);
-              return selectedDate <= today;
-            }, "Date cannot be in the future"),
+              const minDate = new Date(2000, 0, 1);
+              return selectedDate >= minDate && selectedDate <= today;
+            }, "Date must be between January 1, 2000 and today"),
           shares: z.number(),
           pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
         })
@@ -440,6 +441,7 @@ export default function StockPage() {
                       type="date"
                       required
                       value={purchase.date}
+                      min="2000-01-01"
                       max={getTodayISOString()}
                       onChange={(e) =>
                         handlePurchaseChange(index, "date", e.target.value)
