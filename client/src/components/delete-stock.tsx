@@ -15,9 +15,9 @@ import { Input } from "@/components/ui/input"
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { useGlobal } from "@/lib/GlobalProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
+import { useNavigate } from "react-router";
 
 interface DeleteStockProps {
     ticker?: string;
@@ -39,13 +39,13 @@ const deleteStock = async ({ stock_id, user_id,supabase }: { stock_id: number, u
     if (stocksError) {
         console.error('Error deleting from User_Stocks:', stocksError.message);
     }
-    console.log('Records deleted successfully from both tables:');
-
+    console.log('Stock successfully deleted');
 };
 export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
     const { user,supabase } = useSupabase();
     const queryClient = useQueryClient();
     const [inputValue, setInputValue] = useState("");
+    const navigate = useNavigate();
 
     const mutation = useMutation({
         mutationFn: deleteStock,
@@ -53,6 +53,7 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
             queryClient.invalidateQueries({
                 queryKey: [cache_keys.USER_STOCKS],
             });
+            toast.success("Stock deleted successfully.");
         },
         onError: (error) => {
             console.error("Error deleting stock:", error.message);
@@ -61,7 +62,6 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
     });
     const handleDelete = async () => {
         if (inputValue === ticker) {
-            console.log(inputValue + " deleted " + ticker);
             if (stock_id === undefined || stock_id === null) {
                 console.error("Invalid stock_id");
                 toast.error("Invalid stock selection.");
@@ -74,11 +74,11 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                 return;
             }
             mutation.mutate({ stock_id: stock_id ?? 0, user_id: user?.id ?? '',supabase });
+            navigate("/", { replace: true });
         } else {
             toast.error("Stock name does not match. Please enter the correct stock name to delete.");
             setInputValue("");
         }
-
     };
 
     return (
@@ -93,11 +93,12 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                         This action cannot be undone. This will permanently delete your
                         stock history and remove your data.
                     </AlertDialogDescription>
-                    <h2 className="text-md">Please enter the name of the stock you want to delete permanently</h2>
+                    <h2 className="text-md">Please enter the name of the stock you want to delete permanently. 
+                        This is to ensure that the deletion is intentional.</h2>
                     <Input type="text" placeholder={ticker} value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel onClick={()=>{setInputValue("");}}>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDelete} className="bg-[#e50000] text-[#e50000]-foreground shadow hover:bg-[#e50000]/90 text-white border-1 dark:hover:border-white hover:border-black hover:border-2 dark:active:bg-[#e50000]/40 active:bg-[#e50000]/40">Delete</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
