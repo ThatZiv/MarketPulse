@@ -16,7 +16,7 @@ from sqlalchemy.orm import sessionmaker
 from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine, global_engine
 from routes.llm import llm_bp
-
+import pickle
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
@@ -123,17 +123,21 @@ def chart():
 @jw.jwt_required()
 def forecast_route():
     ticker = request.args.get('ticker')
-    if not ticker:
+    lookback = request.args['lookback']
+    if not ticker or not lookback:
         return Response(status=400, mimetype='application/json')
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
-        lookback = request.args['lookback']
+        
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = stock_query_single(s_id, session)
         if output_id :
             forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at)).limit(lookback)
             output = stock_query_all(forecast, session)
+            f = open('test_data/forecast2', 'wb')
+            pickle.dump(output, f)
+            f.close()
             out = []
             out_array = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
