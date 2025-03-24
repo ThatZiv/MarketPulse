@@ -16,25 +16,29 @@ export default function Feedback() {
     }
 
     setLoading(true);
-    
+
     try {
       const { error } = await supabase
         .from("User_Feedback")
         .insert([{ content: feedback }]);
-      
+
       if (error) throw error;
-      
+
       toast.success("Thank you for your feedback!");
       setFeedback("");
     } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast.error(error.message || "An unexpected error occurred");
-          console.error("Feedback submission error:", error.message);
-        } else {
-          toast.error("An unexpected error occurred");
-          console.error("Feedback submission error:", error);
-        }
-      }      
+      if (error instanceof Error) {
+        toast.error(error.message || "An unexpected error occurred");
+        console.error("Feedback submission error:", error.message);
+      } else {
+        toast.error("An unexpected error occurred");
+        console.error("Feedback submission error:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
       <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
@@ -61,7 +65,7 @@ export default function Feedback() {
           </div>
 
           <div className="w-full flex justify-end mt-4">
-            <Button 
+            <Button
               onClick={submitFeedback}
               disabled={loading}
               className="bg-primary hover:bg-primary/90 text-white px-8 py-4 text-lg transition-colors duration-200"
