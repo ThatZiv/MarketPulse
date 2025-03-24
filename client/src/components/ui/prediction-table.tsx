@@ -55,7 +55,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
   const { predictions } = state;
   const model = state.views.predictions.model;
   const days = state.views.predictions.timeWindow;
-
+  
   const data = predictions[ticker];
   if (!data || data.length === 0) {
     return <div>Prediction table is currently unavailable</div>;

@@ -22,6 +22,7 @@ interface ModelOutput {
   forecast: Forecast;
   name: ModelName;
 }
+
 export interface StockPrediction {
   stock_id: number;
   created_at: string;
