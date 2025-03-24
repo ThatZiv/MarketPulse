@@ -19,7 +19,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
 import { useNavigate } from "react-router";
 import { SupabaseClient } from "@supabase/supabase-js";
-
+import { AlertCircle } from "lucide-react"
+import { IoCloseOutline } from "react-icons/io5";
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "@/components/ui/alert"
 interface DeleteStockProps {
     ticker?: string;
     stock_id?: number;
@@ -88,19 +94,39 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                 <Button variant="delete" size="sm">  <IoTrash className="" /> Delete</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
-                <AlertDialogHeader>
+                <AlertDialogHeader className="flex justify-between items-start">
+                    <div className="flex justify-end w-full">
+                        <AlertDialogCancel className="flex justify-end w-fit" onClick={() => { setInputValue(""); }}><IoCloseOutline /></AlertDialogCancel>
+                    </div>
                     <AlertDialogTitle>Are you absolutely sure you want to delete the entire stock history?</AlertDialogTitle>
                     <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your
-                        stock history and remove your data.
+                        <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Warning</AlertTitle>
+                            <AlertDescription>
+                                This action cannot be undone. This will permanently delete your
+                                stock history and remove your data.
+                            </AlertDescription>
+                        </Alert>
+                        <Alert variant="default" className="mt-4">
+                            <AlertTitle> Deleting this stock results in:</AlertTitle>
+                            <AlertDescription>
+                                <ul className="list-disc pl-5">
+                                    <li>Your Stock purchase history will be permanently deleted.</li>
+                                    <li>Stock predictions will be lost.</li>
+                                    <li>All stored data for {ticker} stock cannot be retrieved.</li>
+                                    <li>To re-add {ticker} stock, you'll need to enter the stock details again.</li>
+                                </ul>
+                            </AlertDescription>
+                        </Alert>
                     </AlertDialogDescription>
-                    <h2 className="text-md">Please enter the name of the stock you want to delete permanently.
-                        This is to ensure that the deletion is intentional.</h2>
+                    <h2 className="text-md pt-3 border-t-2">Please enter <span className="font-medium">{ticker} </span>to confirm the deletion is intentional.</h2>
                     <Input type="text" placeholder={ticker} value={inputValue} onChange={(e) => setInputValue(e.target.value)} />
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={() => { setInputValue(""); }}>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-[#e50000] text-[#e50000]-foreground shadow hover:bg-[#e50000]/90 text-white border-1 dark:hover:border-white hover:border-black hover:border-2 dark:active:bg-[#e50000]/40 active:bg-[#e50000]/40">Delete</AlertDialogAction>
+                    <AlertDialogAction onClick={handleDelete} className="bg-[#e50000] text-[#e50000]-foreground shadow
+                     hover:bg-[#e50000]/90 text-white border-1dark:hover:border-white hover:border-black hover:border-2
+                      dark:active:bg-[#e50000]/40 active:bg-[#e50000]/40 w-full">I understand the consequences of removing this stock.</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
