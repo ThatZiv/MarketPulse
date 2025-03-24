@@ -13,6 +13,8 @@ import Documentation from "@/pages/Documentation";
 import Tutorials from "@/pages/Tutorials";
 import FAQ from "@/pages/FAQ";
 import Disclaimer from "./pages/Disclaimers";
+import Feedback from "@/pages/Feedback";
+
 
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 function App() {
@@ -41,6 +43,7 @@ function App() {
           <Route index element={<Landing />} />
           <Route path="/stocks" element={<StockSelection />} />
           <Route path="/stocks/:ticker" element={<StockEstimation />} />
+          <Route path="/feedback" element={<Feedback />} />
           <Route path="/settings">
             <Route path=":tab" element={<Settings />} />
             <Route index element={<Settings />} />
