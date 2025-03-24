@@ -243,7 +243,7 @@ export default function Landing() {
                     </div>
                     <Select value={sort} onValueChange={setSort}>
                       <SelectTrigger
-                        className="md:w-[160px] rounded-lg sm:ml-auto dark:border-white w-[1rem]"
+                        className="md:w-40 rounded-lg w-24 dark:border-white"
                       >
                         <SelectValue placeholder="None Selected" />
                       </SelectTrigger>
