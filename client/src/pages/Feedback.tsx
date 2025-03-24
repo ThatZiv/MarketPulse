@@ -3,11 +3,15 @@ import { useSupabase } from "@/database/SupabaseProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+
 
 export default function Feedback() {
   const { supabase } = useSupabase();
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
 
   const submitFeedback = async () => {
     if (!feedback.trim()) {
@@ -26,6 +30,7 @@ export default function Feedback() {
 
       toast.success("Thank you for your feedback!");
       setFeedback("");
+      navigate("/");
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message || "An unexpected error occurred");
