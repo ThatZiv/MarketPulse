@@ -1,4 +1,4 @@
-
+import React, { useMemo } from "react";
 import { describe } from "node:test";
 import {
   act,
@@ -58,12 +58,14 @@ describe("MarketPulse AI", () => {
       media: query,
       addListener: jest.fn(),
       removeListener: jest.fn(),}));
-
   });
   
     test("Render", async () => {
-        const ticker = "test"
-        render(<GenerateStockLLM ticker={ticker} />);
+        
+      const mockUseMemo = jest.spyOn(React, 'useMemo').mockImplementation((fn) => fn);
+
+      const ticker = "test"
+        await render(<GenerateStockLLM ticker={ticker} />);
         const open = await screen.findByText("MarketPulse AI");
         expect(open).toBeInTheDocument();
         expect(open).not.toBeDisabled();
@@ -85,5 +87,9 @@ describe("MarketPulse AI", () => {
         });
         
         const text_test = await screen.findByText("Hello");
+
+
+        mockUseMemo.mockRestore();
+        
       });
 });
