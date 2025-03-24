@@ -157,15 +157,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         navMain: prevData.navMain.map((navItem) =>
           navItem.title === "Dashboard"
             ? {
-                ...navItem,
-                items: [
-                  ...(navItem.items ?? []),
-                  ...(all_stocks ?? []).filter(
-                    (stock) =>
-                      !navItem.items?.some((item) => item.url === stock.url)
-                  ),
-                ],
-              }
+              ...navItem,
+              items: [
+                ...(navItem.items ?? []),
+                ...(all_stocks ?? []).filter(
+                  (stock) =>
+                    !navItem.items?.some((item) => item.url === stock.url)
+                ),
+              ],
+            }
             : navItem
         ),
       }));
