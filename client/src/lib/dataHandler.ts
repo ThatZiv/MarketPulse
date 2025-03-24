@@ -80,5 +80,37 @@ export default function dataHandler(dispatch?: GlobalDispatch) {
             });
         }),
     }),
+    /**
+     * Factory for api requests
+     * @param api - instance of our api wrapper
+     * @example
+     * const dh = dataHandler(dispatch);
+     * const apiDataHandler = dh.forApi(api); // api is an instance of our global api wrapper
+     */
+    forApi: (api: IApi) => ({
+      /**
+       * get and cache stock realtime data
+       * @param stock_ticker - stock_ticker string from client
+       * @example
+       * const apiCl = dataHandler(dispatch).forApi(api).getStockRealtime(stock_ticker);
+       * const stockRealtime = await getStockRealtime();
+       *  */
+      getStockRealtime: (stock_ticker: string) => async () => {
+        const data = await api.getStockRealtime(stock_ticker);
+        if (!data) return [];
+        if (dispatch)
+          dispatch({
+            type: actions.SET_STOCK_PRICE,
+            payload: {
+              stock_ticker,
+              data: data[data.length - 1].stock_close,
+              timestamp: new Date(
+                data[data.length - 1].time_stamp.join(" ") + " UTC"
+              ).getTime(),
+            },
+          });
+        return data;
+      },
+    }),
   };
 }
