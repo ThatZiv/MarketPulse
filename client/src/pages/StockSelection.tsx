@@ -13,8 +13,6 @@ import {
   Undo,
   X,
 } from "lucide-react";
-import useAsync from "@/hooks/useAsync";
-import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -28,7 +26,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
 import {
   Table,
@@ -41,6 +39,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import InfoTooltip from "@/components/InfoTooltip";
+import dataHandler from "@/lib/dataHandler";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -85,22 +84,13 @@ export default function StockPage() {
 
   const [error, setError] = useState<string>();
   const {
-    value: stocks,
+    data: stocks,
     error: stocksError,
-    loading: stocksLoading,
-  } = useAsync<Stock[]>(
-    () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("Stocks")
-          .select("*")
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            return resolve(data || []);
-          });
-      }),
-    [supabase]
-  );
+    isLoading: stocksLoading,
+  } = useQuery({
+    queryKey: [cache_keys.STOCKS],
+    queryFn: dataHandler().forSupabase(supabase).getAllStocks(),
+  });
 
   useEffect(() => {
     if (searchParams.has("ticker") && stocks) {
@@ -428,7 +418,10 @@ export default function StockPage() {
               <label className="block text-lg font-light">
                 Purchase History <span className="text-red-500">*</span>
               </label>
-              <p className="mb-2 text-gray-600 text-muted-foreground font-medium">Note: Please enter your stock history in the correct time sequence.</p>
+              <p className="mb-2 text-gray-600 text-muted-foreground font-medium">
+                Note: Please enter your stock history in the correct time
+                sequence.
+              </p>
               {formData.purchases.map((purchase, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <div className="flex-1 flex flex-col">
@@ -614,11 +607,12 @@ export default function StockPage() {
                   <TableRow>
                     <TableCell>
                       <span
-                        className={`${calc.getProfit() > 0
-                          ? // totals.value * -1 is the value of profit
-                          "text-green-600"
-                          : "text-red-600"
-                          }`}
+                        className={`${
+                          calc.getProfit() > 0
+                            ? // totals.value * -1 is the value of profit
+                              "text-green-600"
+                            : "text-red-600"
+                        }`}
                       >
                         {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
                       </span>
@@ -632,8 +626,9 @@ export default function StockPage() {
                       {PurchaseHistoryCalculator.toDollar(calc.getTotalSold())}
                     </TableCell>
                     <TableCell
-                      className={`${calc.getTotalShares() < 0 ? "text-red-600" : ""
-                        } flex items-center gap-2`}
+                      className={`${
+                        calc.getTotalShares() < 0 ? "text-red-600" : ""
+                      } flex items-center gap-2`}
                     >
                       {calc.getTotalShares().toLocaleString(undefined, {
                         maximumFractionDigits: 2,
@@ -647,7 +642,7 @@ export default function StockPage() {
                   </TableRow>
                 </TableBody>
               </Table>
-              { }
+              {}
             </div>
           )}
 
