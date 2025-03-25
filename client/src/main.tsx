@@ -11,7 +11,16 @@ import { ApiProvider } from "@/lib/ApiProvider.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip.tsx";
 import { GlobalProvider } from "@/lib/GlobalProvider.tsx";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
