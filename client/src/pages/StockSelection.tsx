@@ -90,6 +90,7 @@ export default function StockPage() {
   } = useQuery({
     queryKey: [cache_keys.STOCKS],
     queryFn: dataHandler().forSupabase(supabase).getAllStocks(),
+    enabled: !!user,
   });
 
   useEffect(() => {
@@ -97,7 +98,12 @@ export default function StockPage() {
       const ticker = (searchParams.get("ticker") as string).toUpperCase();
       const stock = stocks.find((stock) => stock.stock_ticker === ticker);
       if (stock) {
-        setFormData((prev) => ({ ...prev, ticker: stock.stock_id.toString() }));
+        setFormData((prev) => {
+          if (prev.ticker !== stock.stock_id.toString()) {
+            return { ...prev, ticker: stock.stock_id.toString() };
+          }
+          return prev;
+        });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
     }
