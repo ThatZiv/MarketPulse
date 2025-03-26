@@ -37,7 +37,9 @@ export function suggestion(current_price:number, predicted_price:number, purchas
     // Calculate offsets
     const upper_offset  = .025*Math.atan(100*(predicted_price-investment_value.average)/current_price)
     const lower_offset = .025*Math.atan(100*(predicted_price-investment_value.average)/current_price)
+    // percentage sell using a funtion?
 
+    // buy confidence using a function?
     if(predicted_price/current_price > high-upper_offset)
     {
         output.suggestion = "Buy"
@@ -51,6 +53,21 @@ export function suggestion(current_price:number, predicted_price:number, purchas
         output.suggestion="Hold"
     }
 
-    return output
+return (
+<div>
+    <h1>{output.suggestion}</h1>
+    {output.profits > 0?(
+        <div>
+            <p>Expected profit </p>\
+            <p className="text-green-700">$ {output.profits}</p>
+        </div>
+    ):(
+        <div>
+            <p>Expected Loss </p>
+            <p className="text-red-700">$ {output.profits}</p>
+        </div>
+    )}
+</div>
+);
 
 }
