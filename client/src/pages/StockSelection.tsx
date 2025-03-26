@@ -333,7 +333,7 @@ export default function StockPage() {
     return (
       <div className="text-center flex items-center">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p className="text-gray-600">
           Error fetching stocks: {(stocksError as Error).message}
         </p>
       </div>

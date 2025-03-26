@@ -197,7 +197,7 @@ export default function Stocks() {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p className="text-gray-600">
           Unfortunately, we encountered an error fetching your stocks. Please
           refresh the page or try again later.
         </p>
