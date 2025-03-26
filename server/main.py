@@ -1,8 +1,10 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
+# pylint: disable=line-too-long
 
 import os
+import threading
 import flask_jwt_extended as jw
 from flask import Flask, request, jsonify, Response
 from dotenv import load_dotenv
@@ -10,21 +12,20 @@ from flask_cors import CORS
 from sqlalchemy import select, exc
 from sqlalchemy.orm import sessionmaker
 from flask_jwt_extended import jwt_required
-from flask_caching import Cache
 from flask_apscheduler import APScheduler
 from engine import get_engine, global_engine
 from database.tables import Stocks
 from database.yfinanceapi import real_time_data
 from routes.auth import auth_bp
 from load_data import load_stocks
-import threading
+from cache import cache
+
 
 load_dotenv()
 
 LEGACY = os.environ.get("LEGACY") == "true"
 if not LEGACY:
     from models.run_models import run_models
-
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 
@@ -43,6 +44,7 @@ def create_app():
     ap = Flask(__name__)
     ap.config["MUTEX"] = threading.Lock()
     ap.config["JWT_SECRET_KEY"] = os.environ.get("SUPABASE_JWT")
+    cache.init_app(ap)
     ap.register_blueprint(auth_bp, url_prefix='/auth')
     CORS(ap, supports_credentials=True)
     jwt = jw.JWTManager()
@@ -52,30 +54,29 @@ def create_app():
     def stock_job():
         with app.app_context():
             load_stocks()
-    
+
     def model_job():
         with app.app_context():
-            run_models()
-        
+            if not LEGACY:
+                run_models()
+
 
     scheduler.add_job(func=stock_job, trigger='cron', hour='21', minute ='0' ,id="load_stocks")
     if not LEGACY:
         scheduler.add_job(func=model_job, trigger='cron', hour='21', minute ='30' ,id="model_predictions")
     scheduler.start()
-    
+
     return ap
 
 app = create_app()
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 
 def create_session():
-    
+
     try:
         session = sessionmaker(bind=global_engine())
-    except exc.OperationalError as e:
+    except exc.OperationalError:
         with app.config["MUTEX"]:
             session = sessionmaker(bind=get_engine())
-            pass
     return session()
 
 
@@ -90,12 +91,12 @@ def realtime():
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
-        
+
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-       
+
         try:
             output_id = stock_query_single(s_id, session)
-        except exc.OperationalError as e:
+        except exc.OperationalError:
             return Response(status=503, mimetype='application/json')
         if output_id:
             cache_output = cache.get(output_id)
