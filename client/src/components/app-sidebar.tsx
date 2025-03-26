@@ -96,7 +96,7 @@ const data = {
     },
     {
       title: "Feedback",
-      url: "mailto:zavaar.shah@wayne.edu",
+      url: "/feedback",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
