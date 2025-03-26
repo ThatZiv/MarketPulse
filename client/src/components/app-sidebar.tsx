@@ -8,7 +8,6 @@ import {
   CirclePlus,
   LucideProps,
 } from "lucide-react";
-
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
 import {
@@ -20,9 +19,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useSupabase } from "@/database/SupabaseProvider";
-import useAsync from "@/hooks/useAsync";
 import { Separator } from "./ui/separator";
 import { Link } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { cache_keys } from "@/lib/constants";
+import { Skeleton } from "./ui/skeleton";
 
 const data = {
   navMain: [
@@ -120,21 +121,27 @@ interface NavData {
 
 interface StockResponse {
   Stocks: {
+    stock_id: number;
     stock_name: string;
     stock_ticker: string;
   };
+  shares_owned: number;
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, supabase } = useSupabase();
   const [navData, setNavData] = useState<NavData>(data);
-
-  const { value: stocks, error: stocksError } = useAsync<StockResponse[]>(
-    () =>
+  const { supabase, user } = useSupabase();
+  const {
+    data: stocks,
+    error: stocksError,
+    status: stocksStatus,
+  } = useQuery<StockResponse[]>({
+    queryKey: [cache_keys.USER_STOCKS],
+    queryFn: () =>
       new Promise((resolve, reject) => {
         supabase
           .from("User_Stocks")
-          .select("Stocks (stock_name, stock_ticker)")
+          .select("Stocks (*), shares_owned")
           .eq("user_id", user?.id)
           .order("created_at", { ascending: false })
           .limit(5)
@@ -144,34 +151,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             resolve(data || []);
           });
       }),
-    [user, supabase]
-  );
-  const all_stocks = stocks?.map((stock) => ({
-    title: stock.Stocks.stock_name,
-    url: `/stocks/${stock.Stocks.stock_ticker}`,
-  }));
+  });
   useEffect(() => {
-    const updateStocks = () => {
-      setNavData((prevData) => ({
-        ...prevData,
-        navMain: prevData.navMain.map((navItem) =>
-          navItem.title === "Dashboard"
-            ? {
-              ...navItem,
-              items: [
-                ...(navItem.items ?? []),
-                ...(all_stocks ?? []).filter(
-                  (stock) =>
-                    !navItem.items?.some((item) => item.url === stock.url)
-                ),
-              ],
-            }
-            : navItem
-        ),
-      }));
-    };
-    updateStocks();
+    if (!stocks || stocks.length === 0) return;
+
+    const formattedStocks = stocks.map((stock) => ({
+      title: stock.Stocks.stock_name,
+      url: `/stocks/${stock.Stocks.stock_ticker}`,
+    }));
+
+    setNavData((prevData) => ({
+      ...prevData,
+      navMain: prevData.navMain.map((navItem) => {
+        if (navItem.title === "Dashboard") {
+          return {
+            ...navItem,
+            items: [
+              ...(navItem.items ?? []).filter(item =>
+                formattedStocks.some(stock => stock.url === item.url)
+              ),
+              ...formattedStocks.filter(
+                (stock) => !navItem.items?.some(item => item.url === stock.url)
+              ),
+            ],
+          };
+        }
+        return navItem;
+      }),
+    }));
+
   }, [stocks]);
+
   if (stocksError) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
@@ -183,6 +193,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </div>
     );
   }
+
+  const loading = stocksStatus === "pending";
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -207,7 +220,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Separator />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navData.navMain} />
+        {loading ? (<>
+          {new Array(4).fill(undefined).map((_, index) => (
+            <Skeleton
+              key={index}
+              className="w-11/12 h-7 mx-auto bg-gray-200 dark:bg-gray-700"
+            />
+          ))}
+        </>) :
+          (<NavMain items={navData.navMain} />)}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>
