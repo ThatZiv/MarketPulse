@@ -24,6 +24,7 @@ import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
 import { Skeleton } from "./ui/skeleton";
+import dataHandler from "@/lib/dataHandler";
 
 const data = {
   navMain: [
@@ -137,20 +138,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     status: stocksStatus,
   } = useQuery<StockResponse[]>({
     queryKey: [cache_keys.USER_STOCKS],
-    queryFn: () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("User_Stocks")
-          .select("Stocks (*), shares_owned")
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(5)
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            // @ts-expect-error Stocks will never expand to an array
-            resolve(data || []);
-          });
-      }),
+    queryFn: dataHandler()
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user,
   });
   useEffect(() => {
     if (!stocks || stocks.length === 0) return;
@@ -186,7 +177,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p className="text-gray-600 dark:text-gray-400">
           Unfortunately, we encountered an error fetching your stocks. Please
           refresh the page or try again later.
         </p>
