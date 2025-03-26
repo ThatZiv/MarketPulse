@@ -9,7 +9,10 @@ import {
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
-
+jest.mock("lucide-react", () => ({
+    Eye: () => <span>Eye Icon</span>,
+    EyeOff: () => <span>EyeOff Icon</span>,
+  }));
 
 const mockSignInWithEmail = jest.fn();
 const mockSignInWithGoogle = jest.fn();
