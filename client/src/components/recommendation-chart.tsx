@@ -80,7 +80,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     if (!predictions) return undefined;
     const lookAhead =
       predictions.length - timeWindow >= 0
-        ? predictions.length - timeWindow
+        ? timeWindow-1
         : 0;
     const lastPrediction = predictions[lookAhead];
     if (!lastPrediction) return undefined;

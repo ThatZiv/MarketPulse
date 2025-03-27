@@ -36,7 +36,7 @@ export default function Avatar() {
           .from("Account")
           .select("profile_picture")
           .eq("user_id", user?.id);
-        if (data) {
+        if (data && data[0] && data[0].profile_picture) {
           const image = await supabase.storage
             .from("profile_pictures")
             .createSignedUrl(data[0].profile_picture, 3600);
