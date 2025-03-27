@@ -40,6 +40,7 @@ import { Separator } from "@/components/ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import InfoTooltip from "@/components/InfoTooltip";
 import dataHandler from "@/lib/dataHandler";
+import { useGlobal } from "@/lib/GlobalProvider";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -63,6 +64,7 @@ export interface StockFormData {
 export default function StockPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { dispatch } = useGlobal();
   const [searchParams] = useSearchParams();
   const { user, supabase } = useSupabase();
 
@@ -209,33 +211,40 @@ export default function StockPage() {
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
 
-  const fetchPurchaseHistory = async (ticker: string) => {
-    if (!user?.id) return;
+  const fetchPurchaseHistory = async (ticker_id: string) => {
+    try {
+      if (!user?.id) throw new Error("User not authenticated");
+      const thisStock = stocks?.find(
+        (stock) => stock.stock_id.toString() === ticker_id
+      );
+      const data = await queryClient.fetchQuery({
+        queryKey: [cache_keys.USER_STOCK_TRANSACTION, Number(ticker_id)],
+        queryFn: dataHandler(dispatch)
+          .forSupabase(supabase)
+          .getUserStockPurchasesForStock(
+            user.id,
+            ticker_id,
+            thisStock?.stock_ticker
+          ),
+      });
 
-    const { data, error } = await supabase
-      .from("User_Stock_Purchases")
-      .select("date, amount_purchased, price_purchased")
-      .order("date", { ascending: true })
-      .eq("user_id", user.id)
-      .eq("stock_id", ticker);
+      const purchases = data.map((purchase) => ({
+        date: purchase.date.split("T")[0],
+        shares: purchase.amount_purchased,
+        pricePurchased: purchase.price_purchased,
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        ticker: ticker_id,
+        hasStocks: data.length > 0 ? "yes" : "no",
+        purchases,
+      }));
 
-    if (error) {
+      setPreviousPurchases(purchases);
+    } catch (error) {
+      toast.error("Error fetching purchase history");
       console.error("Error fetching purchase history:", error);
-      return;
     }
-    const purchases = data.map((purchase) => ({
-      date: purchase.date.split("T")[0],
-      shares: purchase.amount_purchased,
-      pricePurchased: purchase.price_purchased,
-    }));
-    setFormData((prev) => ({
-      ...prev,
-      ticker,
-      hasStocks: data.length > 0 ? "yes" : "no",
-      purchases,
-    }));
-
-    setPreviousPurchases(purchases);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -319,12 +328,25 @@ export default function StockPage() {
     toast.promise(updateStock, {
       loading: "Saving...",
       success: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: [cache_keys.USER_STOCKS],
-        });
-        await queryClient.invalidateQueries({
-          queryKey: [cache_keys.USER_STOCK_TRANSACTION, formData.ticker],
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: [cache_keys.USER_STOCKS],
+          }),
+          // FIXME: figure out why cache invalidation does not trigger refetch here
+          queryClient.refetchQueries({
+            queryKey: [
+              cache_keys.USER_STOCK_TRANSACTION,
+              Number(formData.ticker),
+            ],
+            exact: true,
+          }),
+          queryClient.refetchQueries({
+            // this is really bad but it's what's current being used in landing (to show update on redirected page)
+            // TODO: make individual stock data cached, no reset for all
+            queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
+            exact: true,
+          }),
+        ]);
         await navigate("/");
         return "Stock data saved successfully";
       },
