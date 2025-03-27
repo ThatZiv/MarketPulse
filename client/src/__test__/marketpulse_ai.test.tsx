@@ -19,7 +19,6 @@ afterEach(() => {
   cleanup();
 });
 
-
 jest.mock("lucide-react", () => ({
     Moon: () => "MoonIcon",
     Sun: () => "SunIcon",
@@ -31,25 +30,13 @@ jest.mock("lucide-react", () => ({
 
 jest.mock("@/lib/ApiProvider", () => ({
     useApi: () => {
-            return {getStockLlmOutput: jest.fn(() => {return "</think>Hello"})}}
+            return {getStockLlmOutput: jest.fn((ticker, callBack) => {callBack("</think>Hello this is the llm stream")})}}
     } 
 ))
 
 jest.mock("react-router", () => ({
   Link: jest.fn()
 }))
-
-//jest.mock("@/components/ui/accordion", () => ({
-//  Accordion: jest.fn(),
-//  AccordionContent: jest.fn(),
-//  AccordionItem: jest.fn(),
-//  AccordionTrigger: jest.fn(),
-//}))
-
-
-//import axios, { type AxiosInstance, type AxiosError } from "axios";
-
-
 
 describe("MarketPulse AI", () => {
   beforeAll(() => {
@@ -62,8 +49,6 @@ describe("MarketPulse AI", () => {
   
     test("Render", async () => {
         
-      const mockUseMemo = jest.spyOn(React, 'useMemo').mockImplementation((fn) => fn);
-
       const ticker = "test"
         await render(<GenerateStockLLM ticker={ticker} />);
         const open = await screen.findByText("MarketPulse AI");
@@ -79,17 +64,10 @@ describe("MarketPulse AI", () => {
         const close = await screen.findByText("Close");
         expect(close).toBeInTheDocument();
 
-        const think = await screen.findByText("Thinking...ChevronDown");
-        expect(think).toBeInTheDocument();
+        const stream = await screen.findByText("Hello this is the llm stream");
+        expect(stream).toBeInTheDocument();
 
-        await act(async () => {
-          await fireEvent.click(think);
-        });
-        
-        const text_test = await screen.findByText("Hello");
-
-
-        mockUseMemo.mockRestore();
+        //mockUseMemo.mockRestore();
         
       });
 });
