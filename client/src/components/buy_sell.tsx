@@ -39,14 +39,14 @@ export function Suggestion(props:props)
     
     if(props.predicted_price/props.current_price > high-upper_offset)
     {
-        return <div>Buy</div>
+        return <div>Buy More</div>
     }
     if(props.predicted_price/props.current_price < low-lower_offset)
     {
-        return <div>Sell</div>
+        return <div>Sell Your</div>
     }
     else
     {
-        return <div>Hold</div>
+        return <div>Hold Your</div>
     }
 }

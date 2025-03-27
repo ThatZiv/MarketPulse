@@ -184,7 +184,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
                     It might be a good idea to{" "}
                   </div>
                   <div className="text-2xl font-bold text-left">
-                    <Suggestion current_price = {currentPrice} predicted_price={predictedPrice} purchases={purchaseHistory[stock_ticker]}/> {stock_ticker}.
+                    <Suggestion current_price = {currentPrice} predicted_price={predictedPrice} purchases={purchaseHistory[stock_ticker]}/> {stock_ticker} Stock.
                   </div>
                 </div>
               </div>
