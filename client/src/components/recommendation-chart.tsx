@@ -5,7 +5,7 @@ import {
   //   ChartTooltip,
   //   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { useApi } from "@/lib/ApiProvider";
@@ -14,7 +14,7 @@ import { actions, cache_keys } from "@/lib/constants";
 import moment from "moment";
 import { Separator } from "./ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
-
+import { Suggestion } from "./buy_sell";
 // const chartData = [
 //   { action: "buy", suggest: 50, fill: "var(--color-buy)" },
 //   { action: "sell", suggest: 20, fill: "var(--color-sell)" },
@@ -41,6 +41,9 @@ interface RecommendationProps {
 }
 
 export default function Recommendation({ stock_ticker }: RecommendationProps) {
+  
+  const [currentPrice, setCurrentPrice] = useState<number>(0)
+  const [predictedPrice, setPredictedPrice] = useState<number>(0)
   const { state, dispatch } = useGlobal();
   const api = useApi();
   //   const [, setActiveIndex] = useState<number | null>(null);
@@ -89,7 +92,8 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     if (!futurePrices.length) return undefined;
     const averageFuturePrice =
       futurePrices.reduce((a, b) => a + b, 0) / futurePrices.length;
-
+    setCurrentPrice(lastPrice)
+    setPredictedPrice(averageFuturePrice)
     return (averageFuturePrice - lastPrice).toFixed(2);
     // ).map((key) => ({[key]: lastPrediction[key]})); // TODO: weighted average here for models
   }, [
@@ -99,6 +103,10 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     state.stocks,
     stock_ticker,
   ]);
+
+  const purchaseHistory = useMemo(()=> {
+    return state.history
+  }, [state.history])
 
   const isLoss = Number(profit) < 0;
   //   const renderActiveShape = (props: PieSectorDataItem) => {
@@ -176,7 +184,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
                     It might be a good idea to{" "}
                   </div>
                   <div className="text-2xl font-bold text-left">
-                    {isLoss ? "Sell" : "Buy"} {stock_ticker}.
+                    <Suggestion current_price = {currentPrice} predicted_price={predictedPrice} purchases={purchaseHistory[stock_ticker]}/> {stock_ticker}.
                   </div>
                 </div>
               </div>

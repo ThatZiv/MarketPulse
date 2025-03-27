@@ -1,8 +1,7 @@
-type purchases = {
-    amount_purchased: number,
-    price_purchased:number
-}[]
-function average_share_value(purchases:purchases)
+
+import { type PurchaseHistoryDatapoint } from "@/types/global_state"
+
+function average_share_value(purchases:PurchaseHistoryDatapoint[])
 {
 let count = 0
 let cost = 0
@@ -22,52 +21,32 @@ for(let i = 0; i<purchases.length; i++)
 }
 return {average:cost/count, amount:count}
 }
-type output = {
-    suggestion: string,
-    profits:number
+type props = {
+    current_price:number, 
+    predicted_price:number, 
+    purchases:PurchaseHistoryDatapoint[]
 }
-export function suggestion(current_price:number, predicted_price:number, purchases:purchases)
+export function Suggestion(props:props)
 {
-    const investment_value = average_share_value(purchases)
+    const investment_value = average_share_value(props.purchases)
 
-    const output:output = {suggestion:"", profits:(predicted_price - investment_value.average)*investment_value.amount}    
     const high = 1.05
     const low = .95
     
     // Calculate offsets
-    const upper_offset  = .025*Math.atan(100*(predicted_price-investment_value.average)/current_price)
-    const lower_offset = .025*Math.atan(100*(predicted_price-investment_value.average)/current_price)
-    // percentage sell using a funtion?
-
-    // buy confidence using a function?
-    if(predicted_price/current_price > high-upper_offset)
+    const upper_offset  = .025*Math.atan(100*(props.predicted_price-investment_value.average)/props.current_price)
+    const lower_offset = .025*Math.atan(100*(props.predicted_price-investment_value.average)/props.current_price)
+    
+    if(props.predicted_price/props.current_price > high-upper_offset)
     {
-        output.suggestion = "Buy"
+        return <div>Buy</div>
     }
-    if(predicted_price/current_price < low-lower_offset)
+    if(props.predicted_price/props.current_price < low-lower_offset)
     {
-        output.suggestion = "Sell"
+        return <div>Sell</div>
     }
     else
     {
-        output.suggestion="Hold"
+        return <div>Hold</div>
     }
-
-return (
-<div>
-    <h1>{output.suggestion}</h1>
-    {output.profits > 0?(
-        <div>
-            <p>Expected profit </p>\
-            <p className="text-green-700">$ {output.profits}</p>
-        </div>
-    ):(
-        <div>
-            <p>Expected Loss </p>
-            <p className="text-red-700">$ {output.profits}</p>
-        </div>
-    )}
-</div>
-);
-
 }

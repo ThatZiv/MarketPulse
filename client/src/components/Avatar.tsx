@@ -6,15 +6,28 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import { generateGravatarUrl } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { actions } from "@/lib/constants";
 export default function Avatar() {
   const { supabase, user, status } = useSupabase();
   const [imageReady, setImageReady] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
   const { state, dispatch } = useGlobal();
   const [imagestatus, setImageStatus] = useState(status);
+  const imageUrl = useMemo(() => {
+  if(state.user.url == "")
+  {
+    return ""
+  }
+  else
+  {
+    setImageReady(true)
+    setImageStatus("success")
+    return state.user.url
+  }
+  }, [state.user.url])
+  
+  
   useEffect(() => {
     if (state.user.url === "") {
       setImageStatus("loading");
@@ -28,7 +41,7 @@ export default function Avatar() {
             .from("profile_pictures")
             .createSignedUrl(data[0].profile_picture, 3600);
           if (image.data) {
-            setImageUrl(image.data.signedUrl);
+            
             setImageReady(true);
             state.user.url = image.data.signedUrl;
             dispatch({
@@ -45,14 +58,13 @@ export default function Avatar() {
       };
       image_url();
     } else {
-      setImageUrl(state.user.url);
       setImageReady(true);
       setImageStatus("success");
     }
   }, []);
 
-  if (status === "loading" || imagestatus === "loading")
-    return <Skeleton className="h-8 w-8 rounded-lg" />;
+  if (status === "loading" && imagestatus === "loading")
+    return <div><Skeleton className="h-8 w-8 rounded-lg" /></div>;
   return (
     <_Avatar className="h-8 w-8 rounded-lg">
       {imageReady ? (
