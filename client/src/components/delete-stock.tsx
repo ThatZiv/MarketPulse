@@ -46,7 +46,6 @@ const deleteStock = async ({ stock_id, user_id, supabase }: { stock_id: number, 
     if (stocksError) {
         console.error('Error deleting from User_Stocks:', stocksError.message);
     }
-    console.log('Stock successfully deleted');
 };
 export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
     const { user, supabase } = useSupabase();
@@ -56,8 +55,8 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
 
     const mutation = useMutation({
         mutationFn: deleteStock,
-        onSuccess: () => {
-            queryClient.invalidateQueries({
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
                 queryKey: [cache_keys.USER_STOCKS],
             });
             toast.success("Stock deleted successfully.");
@@ -81,7 +80,7 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                 return;
             }
             mutation.mutate({ stock_id: stock_id ?? 0, user_id: user?.id ?? '', supabase });
-            navigate("/", { replace: true });
+            await navigate("/", { replace: true });
         } else {
             toast.error("Stock name does not match. Please enter the correct stock name to delete.");
             setInputValue("");

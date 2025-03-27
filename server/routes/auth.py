@@ -12,15 +12,13 @@ from flask import Blueprint, Response, jsonify, request, send_file, current_app
 from sqlalchemy import desc, select, exc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker
-
 from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine, global_engine
 from routes.llm import llm_bp
-
+from cache import cache
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
-
 auth_bp.register_blueprint(llm_bp)
 
 def dump_datetime(value):
@@ -80,12 +78,18 @@ def ticker_logo():
 @auth_bp.route('stockchart', methods=['GET'])
 @jw.jwt_required()
 def chart():
+    ticker = request.args['ticker']
+    limit = request.args.get('limit', 7)
+    if not ticker or not limit:
+        return Response(status=400, mimetype='application/json')
+    cache_value = cache.get("Chart_"+ticker)
+
+    if cache_value is not None:
+        return cache_value
     if request.method == 'GET':
         session = None
         try:
             session = create_session()
-            ticker = request.args['ticker']
-            limit = request.args.get('limit', 7)
             s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
             output_id = stock_query_single(s_id, session)
             #validating the ticker from the frontend
@@ -106,6 +110,8 @@ def chart():
                                         'time_stamp' : dump_datetime(i.time_stamp) })
                 json_output.reverse()
                 session.close()
+                cache.set(f"Chart_{ticker}", jsonify(json_output), timeout = 12000)
+                print("Cache Set")
                 return jsonify(json_output)
             session.close()
             return Response(status=400, mimetype='application/json')
@@ -123,12 +129,19 @@ def chart():
 @jw.jwt_required()
 def forecast_route():
     ticker = request.args.get('ticker')
-    if not ticker:
+    lookback = request.args['lookback']
+
+    if not ticker or not lookback:
         return Response(status=400, mimetype='application/json')
+
+    cache_value = cache.get("forecast_"+ticker+lookback)
+
+    if cache_value is not None:
+        return cache_value
+
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
-        lookback = request.args['lookback']
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = stock_query_single(s_id, session)
         if output_id :
@@ -167,6 +180,7 @@ def forecast_route():
                     "created_at": output_dict["created_at"],
                     "output": copy.deepcopy(out)
                 })
+            cache.set("forecast_"+ticker+lookback, jsonify(out_array), timeout = 10000)
             return jsonify(out_array)
         session.close()
         return Response(status=400, mimetype='application/json')
