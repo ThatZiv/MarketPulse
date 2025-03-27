@@ -322,6 +322,9 @@ export default function StockPage() {
         await queryClient.invalidateQueries({
           queryKey: [cache_keys.USER_STOCKS],
         });
+        await queryClient.invalidateQueries({
+          queryKey: [cache_keys.USER_STOCK_TRANSACTION, formData.ticker],
+        });
         await navigate("/");
         return "Stock data saved successfully";
       },
