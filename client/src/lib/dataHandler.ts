@@ -63,6 +63,41 @@ export default function dataHandler(dispatch?: GlobalDispatch) {
               });
           }),
       /**
+       * get user stock purchases for a specific stock
+       * @param user_id {string}
+       * @param stock_id {string}
+       * @param stock_ticker {string} - optional, used for caching
+       * @example
+       * const supabaseDataHandler = dataHandler(dispatch).forSupabase(supabase);
+       * const getUserStockPurchasesForStock = supabase.getUserStockPurchasesForStock(user_id, stock_id);
+       * const userStockPurchasesForStock = await getUserStockPurchasesForStock();
+       */
+      getUserStockPurchasesForStock:
+        (user_id: string, stock_id: string, stock_ticker?: string) =>
+        (): Promise<UserStockPurchase[]> =>
+          new Promise((resolve, reject) => {
+            supabase
+              .from("User_Stock_Purchases")
+              .select("Stocks (stock_ticker), *")
+              .eq("user_id", user_id)
+              .eq("stock_id", stock_id)
+              .order("date", { ascending: true })
+              .then(({ data, error }) => {
+                if (error) {
+                  reject(error);
+                }
+                if (dispatch && stock_ticker)
+                  dispatch({
+                    type: actions.SET_USER_STOCK_TRANSACTIONS,
+                    payload: {
+                      stock_ticker,
+                      data,
+                    },
+                  });
+                resolve(data as UserStockPurchase[]);
+              });
+          }),
+      /**
        * Gets all available stocks
        * @example
        * const supabaseDataHandler = dataHandler(dispatch).forSupabase(supabase);
