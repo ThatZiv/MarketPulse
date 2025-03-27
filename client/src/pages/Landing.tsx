@@ -25,6 +25,7 @@ import {
 import { LiaSortSolid } from "react-icons/lia";
 import dataHandler from "@/lib/dataHandler";
 import { UserStock } from "@/types/stocks";
+import { IApi } from "@/lib/api";
 
 interface StockCardProps {
   stock: UserStock;
@@ -60,7 +61,7 @@ export default function Landing() {
     queries: [
       {
         queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
-        staleTime: 5 * 60 * 1000,
+        // refetchInterval: () => (import.meta.env.PROD ? 1000 * 60 * 5 : 0),
         queryFn: async () => {
           const data = await dataHandler(dispatch)
             .forSupabase(supabase)
@@ -88,26 +89,36 @@ export default function Landing() {
           return null;
         },
       },
-      ...(stocks?.map((stock) => ({
-        queryKey: [cache_keys.STOCK_DATA_REALTIME, stock.Stocks.stock_ticker],
-        refetchInterval: () => 1000 * 60 * 5,
-        // staleTime: 1000 * 60 * 5, // as of now, we'll keep realtime prices
-        queryFn: () => {
-          api?.getStockRealtime(stock.Stocks.stock_ticker).then((data) => {
-            dispatch({
-              type: actions.SET_STOCK_PRICE,
-              payload: {
-                stock_ticker: stock.Stocks.stock_ticker,
-                data: data[data.length - 1].stock_close,
-                timestamp: new Date(
-                  data[data.length - 1].time_stamp.join(" ") + " UTC"
-                ).getTime(),
-              },
-            });
-          });
-          return null;
-        },
-      })) || []),
+      ...(stocks
+        ?.map((stock) => [
+          {
+            queryKey: [
+              cache_keys.STOCK_DATA_REALTIME,
+              stock.Stocks.stock_ticker,
+            ],
+            refetchInterval: () => (import.meta.env.PROD ? 1000 * 60 * 5 : 0),
+            // staleTime: 1000 * 60 * 5, // as of now, we'll keep realtime prices
+            queryFn: dataHandler(dispatch)
+              .forApi(api as IApi)
+              .getStockRealtime(stock.Stocks.stock_ticker),
+            enabled: !!stock.Stocks.stock_ticker && !!api,
+          },
+          // this is less efficient but good for granular caching
+          // {
+          //   queryKey: [
+          //     cache_keys.USER_STOCK_TRANSACTION,
+          //     stock.Stocks.stock_id.toString(),
+          //   ],
+          //   queryFn: dataHandler(dispatch)
+          //     .forSupabase(supabase)
+          //     .getUserStockPurchasesForStock(
+          //       user?.id ?? "",
+          //       stock.Stocks.stock_id.toString()
+          //     ),
+          //   enabled: !!user,
+          // },
+        ])
+        .flat() ?? []),
     ],
   });
   let sortedStocks: UserStock[] = [];
