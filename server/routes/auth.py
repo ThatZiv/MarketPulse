@@ -147,9 +147,6 @@ def forecast_route():
         if output_id :
             forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at)).limit(lookback)
             output = stock_query_all(forecast, session)
-            f = open('test_data/forecast2', 'wb')
-            pickle.dump(output, f)
-            f.close()
             out = []
             out_array = []
             columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
