@@ -90,7 +90,7 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "",
+      url: "/support",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
