@@ -46,7 +46,7 @@ const Support: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
-      <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
+      <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             Support
@@ -65,7 +65,7 @@ const Support: React.FC = () => {
               id="issueType"
               value={issueType}
               onChange={(e) => setIssueType(e.target.value)}
-              className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
               disabled={loading}
             >
               <option value="" disabled>
@@ -93,7 +93,7 @@ const Support: React.FC = () => {
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="Enter a brief summary of your issue..."
-              className="min-h-[120px] resize-none border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="min-h-[120px] resize-none border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
               disabled={loading}
             />
           </div>
