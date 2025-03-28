@@ -51,7 +51,7 @@ function ColoredRow(row: { row: (number | string)[]; value: number }) {
                              This is the prediction with the lowest value on this day
                             </InfoTooltip></div>;
   } else {
-    return <p>{valueStr}</p>;
+    return <div className = "flex"><p className= "px-2">{valueStr}</p><p></p></div>;
   }
 }
 
