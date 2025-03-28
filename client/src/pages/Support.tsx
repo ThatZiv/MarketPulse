@@ -72,7 +72,6 @@ const Support: React.FC = () => {
                 Select an issue type
               </option>
               <option value="Bug">Bug</option>
-              <option value="Other">Other</option>
               <option value="Security">Security</option>
               <option value="Privacy Concerns">Privacy Concerns</option>
               <option value="Account & Login Issues">Account & Login Issues</option>
@@ -81,6 +80,7 @@ const Support: React.FC = () => {
               <option value="UI/UX Feedback">UI/UX Feedback</option>
               <option value="Data Sync & Integration">Data Sync & Integration</option>
               <option value="Notification Issues">Notification Issues</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
