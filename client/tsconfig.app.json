@@ -26,5 +26,4 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["cypress","src"],
-  "exclude": ["./cypress.config.ts","cypress","**/*.cy.tsx"]
 }
