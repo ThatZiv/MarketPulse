@@ -73,6 +73,9 @@ const Support: React.FC = () => {
               </option>
               <option value="Bug">Bug</option>
               <option value="Other">Other</option>
+              <option value="Security">Security</option>
+              <option value="Privacy Concerns">Privacy Concerns</option>
+              <option value="Account & Login Issues">Account & Login Issues</option>
             </select>
           </div>
 
