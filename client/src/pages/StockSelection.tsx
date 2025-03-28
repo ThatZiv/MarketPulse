@@ -13,8 +13,6 @@ import {
   Undo,
   X,
 } from "lucide-react";
-import useAsync from "@/hooks/useAsync";
-import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -28,7 +26,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
 import {
   Table,
@@ -41,6 +39,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import InfoTooltip from "@/components/InfoTooltip";
+import dataHandler from "@/lib/dataHandler";
+import { useGlobal } from "@/lib/GlobalProvider";
 
 const getTodayISOString = () => {
   const today = new Date();
@@ -64,6 +64,7 @@ export interface StockFormData {
 export default function StockPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { dispatch } = useGlobal();
   const [searchParams] = useSearchParams();
   const { user, supabase } = useSupabase();
 
@@ -85,29 +86,26 @@ export default function StockPage() {
 
   const [error, setError] = useState<string>();
   const {
-    value: stocks,
+    data: stocks,
     error: stocksError,
-    loading: stocksLoading,
-  } = useAsync<Stock[]>(
-    () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("Stocks")
-          .select("*")
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            return resolve(data || []);
-          });
-      }),
-    [supabase]
-  );
+    isLoading: stocksLoading,
+  } = useQuery({
+    queryKey: [cache_keys.STOCKS],
+    queryFn: dataHandler().forSupabase(supabase).getAllStocks(),
+    enabled: !!user,
+  });
 
   useEffect(() => {
     if (searchParams.has("ticker") && stocks) {
       const ticker = (searchParams.get("ticker") as string).toUpperCase();
       const stock = stocks.find((stock) => stock.stock_ticker === ticker);
       if (stock) {
-        setFormData((prev) => ({ ...prev, ticker: stock.stock_id.toString() }));
+        setFormData((prev) => {
+          if (prev.ticker !== stock.stock_id.toString()) {
+            return { ...prev, ticker: stock.stock_id.toString() };
+          }
+          return prev;
+        });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
     }
@@ -128,8 +126,9 @@ export default function StockPage() {
               const selectedDate = new Date(date);
               const today = new Date();
               today.setHours(23, 59, 59, 999);
-              return selectedDate <= today;
-            }, "Date cannot be in the future"),
+              const minDate = new Date(2000, 0, 1);
+              return selectedDate >= minDate && selectedDate <= today;
+            }, "Date must be between January 1, 2000 and today"),
           shares: z.number(),
           pricePurchased: z.number().min(0.01, "Price must be at least $0.01"),
         })
@@ -212,33 +211,40 @@ export default function StockPage() {
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
 
-  const fetchPurchaseHistory = async (ticker: string) => {
-    if (!user?.id) return;
+  const fetchPurchaseHistory = async (ticker_id: string) => {
+    try {
+      if (!user?.id) throw new Error("User not authenticated");
+      const thisStock = stocks?.find(
+        (stock) => stock.stock_id.toString() === ticker_id
+      );
+      const data = await queryClient.fetchQuery({
+        queryKey: [cache_keys.USER_STOCK_TRANSACTION, Number(ticker_id)],
+        queryFn: dataHandler(dispatch)
+          .forSupabase(supabase)
+          .getUserStockPurchasesForStock(
+            user.id,
+            ticker_id,
+            thisStock?.stock_ticker
+          ),
+      });
 
-    const { data, error } = await supabase
-      .from("User_Stock_Purchases")
-      .select("date, amount_purchased, price_purchased")
-      .order("date", { ascending: true })
-      .eq("user_id", user.id)
-      .eq("stock_id", ticker);
+      const purchases = data.map((purchase) => ({
+        date: purchase.date.split("T")[0],
+        shares: purchase.amount_purchased,
+        pricePurchased: purchase.price_purchased,
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        ticker: ticker_id,
+        hasStocks: data.length > 0 ? "yes" : "no",
+        purchases,
+      }));
 
-    if (error) {
+      setPreviousPurchases(purchases);
+    } catch (error) {
+      toast.error("Error fetching purchase history");
       console.error("Error fetching purchase history:", error);
-      return;
     }
-    const purchases = data.map((purchase) => ({
-      date: purchase.date.split("T")[0],
-      shares: purchase.amount_purchased,
-      pricePurchased: purchase.price_purchased,
-    }));
-    setFormData((prev) => ({
-      ...prev,
-      ticker,
-      hasStocks: data.length > 0 ? "yes" : "no",
-      purchases,
-    }));
-
-    setPreviousPurchases(purchases);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -322,9 +328,25 @@ export default function StockPage() {
     toast.promise(updateStock, {
       loading: "Saving...",
       success: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: [cache_keys.USER_STOCKS],
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: [cache_keys.USER_STOCKS],
+          }),
+          // FIXME: figure out why cache invalidation does not trigger refetch here
+          queryClient.refetchQueries({
+            queryKey: [
+              cache_keys.USER_STOCK_TRANSACTION,
+              Number(formData.ticker),
+            ],
+            exact: true,
+          }),
+          queryClient.refetchQueries({
+            // this is really bad but it's what's current being used in landing (to show update on redirected page)
+            // TODO: make individual stock data cached, no reset for all
+            queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
+            exact: true,
+          }),
+        ]);
         await navigate("/");
         return "Stock data saved successfully";
       },
@@ -336,7 +358,7 @@ export default function StockPage() {
     return (
       <div className="text-center flex items-center">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p className="text-gray-600">
           Error fetching stocks: {(stocksError as Error).message}
         </p>
       </div>
@@ -424,9 +446,13 @@ export default function StockPage() {
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
-              <label className="block text-lg font-light mb-2">
+              <label className="block text-lg font-light">
                 Purchase History <span className="text-red-500">*</span>
               </label>
+              <p className="mb-2 text-gray-600 text-muted-foreground font-medium">
+                Note: Please enter your stock history in the correct time
+                sequence.
+              </p>
               {formData.purchases.map((purchase, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <div className="flex-1 flex flex-col">
@@ -440,6 +466,7 @@ export default function StockPage() {
                       type="date"
                       required
                       value={purchase.date}
+                      min="2000-01-01"
                       max={getTodayISOString()}
                       onChange={(e) =>
                         handlePurchaseChange(index, "date", e.target.value)

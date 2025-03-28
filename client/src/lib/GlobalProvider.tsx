@@ -144,14 +144,16 @@ const GlobalReducer = (
   }
 };
 
+export type GlobalDispatch = React.Dispatch<{
+  type: number;
+  payload: unknown;
+  stock_ticker?: string;
+}>;
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const GlobalContext = React.createContext<{
   state: GlobalState;
-  dispatch: React.Dispatch<{
-    type: number;
-    payload: unknown;
-    stock_ticker?: string;
-  }>;
+  dispatch: GlobalDispatch;
 }>({ state: initialState, dispatch: () => {} });
 
 export function GlobalProvider({ children }: { children: React.ReactNode }) {

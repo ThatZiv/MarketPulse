@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { BrowserRouter } from "react-router";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { SupabaseProvider } from "./database/SupabaseProvider.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -11,12 +12,24 @@ import { ApiProvider } from "@/lib/ApiProvider.tsx";
 import { TooltipProvider } from "@/components/ui/tooltip.tsx";
 import { GlobalProvider } from "@/lib/GlobalProvider.tsx";
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // TODO: figure out why invalidate cache not triggering refetch
+      staleTime: 0,
+      gcTime: Infinity,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: true,
+    },
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
         <GlobalProvider>
           <SupabaseProvider>
             <ApiProvider>
