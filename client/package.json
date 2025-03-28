@@ -69,6 +69,7 @@
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/crypto-js": "^4.2.2",
+    "@types/cypress": "^0.1.6",
     "@types/extract-colors": "^3.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",
