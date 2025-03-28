@@ -181,6 +181,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
             .slice(0, days)}
         </TableBody>
       </Table>
+      <div><span><p className="text-green-700 text-left">* Highest Daily Prediction</p><p className="text-red-700  text-left">* Lowest Daily Prediction</p><p className="text-orange-600  text-left">* Average Daily Prediction</p></span></div>
     </>
   );
 }
