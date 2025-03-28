@@ -76,6 +76,11 @@ const Support: React.FC = () => {
               <option value="Security">Security</option>
               <option value="Privacy Concerns">Privacy Concerns</option>
               <option value="Account & Login Issues">Account & Login Issues</option>
+              <option value="Feature Request">Feature Request</option>
+              <option value="Performance Issue">Performance Issue</option>
+              <option value="UI/UX Feedback">UI/UX Feedback</option>
+              <option value="Data Sync & Integration">Data Sync & Integration</option>
+              <option value="Notification Issues">Notification Issues</option>
             </select>
           </div>
 
