@@ -90,7 +90,7 @@ class AttentionLstm:
         valid_answer['Low'] = (valid_answer['Low'] - valid_answer['Low'].min())/ (valid_answer['Low'].max() - valid_answer['Low'].min())
         valid_answer['Open'] = (valid_answer['Open'] - valid_answer['Open'].min())/ (valid_answer['Open'].max() - valid_answer['Open'].min())
         sentiment = (valid_answer['Sentiment_Data'] - valid_answer['Sentiment_Data'].min())/ (valid_answer['Sentiment_Data'].max() - valid_answer['Sentiment_Data'].min())
-        
+
         valid_answer = valid_answer.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
         answer = data
         #print(data)
@@ -215,7 +215,7 @@ class AttentionLstm:
 
     def forecast_seq(self, sequences, sentiment, period = 7):
         self.model.eval()
-        
+
         average = sum(sentiment) / len(sentiment)
         adjustment = .05 * (sentiment[len(sentiment)-1]-average)
         p = []

@@ -22,7 +22,6 @@ from models.forecast.xgboost import XGBoost
 from models.zav2 import Transformer
 from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine, global_engine
-import pickle
 def run_models():
     try:
         session = sessionmaker(bind=global_engine())
