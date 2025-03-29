@@ -153,6 +153,15 @@ describe("CreateForm Component", () => {
     expect(confirmPasswordInput).toHaveAttribute("type", "text");
   });
 
+  test("calls togglePageState on login button click", async () => {
+    const loginButton = screen.getByText("Login");
+
+    await act(async () => {
+      fireEvent.click(loginButton);
+    });
+
+    expect(mockTogglePageState).toHaveBeenCalledTimes(1);
+  });
 
 
 });
