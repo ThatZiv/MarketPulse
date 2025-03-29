@@ -233,9 +233,9 @@ export default function PurchaseHistory({
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-bold">
-                  {PurchaseHistoryCalculator.toDollar(calc.getTotalSpent())}
+                  {PurchaseHistoryCalculator.toDollar(calc.getTotalBought())}
                 </span>{" "}
-                has been spent in total.
+                has been bought in total.
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-bold">{calc.getTotalShares()}</span>{" "}
