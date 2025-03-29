@@ -74,4 +74,20 @@ describe("Feedback Page", () => {
     expect(feedbackInput).toHaveValue("This is a test feedback.");
   });
 
+
+  test("validates empty feedback submission", async () => {
+    const submitButton = screen.getByText("Submit Feedback");
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockInsertFeedback).not.toHaveBeenCalled();
+    expect(require("sonner").toast.error).toHaveBeenCalledWith(
+      "Feedback cannot be empty!"
+    );
+  });
+
+
+
 });
