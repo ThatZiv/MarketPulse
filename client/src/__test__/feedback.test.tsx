@@ -144,4 +144,29 @@ describe("Feedback Page", () => {
 
 
 
+  test("disables submit button while loading", async () => {
+    const feedbackInput = screen.getByPlaceholderText(
+      "Enter your feedback here..."
+    );
+    const submitButton = screen.getByText("Submit Feedback");
+
+    mockInsertFeedback.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve({ error: null }), 1000);
+        })
+    );
+
+    await act(async () => {
+      fireEvent.change(feedbackInput, {
+        target: { value: "This is a test feedback." },
+      });
+      fireEvent.click(submitButton);
+    });
+
+    expect(submitButton).toBeDisabled();
+  });
+
+
+
 });
