@@ -116,4 +116,32 @@ describe("Feedback Page", () => {
 
 
 
+  test("handles feedback submission error", async () => {
+    const feedbackInput = screen.getByPlaceholderText(
+      "Enter your feedback here..."
+    );
+    const submitButton = screen.getByText("Submit Feedback");
+
+    const errorMessage = "An unexpected error occurred";
+
+    mockInsertFeedback.mockResolvedValueOnce({
+      error: { message: errorMessage },
+    });
+
+    await act(async () => {
+      fireEvent.change(feedbackInput, {
+        target: { value: "This is a test feedback." },
+      });
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockInsertFeedback).toHaveBeenCalledTimes(1);
+    expect(mockInsertFeedback).toHaveBeenCalledWith([
+      { content: "This is a test feedback." },
+    ]);
+    expect(require("sonner").toast.error).toHaveBeenCalledWith(errorMessage);
+  });
+
+
+
 });
