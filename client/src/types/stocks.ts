@@ -28,3 +28,23 @@ export interface StockPrediction {
   created_at: string;
   output: ModelOutput[];
 }
+
+export interface UserStock {
+  Stocks: {
+    stock_id: number;
+    stock_name: string;
+    stock_ticker: string;
+  };
+  shares_owned: number;
+  desired_investiture: number;
+}
+
+export interface UserStockPurchase {
+  user_id: string;
+  date: string;
+  Stocks: {
+    stock_ticker: string;
+  };
+  price_purchased: number;
+  amount_purchased: number;
+}
