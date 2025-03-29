@@ -73,7 +73,25 @@ describe("CreateForm Component", () => {
     expect(confirmPasswordInput).toHaveValue("Password123!");
   });
 
+  test("calls signUpNewUser on form submission", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
 
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "Password123!" } });
+      fireEvent.click(createButton);
+    });
+
+    expect(mockSignUpNewUser).toHaveBeenCalledTimes(1);
+    expect(mockSignUpNewUser).toHaveBeenCalledWith(
+      "test@example.com",
+      "Password123!"
+    );
+  });
 
 
 });
