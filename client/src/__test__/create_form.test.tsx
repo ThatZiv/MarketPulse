@@ -116,5 +116,23 @@ describe("CreateForm Component", () => {
   });
 
 
+  test("toggles password visibility", async () => {
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const toggleVisibilityButtons = screen.getAllByText("Eye Icon");
+    const toggleVisibilityButton = toggleVisibilityButtons[0];
+
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+    expect(passwordInput).toHaveAttribute("type", "text");
+  });
+
 
 });
