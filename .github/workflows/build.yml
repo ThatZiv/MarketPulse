@@ -57,7 +57,7 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: client
-      - name: Cypress Run
+      - name: Cypress Test
         uses: cypress-io/github-action@v6
         with:
           start: npm run dev
