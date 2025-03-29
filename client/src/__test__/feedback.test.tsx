@@ -3,7 +3,8 @@ import { describe, test, afterEach, beforeEach } from "@jest/globals";
 import {
   render,
   screen,
-
+  fireEvent,
+  act,
   cleanup,
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
@@ -59,6 +60,18 @@ describe("Feedback Page", () => {
     expect(screen.getByText("Submit Feedback")).toBeInTheDocument();
   });
 
+  test("handles feedback input", async () => {
+    const feedbackInput = screen.getByPlaceholderText(
+      "Enter your feedback here..."
+    );
 
+    await act(async () => {
+      fireEvent.change(feedbackInput, {
+        target: { value: "This is a test feedback." },
+      });
+    });
+
+    expect(feedbackInput).toHaveValue("This is a test feedback.");
+  });
 
 });
