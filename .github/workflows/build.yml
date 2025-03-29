@@ -54,15 +54,15 @@ jobs:
       - name: Test
         run: npm test
         working-directory: client
-      - name: Build
-        run: npm run build
-        working-directory: client
       - name: Cypress Test
         uses: cypress-io/github-action@v6
         with:
           start: npm run dev
           wait-on: "http://localhost:5173"
           working-directory: client
+      - name: Build
+        run: npm run build
+        working-directory: client
 
   build-server:
     needs: changes
