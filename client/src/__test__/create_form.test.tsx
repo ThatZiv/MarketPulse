@@ -3,7 +3,8 @@ import { describe, test, afterEach, beforeEach } from "@jest/globals";
 import {
   render,
   screen,
-
+  fireEvent,
+  act,
   cleanup,
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
@@ -55,5 +56,24 @@ describe("CreateForm Component", () => {
     expect(confirmPasswordInput).toBeInTheDocument();
     expect(createButton).toBeInTheDocument();
   });
+
+  test("handles email and password input", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "Password123!" } });
+    });
+
+    expect(emailInput).toHaveValue("test@example.com");
+    expect(passwordInput).toHaveValue("Password123!");
+    expect(confirmPasswordInput).toHaveValue("Password123!");
+  });
+
+
+
 
 });
