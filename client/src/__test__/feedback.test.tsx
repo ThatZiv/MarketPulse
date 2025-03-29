@@ -10,7 +10,12 @@ import {
 import { MemoryRouter } from "react-router-dom";
 import "@testing-library/jest-dom";
 
-
+jest.mock("sonner", () => ({
+    toast: {
+      success: jest.fn(),
+      error: jest.fn(),
+    },
+  }));
 
 const mockInsertFeedback = jest.fn();
 const mockNavigate = jest.fn();
