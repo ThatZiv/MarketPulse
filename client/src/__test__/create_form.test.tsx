@@ -3,8 +3,7 @@ import { describe, test, afterEach, beforeEach } from "@jest/globals";
 import {
   render,
   screen,
-  fireEvent,
-  act,
+
   cleanup,
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
