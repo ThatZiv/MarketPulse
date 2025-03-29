@@ -49,7 +49,16 @@ describe("Feedback Page", () => {
     );
   });
 
-
+  test("renders Feedback page correctly", () => {
+    expect(screen.getByText("Feedback")).toBeInTheDocument();
+    expect(
+      screen.getByText(/We value your feedback! Please share your thoughts/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter your feedback here...")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Submit Feedback")).toBeInTheDocument();
+  });
 
 
 
