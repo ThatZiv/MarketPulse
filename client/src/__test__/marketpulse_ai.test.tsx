@@ -31,7 +31,7 @@ jest.mock("lucide-react", () => ({
 jest.mock("@/lib/ApiProvider", () => ({
     useApi: () => {
             return {getStockLlmOutput: jest.fn((ticker, callBack) => {
-              ticker = "0"
+              console.log(ticker)
               callBack("</think>Hello this is the llm stream")})}}
     } 
 ))
