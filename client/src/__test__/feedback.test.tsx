@@ -89,5 +89,31 @@ describe("Feedback Page", () => {
   });
 
 
+  test("submits feedback successfully", async () => {
+    const feedbackInput = screen.getByPlaceholderText(
+      "Enter your feedback here..."
+    );
+    const submitButton = screen.getByText("Submit Feedback");
+
+    mockInsertFeedback.mockResolvedValueOnce({ error: null });
+
+    await act(async () => {
+      fireEvent.change(feedbackInput, {
+        target: { value: "This is a test feedback." },
+      });
+      fireEvent.click(submitButton);
+    });
+
+    expect(mockInsertFeedback).toHaveBeenCalledTimes(1);
+    expect(mockInsertFeedback).toHaveBeenCalledWith([
+      { content: "This is a test feedback." },
+    ]);
+    expect(require("sonner").toast.success).toHaveBeenCalledWith(
+      "Thank you for your feedback!"
+    );
+    expect(mockNavigate).toHaveBeenCalledWith("/");
+  });
+
+
 
 });
