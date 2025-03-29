@@ -93,5 +93,28 @@ describe("CreateForm Component", () => {
     );
   });
 
+  test("validates password requirements", async () => {
+    const passwordInput = screen.getByPlaceholderText("Password");
+
+    await act(async () => {
+      fireEvent.change(passwordInput, { target: { value: "short" } });
+    });
+
+    expect(screen.getByText("❌ At least 8 characters")).toBeInTheDocument();
+    expect(screen.getByText("❌ At least 1 uppercase letter")).toBeInTheDocument();
+    expect(screen.getByText("❌ At least 1 number")).toBeInTheDocument();
+    expect(screen.getByText("❌ At least 1 special character")).toBeInTheDocument();
+
+    await act(async () => {
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+    });
+
+    expect(screen.getByText("✅ At least 8 characters")).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 uppercase letter")).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 number")).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 special character")).toBeInTheDocument();
+  });
+
+
 
 });
