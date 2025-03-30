@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import "@testing-library/jest-dom";
+import { toast } from "sonner";
 
 jest.mock("sonner", () => ({
     toast: {
@@ -83,9 +84,7 @@ describe("Feedback Page", () => {
     });
 
     expect(mockInsertFeedback).not.toHaveBeenCalled();
-    expect(require("sonner").toast.error).toHaveBeenCalledWith(
-      "Feedback cannot be empty!"
-    );
+    expect(toast.error).toHaveBeenCalledWith("Feedback cannot be empty!");
   });
 
 
