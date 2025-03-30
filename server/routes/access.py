@@ -1,9 +1,14 @@
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+# pylint: disable=line-too-long
+
 import json
 import copy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import desc, select, exc
-from flask import  Response, jsonify, current_app
-from database.tables import Stock_Info, Stock_Predictions, Stocks
+from flask import  jsonify, current_app
+from database.tables import Stock_Predictions, Stocks
 from engine import get_engine, global_engine
 from cache import cache
 
@@ -23,7 +28,7 @@ def create_session():
 
 def get_forcasts(ticker, lookback):
     session = create_session()
-    
+
     s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
     output_id = stock_query_single(s_id, session)
     if output_id :
@@ -62,7 +67,7 @@ def get_forcasts(ticker, lookback):
                 "created_at": output_dict["created_at"],
                 "output": copy.deepcopy(out)
             })
-            cache.set("forecast_"+ticker+lookback, jsonify(out_array), timeout = 10000)
+            cache.set("forecast_"+ticker+lookback, out_array, timeout = 10000)
             return out_array
-        session.close()
-        return None
+    session.close()
+    return None

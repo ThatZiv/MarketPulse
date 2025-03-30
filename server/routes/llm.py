@@ -1,7 +1,10 @@
+# pylint: disable=missing-module-docstring
+# pylint: disable=missing-class-docstring
+# pylint: disable=missing-function-docstring
+
 import os
-import json
 import flask_jwt_extended as jw
-from flask import Blueprint, Response, request, current_app
+from flask import Blueprint, Response, request
 # pylint: disable=no-name-in-module
 from langchain_community.llms import LlamaCpp
 # pylint: enable=no-name-in-module
@@ -10,8 +13,8 @@ from langchain_community.llms import LlamaCpp
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
 from sqlalchemy import select
 from langchain.prompts import PromptTemplate
-from database.tables import Stocks, Stock_Info
-from routes.forecasts import get_forcasts, create_session
+from database.tables import Stocks, Stock_Info, User_Stock_Purchases
+from routes.access import get_forcasts, create_session
 from cache import cache
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
@@ -54,17 +57,18 @@ prompt = PromptTemplate(template=TEMPLATE, \
 @llm_bp.route('/stock', methods=['GET'])
 @jw.jwt_required()
 def llm__stock_route():
-    """ Route for stock advice """
-    if LLM_MODEL_PATH is None:
-        print("LLM_MODEL_PATH is not set")
-        return Response(status=500)
+    #""" Route for stock advice """
+    #if LLM_MODEL_PATH is None:
+    #    print("LLM_MODEL_PATH is not set")
+    #    return Response(status=500)
 
-    if not os.path.exists(LLM_MODEL_PATH):
-        print("LLM_MODEL_PATH file does not exist. \
-            Please download a gguf model from https://huggingface.co/models")
-        return Response(status=500)
-    
+    #if not os.path.exists(LLM_MODEL_PATH):
+    #    print("LLM_MODEL_PATH file does not exist. \
+    #        Please download a gguf model from https://huggingface.co/models")
+    #    return Response(status=500)
+
     ticker = request.args.get('ticker')
+    current_user = jw.get_jwt_identity()
 
     if not ticker:
         return "Ticker parameter is required", 400
@@ -84,34 +88,58 @@ def llm__stock_route():
     )
     # TODO: get from database and refine the prompt iteself
 
-    output = cache.get(f"LLM_{ticker}")
+    output = cache.get(f"LLM_{ticker}{current_user}")
     if output is None:
         session = create_session()
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
         output_id = session.connection().execute(s_id).first()
         if output_id:
             stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id).order_by(Stock_Info.time_stamp.desc()).limit(1)
-            output = session.connection().execute(stock_data).first()
-            cache.set(f"LLM_{ticker}", output, timeout = 12000)
+            stock = session.connection().execute(stock_data).first()
+            user_info = select(User_Stock_Purchases).where(User_Stock_Purchases.stock_id == stock.stock_id).where(User_Stock_Purchases.user_id == current_user)
+            user_output = session.connection().execute(user_info).all()
 
-            if not output:
+            if not stock or not user_output:
                 return Response(status=500)
+            output = {"output": stock, "user_info":user_output}
+            cache.set(f"LLM_{ticker}{current_user}", output, timeout = 1800)
         else:
             return Response(status=500)
 
+    stocks_owned = 0
+    average = 0
+    count = 0
+    if output["user_info"]:
+        for row in output["user_info"]:
+            count+=1
+            stocks_owned += row.amount_purchased
+            average += row.amount_purchased*row.price_purchased
+        if stocks_owned > 0:
+            average = average/stocks_owned
 
-    closing = output.stock_close
+    closing = output['output'].stock_close
     lookback = "1"
     response = cache.get("forecast_"+ticker+lookback)
 
     if response is None:
         response = get_forcasts(ticker=ticker, lookback=lookback)
-    query = f"Hello, I currently have shares of {ticker} stock. \
+
+    if response is None:
+        return Response(status=500)
+
+    if average !=0:
+        query_template = f"Hello, I currently have shares of {ticker} stock. \
+            I bought them for {average} dollars per share.\
+            The current price is {closing} dollars.\
+            I predict that tomorows price will be {response[0]['output'][-1]['forecast'][6]}\
+            and next weeks will be {response[0]['output'][-1]['forecast'][6]}. What should I do?\n<think>\n"
+    else :
+        query_template = f"Hello, I currently have shares of {ticker} stock. \
             The current price is {closing} dollars.\
             I predict that tomorows price will be {response[0]['output'][-1]['forecast'][0]}\
             and next weeks will be {response[0]['output'][-1]['forecast'][6]}. What should I do?\n<think>\n"
 
-    #query = query_template
+    query = query_template
     def generate_response():
         """ stream llm response """
         #pylint: disable=use-yield-from
@@ -122,4 +150,3 @@ def llm__stock_route():
             yield chunk
 
     return Response(generate_response(), content_type='text/event-stream')
-

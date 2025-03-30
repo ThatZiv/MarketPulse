@@ -6,15 +6,13 @@
 import os
 import flask_jwt_extended as jw
 import requests
-from flask import Blueprint, Response, jsonify, request, send_file, current_app
-from sqlalchemy import desc, select, exc
+from flask import Blueprint, Response, jsonify, request, send_file
+from sqlalchemy import desc, select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
-from database.tables import Stock_Info, Stock_Predictions, Stocks
-from engine import get_engine, global_engine
+from database.tables import Stock_Info, Stocks
 from routes.llm import llm_bp
 from cache import cache
-from routes.forecasts import get_forcasts, create_session
+from routes.access import get_forcasts, create_session
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
