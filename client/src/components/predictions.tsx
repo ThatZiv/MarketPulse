@@ -61,13 +61,11 @@ export default function Predictions({
     },
     enabled: !!stock_id && !!api,
   });
-  
-  let predictions = null
-  if(data)
-  {
-  predictions = data[0].output;
+
+  let predictions = null;
+  if (data) {
+    predictions = data[0].output;
   }
-  
 
   const chartData = React.useMemo(() => {
     const points: Array<PredictionDatapoint> = [];

@@ -256,7 +256,12 @@ export default function Stocks() {
         </div>
       </div>
       <div className="flex flex-col md:items-center pt-4">
-        <HistoricalChart ticker={ticker ?? ""} />
+        {currentStock && (
+          <HistoricalChart
+            ticker={ticker ?? ""}
+            stock_id={currentStock?.Stocks.stock_id}
+          />
+        )}
       </div>
       <div className="flex flex-col md:items-center pt-4">
         <Card className="border border-black dark:border-white w-full p-1">

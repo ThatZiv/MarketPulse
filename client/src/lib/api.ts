@@ -9,7 +9,10 @@ export interface IApi {
     onToken: (token: string) => void
   ) => Promise<ReadableStream>;
   getStockData: (ticker: string, limit?: number) => Promise<StockDataItem[]>;
-  getStockPredictions: (ticker: string) => Promise<StockPrediction[]>;
+  getStockPredictions: (
+    ticker: string,
+    lookback?: number
+  ) => Promise<StockPrediction[]>;
   getStockRealtime: (ticker: string) => Promise<StockDataItem[]>;
   get: <TRes>(path: string) => Promise<TRes>;
   post: <TReq, TRes>(path: string, object?: TReq) => Promise<TRes>;
@@ -181,15 +184,18 @@ export default class Api implements IApi {
    * @param ticker stock ticker
    * @returns {Promise<StockPrediction>}
    */
-  public async getStockPredictions(ticker: string): Promise<StockPrediction[]> {
+  public async getStockPredictions(
+    ticker: string,
+    lookback: number = 7
+  ): Promise<StockPrediction[]> {
     try {
-      const lookback = 7
+      console.log(lookback);
       const resp = await this.instance.get("/auth/forecast", {
         params: { ticker, lookback },
         responseType: "json",
         withCredentials: true,
       });
-      
+
       return resp.data;
     } catch (error) {
       this.handleError(error as AxiosError);
