@@ -74,7 +74,7 @@ export default function PurchaseHistory({
     isLoading,
     isError,
   } = useQuery<Array<PurchaseHistoryDatapoint>>({
-    queryKey: [cache_keys.USER_STOCK_TRANSACTION, ticker],
+    queryKey: [cache_keys.USER_STOCK_TRANSACTION, stock_id],
     queryFn: async () => {
       // TODO: take from global state (read-thru cache)
       const { data, error } = await supabase
@@ -94,7 +94,7 @@ export default function PurchaseHistory({
 
       return data || [];
     },
-    enabled: !!ticker,
+    enabled: !!ticker && !!stock_id,
   });
 
   const chartData = useMemo(() => {
