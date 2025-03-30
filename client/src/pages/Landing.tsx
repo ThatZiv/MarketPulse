@@ -23,18 +23,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LiaSortSolid } from "react-icons/lia";
-
-interface StockResponse {
-  Stocks: {
-    stock_id: number;
-    stock_name: string;
-    stock_ticker: string;
-  };
-  shares_owned: number;
-}
+import dataHandler from "@/lib/dataHandler";
+import { UserStock } from "@/types/stocks";
+import { IApi } from "@/lib/api";
 
 interface StockCardProps {
-  stock: StockResponse;
+  stock: UserStock;
   activeCard: number;
   setActiveCard: React.Dispatch<React.SetStateAction<number>>;
 }
@@ -54,22 +48,12 @@ export default function Landing() {
     data: stocks,
     error: stocksError,
     status: stocksStatus,
-  } = useQuery<StockResponse[]>({
+  } = useQuery<UserStock[]>({
     queryKey: [cache_keys.USER_STOCKS],
-    queryFn: () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("User_Stocks")
-          .select("Stocks (*), shares_owned")
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(5)
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            // @ts-expect-error Stocks will never expand to an array
-            resolve(data || []);
-          });
-      }),
+    queryFn: dataHandler(dispatch)
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user,
   });
 
   // global coroutine to cache in state
@@ -77,66 +61,67 @@ export default function Landing() {
     queries: [
       {
         queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
+        // refetchInterval: () => (import.meta.env.PROD ? 1000 * 60 * 5 : 0),
         queryFn: async () => {
-          supabase
-            .from("User_Stock_Purchases")
-            .select("Stocks (stock_ticker), *")
-            .eq("user_id", user?.id)
-            .order("date", { ascending: false })
-            .then(({ data, error }) => {
-              if (error) {
-                throw error;
+          const data = await dataHandler(dispatch)
+            .forSupabase(supabase)
+            .getUserStockPurchases(user?.id ?? "")();
+          const allTransactions: {
+            [ticker: string]: Array<
+              PurchaseHistoryDatapoint & {
+                Stocks: { stock_ticker: string };
               }
-              const allTransactions: {
-                [ticker: string]: Array<
-                  PurchaseHistoryDatapoint & {
-                    Stocks: { stock_ticker: string };
-                  }
-                >;
-              } = {};
-              data?.forEach((transaction) => {
-                if (!allTransactions[transaction.Stocks.stock_ticker]) {
-                  allTransactions[transaction.Stocks.stock_ticker] = [];
-                }
-                allTransactions[transaction.Stocks.stock_ticker].push(
-                  transaction
-                );
-              });
-              Object.entries(allTransactions).forEach(
-                ([ticker, transactions]) => {
-                  dispatch({
-                    type: actions.SET_USER_STOCK_TRANSACTIONS,
-                    payload: { data: transactions, stock_ticker: ticker },
-                  });
-                }
-              );
+            >;
+          } = {};
+          data?.forEach((transaction) => {
+            if (!allTransactions[transaction.Stocks.stock_ticker]) {
+              allTransactions[transaction.Stocks.stock_ticker] = [];
+            }
+            allTransactions[transaction.Stocks.stock_ticker].push(transaction);
+          });
+          Object.entries(allTransactions).forEach(([ticker, transactions]) => {
+            dispatch({
+              type: actions.SET_USER_STOCK_TRANSACTIONS,
+              payload: { data: transactions, stock_ticker: ticker },
             });
+          });
 
           return null;
         },
       },
-      ...(stocks?.map((stock) => ({
-        queryKey: [cache_keys.STOCK_DATA_REALTIME, stock.Stocks.stock_ticker],
-        refetchInterval: () => 1000 * 60 * 5,
-        queryFn: () => {
-          api?.getStockRealtime(stock.Stocks.stock_ticker).then((data) => {
-            dispatch({
-              type: actions.SET_STOCK_PRICE,
-              payload: {
-                stock_ticker: stock.Stocks.stock_ticker,
-                data: data[data.length - 1].stock_close,
-                timestamp: new Date(
-                  data[data.length - 1].time_stamp.join(" ") + " UTC"
-                ).getTime(),
-              },
-            });
-          });
-          return null;
-        },
-      })) || []),
+      ...(stocks
+        ?.map((stock) => [
+          {
+            queryKey: [
+              cache_keys.STOCK_DATA_REALTIME,
+              stock.Stocks.stock_ticker,
+            ],
+            refetchInterval: () => (import.meta.env.PROD ? 1000 * 60 * 5 : 0),
+            // staleTime: 1000 * 60 * 5, // as of now, we'll keep realtime prices
+            queryFn: dataHandler(dispatch)
+              .forApi(api as IApi)
+              .getStockRealtime(stock.Stocks.stock_ticker),
+            enabled: !!stock.Stocks.stock_ticker && !!api,
+          },
+          // this is less efficient but good for granular caching
+          // {
+          //   queryKey: [
+          //     cache_keys.USER_STOCK_TRANSACTION,
+          //     stock.Stocks.stock_id.toString(),
+          //   ],
+          //   queryFn: dataHandler(dispatch)
+          //     .forSupabase(supabase)
+          //     .getUserStockPurchasesForStock(
+          //       user?.id ?? "",
+          //       stock.Stocks.stock_id.toString()
+          //     ),
+          //   enabled: !!user,
+          // },
+        ])
+        .flat() ?? []),
     ],
   });
-  let sortedStocks: StockResponse[] = [];
+  let sortedStocks: UserStock[] = [];
   const validStocks = Array.isArray(stocks) ? stocks : [];
 
   if (validStocks.length > 0) {
@@ -152,25 +137,39 @@ export default function Landing() {
       );
     } else if (sort === "Shares:L-H") {
       sortedStocks.sort((item1, item2) => {
-        const sum1 = (history[item1.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
-        const sum2 = (history[item2.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        const sum1 =
+          (history[item1.Stocks.stock_ticker] ?? []).reduce(
+            (sum, stock) => sum + stock.amount_purchased,
+            0
+          ) || 0;
+        const sum2 =
+          (history[item2.Stocks.stock_ticker] ?? []).reduce(
+            (sum, stock) => sum + stock.amount_purchased,
+            0
+          ) || 0;
         return sum1 - sum2;
       });
-    }
-    else if (sort === "Shares:H-L") {
+    } else if (sort === "Shares:H-L") {
       sortedStocks.sort((item1, item2) => {
-        const sum1 = (history[item1.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
-        const sum2 = (history[item2.Stocks.stock_ticker] ?? []).reduce((sum, stock) => sum + stock.amount_purchased, 0) || 0;
+        const sum1 =
+          (history[item1.Stocks.stock_ticker] ?? []).reduce(
+            (sum, stock) => sum + stock.amount_purchased,
+            0
+          ) || 0;
+        const sum2 =
+          (history[item2.Stocks.stock_ticker] ?? []).reduce(
+            (sum, stock) => sum + stock.amount_purchased,
+            0
+          ) || 0;
         return sum2 - sum1;
       });
     }
   }
 
-
   const stockImages = useQueries({
     queries:
       sortedStocks?.map((stock) => ({
-        queryKey: ["stock", stock.Stocks.stock_ticker],
+        queryKey: ["stock_img", stock.Stocks.stock_ticker],
         queryFn: () => api?.getStockLogo(stock.Stocks.stock_ticker),
         staleTime: Infinity,
       })) || [],
@@ -179,7 +178,7 @@ export default function Landing() {
   const stockColors = useQueries({
     queries:
       stockImages?.map((img) => ({
-        queryKey: ["stock", img],
+        queryKey: ["stock_img_color", img],
         queryFn: () => extractColors(img ?? ""),
         staleTime: Infinity,
       })) || [],
@@ -242,9 +241,7 @@ export default function Landing() {
                       <h3 className="">Sort:</h3>
                     </div>
                     <Select value={sort} onValueChange={setSort}>
-                      <SelectTrigger
-                        className="md:w-40 rounded-lg w-24 dark:border-white"
-                      >
+                      <SelectTrigger className="md:w-40 rounded-lg w-24 dark:border-white">
                         <SelectValue placeholder="None Selected" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -266,9 +263,7 @@ export default function Landing() {
                       </SelectContent>
                     </Select>
                   </div>
-
                 </div>
-
 
                 <div
                   onClick={handleClickOut}
@@ -327,8 +322,9 @@ function StockCard({
       onClick={() => setActiveCard(stock.Stocks.stock_id)}
     >
       <div
-        className={`bg-white cursor-pointer hover:bg-slate-200 ${!isShown && "h-[200px]"
-          } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
+        className={`bg-white cursor-pointer hover:bg-slate-200 ${
+          !isShown && "h-[200px]"
+        } dark:hover:bg-gray-800 dark:bg-black p-6 rounded-xl shadow-lg hover:shadow-2xl transition-all transform duration-500 hover:scale-105 ease-in-out`}
         style={{
           border: `4px solid ${colors[0]}`,
         }}
@@ -381,8 +377,9 @@ function StockCard({
                 <>
                   <span className={`text-xs mx-1`}>
                     <span
-                      className={`${calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
-                        } text-sm`}
+                      className={`${
+                        calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
+                      } text-sm`}
                     >
                       {toDollar(calc.getProfit())}
                     </span>{" "}
@@ -406,8 +403,9 @@ function StockCard({
           </div>
         )}
         <div
-          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
-            }`}
+          className={`flex flex-col items-center overflow-hidden transition-all duration-500 ease-in-out ${
+            isShown ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"
+          }`}
         >
           {isShown && (
             <>
@@ -436,10 +434,11 @@ function StockCard({
                     <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
                         <span
-                          className={`text-xl font-semibold ${calc.getProfit() < 0
-                            ? "text-red-600"
-                            : "text-green-600"
-                            }`}
+                          className={`text-xl font-semibold ${
+                            calc.getProfit() < 0
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }`}
                         >
                           {toDollar(calc.getProfit())}
                         </span>
@@ -472,24 +471,28 @@ function StockCard({
                         </div>
                         {calc.getTotalShares() > 0 && (
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
+                            {calc.getTotalProfit(thisStock.current_price) < 0 ? 
                             <div className="flex items-center gap-1">
                               <span
-                                className={`text-xl animate-pulse font-semibold ${calc.getTotalProfit(thisStock.current_price) <
-                                  0
-                                  ? "text-red-600"
-                                  : "text-green-600"
-                                  }`}
-                              >
-                                {toDollar(
-                                  calc.getTotalProfit(thisStock.current_price)
-                                )}
+                                className={`text-xl animate-pulse font-semibold text-red-600`}>
+                                {toDollar(calc.getTotalProfit(thisStock.current_price)*-1)}
+                              </span>
+                              <span className="inline">potential loss</span>
+                              <InfoTooltip side="right">
+                                This is the potential loss you would make if
+                                you sold all your shares at the current price.
+                              </InfoTooltip>
+                            </div>:<div className="flex items-center gap-1">
+                              <span
+                                className={`text-xl animate-pulse font-semibold text-green-600`}>
+                                {toDollar(calc.getTotalProfit(thisStock.current_price))}
                               </span>
                               <span className="inline">potential profit</span>
                               <InfoTooltip side="right">
                                 This is the potential profit you would make if
                                 you sold all your shares at the current price.
                               </InfoTooltip>
-                            </div>
+                            </div>}
                           </div>
                         )}
                         <p className="text-[10px] font-light">

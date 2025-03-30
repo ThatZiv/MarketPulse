@@ -3,9 +3,7 @@ import Stock_Chart from "@/components/stock_chart_demo";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
-import useAsync from "@/hooks/useAsync";
 import { toast } from "sonner";
-import { type Stock } from "@/types/stocks";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -30,24 +28,15 @@ import { SentimentMeter } from "@/components/sentiment-meter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import { DeleteStock } from "@/components/delete-stock";
+import dataHandler from "@/lib/dataHandler";
 
 const staticStockData = [
-  { stock_ticker: "TSLA", stock_name: "Tesla",stock_id:1 },
-  { stock_ticker: "F", stock_name: "Ford", stock_id:2 },
-  { stock_ticker: "GM", stock_name: "General Motors",stock_id:3 },
-  { stock_ticker: "TM", stock_name: "Toyota Motor Corporation",stock_id:4 },
-  { stock_ticker: "STLA", stock_name: "Stellantis N.V.", stock_id:5},
+  { stock_ticker: "TSLA", stock_name: "Tesla", stock_id: 1 },
+  { stock_ticker: "F", stock_name: "Ford", stock_id: 2 },
+  { stock_ticker: "GM", stock_name: "General Motors", stock_id: 3 },
+  { stock_ticker: "TM", stock_name: "Toyota Motor Corporation", stock_id: 4 },
+  { stock_ticker: "STLA", stock_name: "Stellantis N.V.", stock_id: 5 },
 ];
-
-interface StockResponse {
-  Stocks: {
-    stock_id: number;
-    stock_name: string;
-    stock_ticker: string;
-  };
-  shares_owned: number;
-  desired_investiture: number;
-}
 
 const sentimentFooter = (score: number, meter: string): string => {
   let trend = "";
@@ -82,13 +71,9 @@ export default function Stocks() {
   const navigate = useNavigate();
   const [hype_meter, setHypeMeter] = useState(0);
   const [impact_meter, setImpactMeter] = useState(0);
-  const { data: stocksFetch, error: availableStocksError } = useQuery<Stock[]>({
-    queryKey: [cache_keys.USER_STOCKS, ticker],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("Stocks").select("*");
-      if (error) throw error;
-      return data || [];
-    },
+  const { data: stocksFetch, error: availableStocksError } = useQuery({
+    queryKey: [cache_keys.STOCKS],
+    queryFn: dataHandler().forSupabase(supabase).getAllStocks(),
     enabled: !!ticker,
   });
 
@@ -104,23 +89,14 @@ export default function Stocks() {
     (stock) => stock[ticker as keyof typeof stock]
   );
 
-  const { value: stocks, error: stocksError } = useAsync<StockResponse[]>(
-    () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("User_Stocks")
-          .select("Stocks (*), shares_owned, desired_investiture")
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(5)
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            // @ts-expect-error Stocks will never expand to an array
-            resolve(data || []);
-          });
-      }),
-    [user, supabase]
-  );
+  const { data: stocks, error: stocksError } = useQuery({
+    queryKey: [cache_keys.USER_STOCKS],
+    staleTime: Infinity,
+    queryFn: dataHandler()
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user?.id,
+  });
 
   const meters = useMemo(() => {
     // gets the last data point in stock data for a given ticker
@@ -221,7 +197,7 @@ export default function Stocks() {
     return (
       <div className="flex flex-col justify-center items-center h-screen">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p className="text-gray-600">
           Unfortunately, we encountered an error fetching your stocks. Please
           refresh the page or try again later.
         </p>
@@ -244,15 +220,20 @@ export default function Stocks() {
       <GenerateStockLLM ticker={ticker} />
       <div className="border border-black dark:border-white p-4 bg-secondary dark:bg-dark rounded-md w-full">
         <div className="flex justify-end right-0 gap-4 py-2">
-          <Link
-            to={`/stocks?ticker=${ticker}`}
-          >
+          <Link to={`/stocks?ticker=${ticker}`}>
             <Button variant="secondary" size="sm">
               <MdEdit className="" /> Edit
             </Button>
           </Link>
-          <DeleteStock stock_id={currentStock?.Stocks.stock_id} ticker={ticker_name ? ticker_name[ticker as keyof typeof ticker_name] : undefined} />
-          </div>
+          <DeleteStock
+            stock_id={currentStock?.Stocks.stock_id}
+            ticker={
+              ticker_name
+                ? ticker_name[ticker as keyof typeof ticker_name]
+                : undefined
+            }
+          />
+        </div>
         <div className="flex md:flex-row flex-col justify-center lg:gap-64 md:gap-32 gap:5 mt-4">
           <div className="flex flex-col">
             <h3 className="lg:text-2xl text-md">Shares Owned</h3>

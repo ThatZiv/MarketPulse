@@ -9,12 +9,16 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { useApi } from "@/lib/ApiProvider";
-import { actions, cache_keys } from "@/lib/constants";
+import { cache_keys } from "@/lib/constants";
 // import { type PieSectorDataItem } from "recharts/types/polar/Pie";
 import moment from "moment";
 import { Separator } from "./ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+
 import { Suggestion } from "./buy_sell";
+import dataHandler from "@/lib/dataHandler";
+import { IApi } from "@/lib/api";
+
 // const chartData = [
 //   { action: "buy", suggest: 50, fill: "var(--color-buy)" },
 //   { action: "sell", suggest: 20, fill: "var(--color-sell)" },
@@ -50,22 +54,10 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
   const { data, isError, isLoading } = useQuery({
     queryKey: [cache_keys.STOCK_DATA_REALTIME, stock_ticker],
     refetchInterval: () => 1000 * 60 * 5,
-    queryFn: async () => {
-      const data = await api?.getStockRealtime(stock_ticker);
-      if (!data) return [];
-      dispatch({
-        type: actions.SET_STOCK_PRICE,
-        payload: {
-          stock_ticker,
-          data: data[data.length - 1].stock_close,
-          timestamp: new Date(
-            data[data.length - 1].time_stamp.join(" ") + " UTC"
-          ).getTime(),
-        },
-      });
-      return data;
-    },
-    enabled: !!stock_ticker,
+    queryFn: dataHandler(dispatch)
+      .forApi(api as IApi)
+      .getStockRealtime(stock_ticker),
+    enabled: !!stock_ticker && !!api,
   });
   const profit = useMemo(() => {
     if (!data) return undefined;
