@@ -1,19 +1,18 @@
 import os
 import json
 import flask_jwt_extended as jw
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, current_app
 # pylint: disable=no-name-in-module
 from langchain_community.llms import LlamaCpp
 # pylint: enable=no-name-in-module
 # pylint: disable=line-too-long
 # pylint: disable=not-callable
 # from langchain_core.callbacks import CallbackManager, StreamingStdOutCallbackHandler
-from langchain.prompts import PromptTemplate
 from sqlalchemy import select
-from sqlalchemy.orm import sessionmaker
-from database.tables import Stocks, Stock_Info, Stock_Predictions, User_Stock_Purchases
-from engine import global_engine
-
+from langchain.prompts import PromptTemplate
+from database.tables import Stocks, Stock_Info
+from routes.forecasts import get_forcasts, create_session
+from cache import cache
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
 
@@ -64,7 +63,7 @@ def llm__stock_route():
         print("LLM_MODEL_PATH file does not exist. \
             Please download a gguf model from https://huggingface.co/models")
         return Response(status=500)
-    current_user = jw.get_jwt_identity()
+    
     ticker = request.args.get('ticker')
 
     if not ticker:
@@ -83,64 +82,36 @@ def llm__stock_route():
         # callback_manager=CallbackManager([StreamingStdOutCallbackHandler()]),
         verbose=False,
     )
-    stocks = 250
     # TODO: get from database and refine the prompt iteself
 
-    session = sessionmaker(bind=global_engine())
-    session = session()
+    output = cache.get(f"LLM_{ticker}")
+    if output is None:
+        session = create_session()
+        s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
+        output_id = session.connection().execute(s_id).first()
+        if output_id:
+            stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id).order_by(Stock_Info.time_stamp.desc()).limit(1)
+            output = session.connection().execute(stock_data).first()
+            cache.set(f"LLM_{ticker}", output, timeout = 12000)
 
-    s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-    output_id = session.connection().execute(s_id).first()
-    model_pred = 0
-    model_pred_2 = 0
-    if output_id :
-        stock_data = select(Stock_Info).where(Stock_Info.stock_id == output_id.stock_id).order_by(Stock_Info.time_stamp.desc()).limit(1)
-        output = session.connection().execute(stock_data).first()
+            if not output:
+                return Response(status=500)
+        else:
+            return Response(status=500)
 
-        predictions = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(Stock_Predictions.created_at.desc()).limit(1)
-        pred_output = session.connection().execute(predictions).first()
 
-        user_info = select(User_Stock_Purchases).where(User_Stock_Purchases.stock_id == output.stock_id).where(User_Stock_Purchases.user_id == current_user)
-        user_output = session.connection().execute(user_info).all()
-        count = 0
-        stocks_owned = 0
-        average = 0
+    closing = output.stock_close
+    lookback = "1"
+    response = cache.get("forecast_"+ticker+lookback)
 
-        session.close()
-
-        if not output or not pred_output:
-            return "</think>\nMissing context for suggestion"
-        closing_pred = []
-        closing = output.stock_close
-        closing_pred.append(json.loads(pred_output.model_1))
-        closing_pred.append(json.loads(pred_output.model_2))
-        closing_pred.append(json.loads(pred_output.model_3))
-        closing_pred.append(json.loads(pred_output.model_4))
-        closing_pred.append(json.loads(pred_output.model_5))
-        model_pred = (closing_pred[0]['forecast'][0]+closing_pred[1]['forecast'][0]+closing_pred[2]['forecast'][0]+closing_pred[3]['forecast'][0]+closing_pred[4]['forecast'][0])/5
-        model_pred_2 = (closing_pred[0]['forecast'][6]+closing_pred[1]['forecast'][6]+closing_pred[2]['forecast'][6]+closing_pred[3]['forecast'][6]+closing_pred[4]['forecast'][6])/5
-    else :
-        return "</think>\nMissing context for suggestion"
-
-    if user_output:
-        for row in user_output:
-            count+=1
-            stocks_owned += row.amount_purchased
-            average += row.amount_purchased*row.price_purchased
-        if stocks_owned > 0:
-            average = average/stocks_owned
-
-        query_template = f"Hello, I currently have shares of {ticker} stock. \
-        I bought them for {average} dollars per share.\
-        The current price is {closing} dollars.\
-        I predict that tomorows price will be {model_pred} and next weeks will be {model_pred_2}. What should I do?\n<think>\n"
-
-    else:
-        query_template = f"Hello, I currently have shares of {ticker} stock. \
+    if response is None:
+        response = get_forcasts(ticker=ticker, lookback=lookback)
+    query = f"Hello, I currently have shares of {ticker} stock. \
             The current price is {closing} dollars.\
-            I predict that tomorows price will be {model_pred} and next weeks will be {model_pred_2}. What should I do?\n<think>\n"
+            I predict that tomorows price will be {response[0]['output'][-1]['forecast'][0]}\
+            and next weeks will be {response[0]['output'][-1]['forecast'][6]}. What should I do?\n<think>\n"
 
-    query = query_template.format(stocks=stocks, ticker=ticker)
+    #query = query_template
     def generate_response():
         """ stream llm response """
         #pylint: disable=use-yield-from
@@ -151,3 +122,4 @@ def llm__stock_route():
             yield chunk
 
     return Response(generate_response(), content_type='text/event-stream')
+
