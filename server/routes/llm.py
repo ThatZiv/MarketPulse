@@ -12,7 +12,7 @@ from langchain.prompts import PromptTemplate
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 from database.tables import Stocks, Stock_Info, Stock_Predictions, User_Stock_Purchases
-from engine import get_engine
+from engine import global_engine
 
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
@@ -86,7 +86,7 @@ def llm__stock_route():
     stocks = 250
     # TODO: get from database and refine the prompt iteself
 
-    session = sessionmaker(bind=get_engine())
+    session = sessionmaker(bind=global_engine())
     session = session()
 
     s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
@@ -110,11 +110,15 @@ def llm__stock_route():
 
         if not output or not pred_output:
             return "</think>\nMissing context for suggestion"
-
+        closing_pred = []
         closing = output.stock_close
-        closing_pred = json.loads(pred_output.model_1)
-        model_pred = closing_pred['forecast'][0]
-        model_pred_2 = closing_pred['forecast'][6]
+        closing_pred.append(json.loads(pred_output.model_1))
+        closing_pred.append(json.loads(pred_output.model_2))
+        closing_pred.append(json.loads(pred_output.model_3))
+        closing_pred.append(json.loads(pred_output.model_4))
+        closing_pred.append(json.loads(pred_output.model_5))
+        model_pred = (closing_pred[0]['forecast'][0]+closing_pred[1]['forecast'][0]+closing_pred[2]['forecast'][0]+closing_pred[3]['forecast'][0]+closing_pred[4]['forecast'][0])/5
+        model_pred_2 = (closing_pred[0]['forecast'][6]+closing_pred[1]['forecast'][6]+closing_pred[2]['forecast'][6]+closing_pred[3]['forecast'][6]+closing_pred[4]['forecast'][6])/5
     else :
         return "</think>\nMissing context for suggestion"
 
