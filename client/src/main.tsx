@@ -16,7 +16,7 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // TODO: figure out why invalidate cache not triggering refetch
-      staleTime: 0,
+      staleTime: Infinity,
       gcTime: Infinity,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
