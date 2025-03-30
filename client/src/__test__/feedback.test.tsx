@@ -136,8 +136,8 @@ describe("Feedback Page", () => {
     expect(mockInsertFeedback).toHaveBeenCalledWith([
       { content: "This is a test feedback." },
     ]);
-    expect(require("sonner").toast.error).toHaveBeenCalledWith(errorMessage);
-  });
+    expect(toast.error).toHaveBeenCalledWith(errorMessage); 
+   });
 
 
 
