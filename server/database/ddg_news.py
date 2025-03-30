@@ -26,7 +26,7 @@ def stock_scrap(stock_id, engine):
     stock = session.connection().execute(stock).first()
     # Get all the dates out of the table to get news data for
     stock_data = select(Stock_Info.time_stamp,
-                    Stock_Info.news_data).filter(Stock_Info.stock_id == stock_id)
+                    Stock_Info.news_data).filter(Stock_Info.stock_id == stock_id, Stock_Info.news_data==0)
     stock_data = session.connection().execute(stock_data).all()
     for day in stock_data:
 
