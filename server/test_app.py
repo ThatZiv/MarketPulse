@@ -100,8 +100,15 @@ def test_forecast(client, monkeypatch):
         f.close()
         return data
 
+    def mock_forecast_all(a, b):
+        f = open('test_data/forecast2', 'rb')
+        data = pickle.load(f)
+        f.close()
+        return data
+
     monkeypatch.setattr(a, "create_session", mock_session)
     monkeypatch.setattr(a, "stock_query_single", mock_forecast)
+    monkeypatch.setattr(a, "stock_query_all", mock_forecast_all)
     response = client.get('/auth/forecast')
     assert response.status_code == 401
 
@@ -110,6 +117,6 @@ def test_forecast(client, monkeypatch):
     response = client.get('/auth/forecast', headers = headers)
     assert response.status_code == 400
 
-    response = client.get('/auth/forecast?ticker=TSLA', headers = headers)
+    response = client.get('/auth/forecast?ticker=F&lookback=7', headers = headers)
     assert response.status_code == 200
     assert response.json != None
