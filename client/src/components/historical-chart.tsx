@@ -31,24 +31,37 @@ import { useQuery } from "@tanstack/react-query";
 import { StockDataItem } from "@/types/stocks";
 import { actions, cache_keys } from "@/lib/constants";
 import moment from "moment";
-import { capitalizeFirstLetter } from "@/lib/utils";
+import { capitalizeFirstLetter, isSameDay } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 interface StockChartProps {
   ticker: string;
+  stock_id: number;
 }
 
 // FIXME:
-// - area gradient not working
-// - ChartToolTipContent invalid date
-// - chart data not stacking
-// - Y label cut off
+// - properly handle invalidation and time range switch
+// - ChartToolTipContent needs to show date
 
 // TODO:
 // - add prediction data
+// - figure out forecast continuity
 
-export default function HistoricalChart({ ticker }: StockChartProps) {
+export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
+  const queryClient = useQueryClient();
   const api = useApi();
   const { dispatch } = useGlobal();
+
+  const timeRangeValue = React.useMemo(() => {
+    return parseInt(timeRange.match(/(\d+)/)?.[0] || "0");
+  }, [timeRange]);
+
+  React.useEffect(() => {
+    queryClient.invalidateQueries({
+      queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
+    });
+  }, [timeRangeValue]);
+
   const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
     queryKey: [cache_keys.STOCK_DATA, ticker],
     queryFn: async () => {
@@ -61,29 +74,47 @@ export default function HistoricalChart({ ticker }: StockChartProps) {
         payload: { data, stock_ticker: ticker },
       });
       return data.map((item) => ({
-        date: item.time_stamp,
+        date: new Date(item.time_stamp.join(" ")),
         ...item,
       }));
     },
     enabled: !!api && !!ticker,
   });
 
-  const timeRangeValue = React.useMemo(() => {
-    return parseInt(timeRange.match(/(\d+)/)?.[0] || "0");
-  }, [timeRange]);
+  const {
+    data: predictionHistory,
+    isLoading: arePredictionsLoading,
+    error: predictionsError,
+  } = useQuery({
+    queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
+    queryFn: () => api?.getStockPredictions(ticker, timeRangeValue),
+    enabled: !!stock_id && !!api,
+  });
 
   const chartData = React.useMemo(() => {
     if (!data) return [];
-    const filteredData = data?.map((item) => ({
-      date: new Date(item.time_stamp.join(" ")),
-      "stock open": item.stock_open,
-      "stock close": item.stock_close,
-    }));
+    if (!predictionHistory) return [];
+    const filteredData = data?.map((item) => {
+      const thisDate = new Date(item.time_stamp.join(" "));
+      const thisPredictionHistory = predictionHistory.find((point) =>
+        isSameDay(new Date(point.created_at), thisDate)
+      );
+      return {
+        date: thisDate,
+        stock_close: item.stock_close,
+        average: thisPredictionHistory?.output.find(
+          (point) => point.name === "average"
+        )?.forecast[0],
+        // stock_open: item.stock_open,
+        // stock_high: item.stock_high,
+        // stock_low: item.stock_low,
+      };
+    });
     return filteredData.slice(
       filteredData.length - timeRangeValue,
       filteredData.length
     );
-  }, [data, timeRangeValue]);
+  }, [data, timeRangeValue, predictionHistory]);
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const config: ChartConfig = {};
@@ -92,8 +123,7 @@ export default function HistoricalChart({ ticker }: StockChartProps) {
     for (const name of Object.keys(chartData[0] ?? {}) ?? []) {
       if (name === "date") continue;
       config[name] = {
-        // label: name.split("_").map(capitalizeFirstLetter).join(" "),
-        label: name,
+        label: name.split("_").map(capitalizeFirstLetter).join(" "),
         color: colors.shift() ?? "#606060",
       };
     }
@@ -104,7 +134,7 @@ export default function HistoricalChart({ ticker }: StockChartProps) {
     <>
       {isLoading ? (
         <Card className="w-full p-4 border border-black dark:border-white ">
-          {isLoading && (
+          {(isLoading || arePredictionsLoading) && (
             <div
               role="status"
               className="border border-gray-200 rounded-sm shadow-sm animate-pulse md:p-6 dark:border-gray-700"
@@ -125,7 +155,7 @@ export default function HistoricalChart({ ticker }: StockChartProps) {
               </div>
             </div>
           )}
-          {isError && (
+          {(isError || predictionsError) && (
             <div>Error fetching stock data. Please try again later...</div>
           )}
         </Card>
@@ -151,6 +181,9 @@ export default function HistoricalChart({ ticker }: StockChartProps) {
                 <SelectValue placeholder="Last 3 months" />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
+                <SelectItem value="30d" className="rounded-lg">
+                  Last 30 days
+                </SelectItem>
                 <SelectItem value="14d" className="rounded-lg">
                   Last 14 days
                 </SelectItem>
@@ -163,83 +196,78 @@ export default function HistoricalChart({ ticker }: StockChartProps) {
           <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
             <ChartContainer
               config={chartConfig}
-              className="aspect-auto h-[250px] w-full"
+              className="aspect-auto h-[275px] w-full"
             >
-              <AreaChart data={chartData}>
+              <AreaChart data={chartData} dataKey="date" accessibilityLayer>
                 <defs>
                   {chartConfig &&
-                    Object.values(chartConfig)?.map((item) => {
+                    Object.entries(chartConfig)?.map(([key, val]) => {
                       return (
-                        <linearGradient
-                          id={item.label as string}
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
+                        <linearGradient id={key} x1="0" y1="1" x2="0" y2="1">
                           <stop
                             offset="5%"
-                            stopColor={item.color}
+                            stopColor={val.color}
                             stopOpacity={0.8}
                           />
                           <stop
                             offset="95%"
-                            stopColor={item.color}
-                            stopOpacity={0.1}
+                            stopColor={val.color}
+                            stopOpacity={0.15}
                           />
                         </linearGradient>
                       );
                     })}
                 </defs>
+                {chartData &&
+                  Object.keys(chartData[0] ?? {}).map((key, index) => {
+                    if (key === "date") return null;
+                    return (
+                      <Area
+                        key={`area-${index}`}
+                        type="monotone"
+                        dataKey={key}
+                        strokeWidth={2}
+                        stroke={chartConfig[key].color}
+                        fill={`url(#${key})`}
+                        activeDot={{ r: 3 }}
+                        dot={false}
+                        stackId={key}
+                      />
+                    );
+                  })}
                 <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={true}
+                  axisLine={true}
+                  tickMargin={9}
+                  tickFormatter={(value) => moment(value).format("MMM D")}
+                />
                 <YAxis
                   tickLine={true}
                   axisLine={true}
-                  tickMargin={5}
+                  dataKey={"stock_close"}
+                  allowDataOverflow
+                  tickMargin={4}
+                  tickCount={9}
                   domain={["auto", "auto"]}
                 >
                   <Label
                     value="Stock Price ($)"
                     angle={-90}
                     position="insideLeft"
-                    offset={-5}
                     style={{ textAnchor: "middle" }}
                   />
                 </YAxis>
-                <XAxis
-                  dataKey="date"
-                  tickLine={true}
-                  allowDuplicatedCategory={false}
-                  axisLine={true}
-                  tickMargin={9}
-                  tickFormatter={(value) => moment(value).format("MMM D")}
-                />
                 <ChartTooltip
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(val) => moment(val).format("MMM D")}
+                    // labelFormatter={(val) => moment(val).format("MMM D")}
                     />
                   }
                 />
 
-                {chartData &&
-                  Object.keys(chartData[0] ?? {}).map((key, index) => {
-                    if (key === "date") return null;
-                    return (
-                      <Area
-                        key={index}
-                        type="monotone"
-                        dataKey={key}
-                        strokeWidth={2}
-                        stroke={chartConfig[key].color}
-                        fill={`url(#${chartConfig[key].label})`}
-                        activeDot={{ r: 3 }}
-                        dot={false}
-                        stackId="a"
-                      />
-                    );
-                  })}
                 <ChartLegend content={<ChartLegendContent />} />
               </AreaChart>
             </ChartContainer>
