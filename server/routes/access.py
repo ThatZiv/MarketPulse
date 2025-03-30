@@ -7,7 +7,7 @@ import json
 import copy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import desc, select, exc
-from flask import  jsonify, current_app
+from flask import  current_app
 from database.tables import Stock_Predictions, Stocks
 from engine import get_engine, global_engine
 from cache import cache

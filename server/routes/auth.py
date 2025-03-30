@@ -11,8 +11,8 @@ from sqlalchemy import desc, select
 from sqlalchemy.exc import SQLAlchemyError
 from database.tables import Stock_Info, Stocks
 from routes.llm import llm_bp
-from cache import cache
 from routes.access import get_forcasts, create_session
+from cache import cache
 
 auth_bp = Blueprint('auth', __name__)
 LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
@@ -129,8 +129,7 @@ def forecast_route():
     if request.method == 'GET':
         response = get_forcasts(ticker=ticker, lookback=lookback)
 
-        if response == None:
+        if response is None:
             return Response(status=400, mimetype='application/json')
-        else:
-            return jsonify(response)
+        return jsonify(response)
     return Response(status=503, mimetype='application/json')
