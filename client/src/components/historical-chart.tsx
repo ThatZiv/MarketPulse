@@ -1,7 +1,8 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Label } from "recharts";
-import { StockDataItem } from "@/types/stocks";
+"use client";
+
+import * as React from "react";
+import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
+
 import {
   Card,
   CardContent,
@@ -25,33 +26,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useApi } from "@/lib/ApiProvider";
-import { actions, cache_keys } from "@/lib/constants";
 import { useGlobal } from "@/lib/GlobalProvider";
+import { useQuery } from "@tanstack/react-query";
+import { StockDataItem } from "@/types/stocks";
+import { actions, cache_keys } from "@/lib/constants";
+import moment from "moment";
+import { capitalizeFirstLetter } from "@/lib/utils";
+interface StockChartProps {
+  ticker: string;
+}
 
-const chartConfig = {
-  close: {
-    label: "Close",
-    color: "hsl(var(--chart-1))",
-  },
-  open: {
-    label: "Open",
-    color: "hsl(var(--chart-2))",
-  },
-  high: {
-    label: "High",
-    color: "hsl(var(--chart-3))",
-  },
-  low: {
-    label: "Low",
-    color: "hsl(var(--chart-4))",
-  },
-} satisfies ChartConfig;
+// FIXME:
+// - area gradient not working
+// - ChartToolTipContent invalid date
+// - chart data not stacking
+// - Y label cut off
 
-type props = { ticker: string };
-export default function Stock_Chart({ ticker }: props) {
+// TODO:
+// - add prediction data
+
+export default function HistoricalChart({ ticker }: StockChartProps) {
+  const [timeRange, setTimeRange] = React.useState("7d");
   const api = useApi();
   const { dispatch } = useGlobal();
-  const [timeRange, setTimeRange] = React.useState("14d");
   const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
     queryKey: [cache_keys.STOCK_DATA, ticker],
     queryFn: async () => {
@@ -63,53 +60,49 @@ export default function Stock_Chart({ ticker }: props) {
         type: actions.SET_STOCK_HISTORY,
         payload: { data, stock_ticker: ticker },
       });
-      return data;
+      return data.map((item) => ({
+        date: item.time_stamp,
+        ...item,
+      }));
     },
     enabled: !!api && !!ticker,
   });
 
-  const validData = data ?? ([] as StockDataItem[]);
+  const timeRangeValue = React.useMemo(() => {
+    return parseInt(timeRange.match(/(\d+)/)?.[0] || "0");
+  }, [timeRange]);
 
-  const labels =
-    validData.length >= 15
-      ? validData.slice(-15).map((item) => item.time_stamp[0])
-      : [];
-  const close_values =
-    validData.length >= 15
-      ? validData.slice(-15).map((item) => item.stock_close)
-      : [];
-  const open_values =
-    validData.length >= 15
-      ? validData.slice(-15).map((item) => item.stock_open)
-      : [];
-  const high_values =
-    validData.length >= 15
-      ? validData.slice(-15).map((item) => item.stock_high)
-      : [];
-  const low_values =
-    validData.length >= 15
-      ? validData.slice(-15).map((item) => item.stock_low)
-      : [];
-  const chartData = labels.map((label, index) => ({
-    date: label,
-    close: close_values[index],
-    open: open_values[index],
-    high: high_values[index],
-    low: low_values[index],
-  }));
+  const chartData = React.useMemo(() => {
+    if (!data) return [];
+    const filteredData = data?.map((item) => ({
+      date: new Date(item.time_stamp.join(" ")),
+      "stock open": item.stock_open,
+      "stock close": item.stock_close,
+    }));
+    return filteredData.slice(
+      filteredData.length - timeRangeValue,
+      filteredData.length
+    );
+  }, [data, timeRangeValue]);
 
-  const filteredData = chartData.filter((item) => {
-    if (timeRange === "14d") {
-      return chartData.length - 14 <= chartData.indexOf(item);
+  const chartConfig = React.useMemo<ChartConfig>(() => {
+    const config: ChartConfig = {};
+    const colors = ["#E2C541", "#92E98C", "#479BC6", "#ea580c"];
+    if (!chartData) return config;
+    for (const name of Object.keys(chartData[0] ?? {}) ?? []) {
+      if (name === "date") continue;
+      config[name] = {
+        // label: name.split("_").map(capitalizeFirstLetter).join(" "),
+        label: name,
+        color: colors.shift() ?? "#606060",
+      };
     }
-    if (timeRange === "7d") {
-      return chartData.length - 7 <= chartData.indexOf(item);
-    }
-  });
+    return config;
+  }, [chartData]);
 
   return (
     <>
-      {isLoading || isError ? (
+      {isLoading ? (
         <Card className="w-full p-4 border border-black dark:border-white ">
           {isLoading && (
             <div
@@ -137,7 +130,7 @@ export default function Stock_Chart({ ticker }: props) {
           )}
         </Card>
       ) : (
-        <Card className="w-full border border-black dark:border-white">
+        <Card className="w-full p-4 border border-black dark:border-white">
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
               <CardTitle>{ticker} Historical Prices</CardTitle>
@@ -172,112 +165,81 @@ export default function Stock_Chart({ ticker }: props) {
               config={chartConfig}
               className="aspect-auto h-[250px] w-full"
             >
-              <AreaChart data={filteredData}>
+              <AreaChart data={chartData}>
                 <defs>
-                  <linearGradient id="fillOpen" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-open)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-open)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillClose" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-close)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-close)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillHigh" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-high)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-high)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                  <linearGradient id="fillLow" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-low)"
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-low)"
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
+                  {chartConfig &&
+                    Object.values(chartConfig)?.map((item) => {
+                      return (
+                        <linearGradient
+                          id={item.label as string}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor={item.color}
+                            stopOpacity={0.8}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor={item.color}
+                            stopOpacity={0.1}
+                          />
+                        </linearGradient>
+                      );
+                    })}
                 </defs>
                 <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  tickLine={true}
-                  axisLine={true}
-                  tickMargin={8}
-                  minTickGap={32}
-                  tickFormatter={(value) => {
-                    const date = new Date(value);
-                    return date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    });
-                  }}
-                >
-                  <Label value="Date" offset={-10} position="insideBottom" />
-                </XAxis>
                 <YAxis
                   tickLine={true}
                   axisLine={true}
-                  tickMargin={9}
-                  tickCount={9}
+                  tickMargin={5}
                   domain={["auto", "auto"]}
                 >
                   <Label
                     value="Stock Price ($)"
                     angle={-90}
                     position="insideLeft"
+                    offset={-5}
                     style={{ textAnchor: "middle" }}
                   />
                 </YAxis>
-
+                <XAxis
+                  dataKey="date"
+                  tickLine={true}
+                  allowDuplicatedCategory={false}
+                  axisLine={true}
+                  tickMargin={9}
+                  tickFormatter={(value) => moment(value).format("MMM D")}
+                />
                 <ChartTooltip
                   cursor={false}
                   content={
                     <ChartTooltipContent
-                      labelFormatter={(value) => {
-                        return new Date(value).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        });
-                      }}
-                      indicator="dot"
+                      labelFormatter={(val) => moment(val).format("MMM D")}
                     />
                   }
                 />
-                {/* Will Add lines for open, high and low later */}
-                <Area
-                  dataKey="close"
-                  type="natural"
-                  fill="url(#fillClose)"
-                  stroke="var(--color-close)"
-                  stackId="a"
-                />
 
+                {chartData &&
+                  Object.keys(chartData[0] ?? {}).map((key, index) => {
+                    if (key === "date") return null;
+                    return (
+                      <Area
+                        key={index}
+                        type="monotone"
+                        dataKey={key}
+                        strokeWidth={2}
+                        stroke={chartConfig[key].color}
+                        fill={`url(#${chartConfig[key].label})`}
+                        activeDot={{ r: 3 }}
+                        dot={false}
+                        stackId="a"
+                      />
+                    );
+                  })}
                 <ChartLegend content={<ChartLegendContent />} />
               </AreaChart>
             </ChartContainer>
