@@ -107,9 +107,7 @@ describe("Feedback Page", () => {
     expect(mockInsertFeedback).toHaveBeenCalledWith([
       { content: "This is a test feedback." },
     ]);
-    expect(require("sonner").toast.success).toHaveBeenCalledWith(
-      "Thank you for your feedback!"
-    );
+    expect(toast.success).toHaveBeenCalledWith("Thank you for your feedback!");
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
