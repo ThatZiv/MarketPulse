@@ -1,7 +1,12 @@
-"use client";
-
 import * as React from "react";
-import { Area, AreaChart, CartesianGrid, Label, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Label as ChartLabel,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import {
   Card,
@@ -31,36 +36,45 @@ import { useQuery } from "@tanstack/react-query";
 import { StockDataItem } from "@/types/stocks";
 import { actions, cache_keys } from "@/lib/constants";
 import moment from "moment";
-import { capitalizeFirstLetter, isSameDay } from "@/lib/utils";
-import { useQueryClient } from "@tanstack/react-query";
+import { capitalizeFirstLetter, formatNumber, isSameDay } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import InfoTooltip from "./InfoTooltip";
 interface StockChartProps {
   ticker: string;
   stock_id: number;
 }
 
-// FIXME:
-// - properly handle invalidation and time range switch
-// - ChartToolTipContent needs to show date
+const normalizeName = (name: string) =>
+  name.split("_").map(capitalizeFirstLetter).join(" ");
 
-// TODO:
-// - add prediction data
-// - figure out forecast continuity
+// FIXME:
+// - ChartToolTipContent needs to show date
 
 export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
-  const queryClient = useQueryClient();
+  const [dataInput, setDataInput] =
+    React.useState<keyof StockDataItem>("stock_close");
   const api = useApi();
   const { dispatch } = useGlobal();
+  const [showPredictions, setShowPredictions] = React.useState(true);
 
   const timeRangeValue = React.useMemo(() => {
     return parseInt(timeRange.match(/(\d+)/)?.[0] || "0");
   }, [timeRange]);
 
+  // React.useEffect(() => {
+  //   queryClient.invalidateQueries({
+  //     queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
+  //   });
+  // }, [timeRangeValue]);
+
   React.useEffect(() => {
-    queryClient.invalidateQueries({
-      queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
-    });
-  }, [timeRangeValue]);
+    return () => {
+      setShowPredictions(true);
+      setDataInput("stock_close");
+    };
+  }, [ticker]);
 
   const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
     queryKey: [cache_keys.STOCK_DATA, ticker],
@@ -87,43 +101,56 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     error: predictionsError,
   } = useQuery({
     queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
-    queryFn: () => api?.getStockPredictions(ticker, timeRangeValue),
-    enabled: !!stock_id && !!api,
+    queryFn: () => api?.getStockPredictions(ticker, 30),
+    enabled: !!stock_id && !!api && !!ticker && timeRangeValue > 0,
   });
 
   const chartData = React.useMemo(() => {
     if (!data) return [];
     if (!predictionHistory) return [];
+    // TODO: skip weekends
     const filteredData = data?.map((item) => {
-      const thisDate = new Date(item.time_stamp.join(" "));
+      const thisDate = moment(new Date(item.time_stamp.join(" ")))
+        //.add(1, "days") // this will align with prediction forecast
+        .toDate();
       const thisPredictionHistory = predictionHistory.find((point) =>
-        isSameDay(new Date(point.created_at), thisDate)
+        // isSameDay(thisDate, moment(point.created_at).add(-1, "days").toDate())
+        isSameDay(thisDate, moment(point.created_at).toDate())
       );
-      return {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const point: Record<string, any> = {
         date: thisDate,
-        stock_close: item.stock_close,
-        average: thisPredictionHistory?.output.find(
-          (point) => point.name === "average"
-        )?.forecast[0],
+        // stock_close: item.stock_close,
         // stock_open: item.stock_open,
         // stock_high: item.stock_high,
         // stock_low: item.stock_low,
+        // stock_volume: item.stock_volume,
       };
+      if (dataInput !== "stock_close") {
+        setShowPredictions(false);
+      }
+      point[dataInput] = item[dataInput];
+      if (showPredictions) {
+        point["prediction"] = thisPredictionHistory?.output.find(
+          (point) => point.name === "average"
+        )?.forecast[0];
+      }
+      return point;
     });
     return filteredData.slice(
       filteredData.length - timeRangeValue,
       filteredData.length
     );
-  }, [data, timeRangeValue, predictionHistory]);
+  }, [data, timeRangeValue, predictionHistory, showPredictions, dataInput]);
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const config: ChartConfig = {};
-    const colors = ["#E2C541", "#92E98C", "#479BC6", "#ea580c"];
+    const colors = ["#479BC6", "#ea580c"];
     if (!chartData) return config;
     for (const name of Object.keys(chartData[0] ?? {}) ?? []) {
       if (name === "date") continue;
       config[name] = {
-        label: name.split("_").map(capitalizeFirstLetter).join(" "),
+        label: normalizeName(name),
         color: colors.shift() ?? "#606060",
       };
     }
@@ -132,7 +159,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
 
   return (
     <>
-      {isLoading ? (
+      {isLoading || arePredictionsLoading ? (
         <Card className="w-full p-4 border border-black dark:border-white ">
           {(isLoading || arePredictionsLoading) && (
             <div
@@ -173,6 +200,34 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 </div>
               </CardDescription>
             </div>
+            <div className="flex items-center space-x-2">
+              <InfoTooltip side="left">
+                <p className="text-xs">
+                  Toggle to show or hide the average predictions on the chart.
+                  The average predictions are based on the average output from
+                  all the forecast models.{" "}
+                  <strong>
+                    You can only view predictions only when viewing stock
+                    closing
+                  </strong>{" "}
+                  because the predictions are based on stock closing prices.
+                </p>
+              </InfoTooltip>
+              <Switch
+                checked={showPredictions}
+                onCheckedChange={(checked) => {
+                  setShowPredictions(checked);
+                }}
+                disabled={
+                  arePredictionsLoading ||
+                  isLoading ||
+                  dataInput !== "stock_close"
+                }
+                className="data-[state=checked]:bg-[#ea580c]"
+                id="showPreds"
+              />
+              <Label htmlFor="showPreds">Show Predictions</Label>
+            </div>
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger
                 className="w-[160px] rounded-lg sm:ml-auto"
@@ -190,6 +245,34 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <SelectItem value="7d" className="rounded-lg">
                   Last 7 days
                 </SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={dataInput}
+              onValueChange={(value) =>
+                setDataInput(value as keyof StockDataItem)
+              }
+            >
+              <SelectTrigger
+                className="w-[160px] rounded-lg sm:ml-auto"
+                aria-label="Select a data input"
+              >
+                <SelectValue placeholder="Stock Close" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                {[
+                  "stock_close",
+                  "stock_open",
+                  "stock_high",
+                  "stock_low",
+                  "stock_volume",
+                  "sentiment_data",
+                  "news_data",
+                ].map((item) => (
+                  <SelectItem key={item} value={item} className="rounded-lg">
+                    {normalizeName(item)}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </CardHeader>
@@ -246,14 +329,17 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <YAxis
                   tickLine={true}
                   axisLine={true}
-                  dataKey={"stock_close"}
+                  dataKey={dataInput}
                   allowDataOverflow
                   tickMargin={4}
                   tickCount={9}
+                  tickFormatter={(value) => {
+                    return String(formatNumber(value));
+                  }}
                   domain={["auto", "auto"]}
                 >
-                  <Label
-                    value="Stock Price ($)"
+                  <ChartLabel
+                    // TODO: add a conditional y-axis for each data input
                     angle={-90}
                     position="insideLeft"
                     style={{ textAnchor: "middle" }}

@@ -189,7 +189,6 @@ export default class Api implements IApi {
     lookback: number = 7
   ): Promise<StockPrediction[]> {
     try {
-      console.log(lookback);
       const resp = await this.instance.get("/auth/forecast", {
         params: { ticker, lookback },
         responseType: "json",
