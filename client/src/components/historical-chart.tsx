@@ -116,13 +116,14 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
 
       console.log(thisDate);
       const thisPredictionHistory = predictionHistory.find(
-        (point) =>
-          isSameDay(
+        (point) => {
+          const tday = moment(point.created_at + " EST");
+          return isSameDay(
             thisDate,
-            moment(point.created_at + " EST")
-              .add(1, "days")
-              .toDate()
-          )
+            // we need to skip fridays to align w/ historical
+            tday.add(tday.weekday() == 5 ? 3 : 1, "days").toDate()
+          );
+        }
         // isSameDay(thisDate, moment(point.created_at + " EST").toDate())
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
