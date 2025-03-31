@@ -163,8 +163,8 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     stock_high: "High Price ($)",
     stock_low: "Low Price ($)",
     stock_volume: "Volume (# shares)",
-    sentiment_data: "Social Score (-6 to 6) higher is better",
-    news_data: "News Score (-6 to 6) higher is better",
+    sentiment_data: "Social Score - higher is better",
+    news_data: "News Score - higher is better",
   };
 
   return (
