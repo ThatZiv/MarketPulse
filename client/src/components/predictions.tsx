@@ -283,7 +283,7 @@ export default function Predictions({
                     if (key === "day") return null;
                     return (
                       <Line
-                        key={index}
+                        key={"prediction-line-" + index}
                         type="monotone"
                         dataKey={key}
                         strokeWidth={2}
