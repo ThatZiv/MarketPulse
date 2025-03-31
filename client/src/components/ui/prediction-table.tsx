@@ -20,6 +20,7 @@ import moment from "moment";
 import { Button } from "@/components/ui/button";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { actions } from "@/lib/constants";
+import InfoTooltip from "@/components/InfoTooltip";
 
 interface PredictionTableProps {
   ticker: string;
@@ -42,11 +43,15 @@ function ColoredRow(row: { row: (number | string)[]; value: number }) {
 
   const valueStr = "$" + Number(row.value).toFixed(2);
   if (greatest) {
-    return <p className="text-green-700">{valueStr}</p>;
+    return <div className = "flex"><p className="text-green-700 px-2">{valueStr} </p><InfoTooltip side="right">
+                            This is the prediction with the highest value on this day.
+                            </InfoTooltip></div>;
   } else if (least) {
-    return <p className="text-red-700">{valueStr}</p>;
+    return <div className = "flex"><p className="text-red-700 px-2">{valueStr}</p><InfoTooltip side="right">
+                             This is the prediction with the lowest value on this day
+                            </InfoTooltip></div>;
   } else {
-    return <p>{valueStr}</p>;
+    return <div className = "flex"><p className= "px-2">{valueStr}</p><p></p></div>;
   }
 }
 
@@ -161,7 +166,9 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                         <TableCell key={`${i}:${j}`}>
                           {j === Object.values(row).length - 1 ? (
                             // last column is for AVERAGE model!
-                            <p className="text-orange-600 ">{valueStr}</p>
+                            <div className="flex"><p className="text-orange-600 px-2">{valueStr}</p><InfoTooltip side="right">
+                                                      This is the average of the model predictions on this day.
+                                                    </InfoTooltip></div>
                           ) : (
                             <ColoredRow
                               row={Object.values(row)}
