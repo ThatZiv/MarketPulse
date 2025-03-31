@@ -110,12 +110,20 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     if (!predictionHistory) return [];
     // TODO: skip weekends
     const filteredData = data?.map((item) => {
-      const thisDate = moment(new Date(item.time_stamp.join(" ")))
-        //.add(1, "days") // this will align with prediction forecast
+      const thisDate = moment(new Date(item.time_stamp.join(" ") + " EST"))
+        // .add(1, "days") // this will align with prediction forecast
         .toDate();
-      const thisPredictionHistory = predictionHistory.find((point) =>
-        // isSameDay(thisDate, moment(point.created_at).add(-1, "days").toDate())
-        isSameDay(thisDate, moment(point.created_at).toDate())
+
+      console.log(thisDate);
+      const thisPredictionHistory = predictionHistory.find(
+        (point) =>
+          isSameDay(
+            thisDate,
+            moment(point.created_at + " EST")
+              .add(-1, "days")
+              .toDate()
+          )
+        // isSameDay(thisDate, moment(point.created_at + " EST").toDate())
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const point: Record<string, any> = {
