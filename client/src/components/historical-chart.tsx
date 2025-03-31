@@ -300,7 +300,14 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   {chartConfig &&
                     Object.entries(chartConfig)?.map(([key, val]) => {
                       return (
-                        <linearGradient id={key} x1="0" y1="1" x2="0" y2="1">
+                        <linearGradient
+                          id={key}
+                          key={"linear-" + key}
+                          x1="0"
+                          y1="1"
+                          x2="0"
+                          y2="1"
+                        >
                           <stop
                             offset="5%"
                             stopColor={val.color}
