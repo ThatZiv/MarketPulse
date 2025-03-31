@@ -119,18 +119,19 @@ if __name__ == "__main__":
     }
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
-    
+
 
     # Train ARIMA
     arima_model = AzArima("az-arima", "TSLA")
     arima_model.train(data2, data2['Sentiment_Data'])
     arima_model.load()
-    print("\nARIMA Predictions (Sentiment Adjusted):\n", arima_model.run(data_copy, 7))
+    print("\nARIMA Predictions:\n", arima_model.run(data_copy, 7))
 
     # Train SARIMA
     sarima_model = AzSarima("az-sarima", "TSLA")
     sarima_model.train(data2, data2['Sentiment_Data'])
     sarima_model.load()
-    print("\nSARIMA Predictions (Sentiment Adjusted):\n", sarima_model.run(data_copy, 7))
+    print("\nSARIMA Predictions:\n", sarima_model.run(data_copy, 7))
 
     session.close()
+
