@@ -76,7 +76,7 @@ class CNNLSTMTransformer(ForecastModel):
         news = input_data['News_Data']
         average_sentiment = sentiment.mean()
         average_news = news.mean()
-        sentiment_adjustment = 0.04 * (sentiment.iloc[-1] - average_sentiment)
+        sentiment_adjustment = 0.05 * (sentiment.iloc[-1] - average_sentiment)
         news_adjustment = 0.2 * (news.iloc[-1] - average_news)
 
         for _ in range(num_forecast_days):
