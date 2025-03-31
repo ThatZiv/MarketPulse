@@ -222,7 +222,6 @@ class XGBoostModel:
         future_df['isFuture'] = True
         df['isFuture'] = False
         sentiment_value = df['Sentiment_Data'].iloc[-1]
-        print('sentiment_value to adjust: ',sentiment_value)
         first_drop_cols = ['Low','High','Open','Volume', 'Sentiment_Data']
         df = df.drop(columns=first_drop_cols)
         df_and_future = pd.concat([df, future_df])
