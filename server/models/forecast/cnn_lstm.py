@@ -22,13 +22,13 @@ class CNNLSTMTransformer(ForecastModel):
     CNNLSTMTransformer implementation of ForecastModel abstract class
     """
     def __init__(self, name: str, ticker: str = None):
-        self.seq_length = 6
+        self.seq_length = 6 
         self.scaler = MinMaxScaler(feature_range=(0, 1))
         self.model = self._build_model()
         super().__init__(self.model, name, ticker)
 
     def _build_model(self):
-        inputs = Input(shape=(self.seq_length, 2)) 
+        inputs = Input(shape=(self.seq_length, 3)) 
         x = Conv1D(filters=128, kernel_size=3, activation='relu', padding='same')(inputs)
         x = BatchNormalization()(x)
         x = MaxPooling1D(pool_size=2)(x)
@@ -54,7 +54,8 @@ class CNNLSTMTransformer(ForecastModel):
         return Add()([inputs, context_vector])
 
     def train(self, data_set: DatasetType):
-        scaled_data = self.scaler.fit_transform(data_set[['Close', 'Sentiment_Data']])
+
+        scaled_data = self.scaler.fit_transform(data_set[['Close', 'Sentiment_Data', 'News_Data']])
         X, y = self._create_sequences(scaled_data, self.seq_length)
         split_index = int(len(X) * 0.8)
         X_train, X_val = X[:split_index], X[split_index:]
@@ -66,23 +67,26 @@ class CNNLSTMTransformer(ForecastModel):
 
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
 
-        scaled_data = self.scaler.transform(input_data[['Close', 'Sentiment_Data']])
+        scaled_data = self.scaler.transform(input_data[['Close', 'Sentiment_Data', 'News_Data']])
         X_test, _ = self._create_sequences(scaled_data, self.seq_length)
 
         predictions = []
         last_sequence = scaled_data[-self.seq_length:]
         sentiment = input_data['Sentiment_Data']
+        news = input_data['News_Data']
         average_sentiment = sentiment.mean()
+        average_news = news.mean()
         sentiment_adjustment = 0.04 * (sentiment.iloc[-1] - average_sentiment)
+        news_adjustment = 0.2 * (news.iloc[-1] - average_news)
 
         for _ in range(num_forecast_days):
-            prediction = self.model.predict(last_sequence.reshape(1, self.seq_length, 2))
-            adjusted_prediction = prediction[0, 0] * (1 + sentiment_adjustment)
+            prediction = self.model.predict(last_sequence.reshape(1, self.seq_length, 3))
+            adjusted_prediction = prediction[0, 0] * (1 + sentiment_adjustment + news_adjustment)
             predictions.append(adjusted_prediction)
-            last_sequence = np.append(last_sequence[1:], [[adjusted_prediction, sentiment.iloc[-1]]], axis=0)
+            last_sequence = np.append(last_sequence[1:], [[adjusted_prediction, sentiment.iloc[-1], news.iloc[-1]]], axis=0)
 
         predictions = np.array(predictions).reshape(-1, 1)
-        predictions_actual = self.scaler.inverse_transform(np.hstack((predictions, np.zeros((len(predictions), 1)))))[:, 0]
+        predictions_actual = self.scaler.inverse_transform(np.hstack((predictions, np.zeros((len(predictions), 2)))))[:, 0]
 
         return predictions_actual.tolist()
 
@@ -90,7 +94,7 @@ class CNNLSTMTransformer(ForecastModel):
         X, y = [], []
         for i in range(len(data) - seq_length):
             X.append(data[i:i + seq_length])
-            y.append(data[i + seq_length, 0])  
+            y.append(data[i + seq_length, 0])
         return np.array(X), np.array(y)
 
 
@@ -124,13 +128,15 @@ if __name__ == "__main__":
     s_low = []
     s_volume = []
     s_sentiment = []
+    s_news = []
     for row in data2:
         s_open.append(row[3])
         s_close.append(row[1])
         s_high.append(row[4])
         s_low.append(row[5])
         s_volume.append(row[2])
-        s_sentiment.append(row[6])  
+        s_sentiment.append(row[6]) 
+        s_news.append(row[8])  
 
     data2 = {
         'Close': s_close,
@@ -138,7 +144,8 @@ if __name__ == "__main__":
         'High': s_high,
         'Low': s_low,
         'Volume': s_volume,
-        'Sentiment_Data': s_sentiment
+        'Sentiment_Data': s_sentiment,
+        'News_Data': s_news
     }
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
