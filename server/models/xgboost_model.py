@@ -196,7 +196,7 @@ class XGBoostModel:
         This function trains the model for actual predictions.
         """
         df = df.copy()
-        drop_cols = ['Open','High','Low','Volume','Sentiment_Data','News_Data']
+        drop_cols = ['Open','High','Low','Volume','Sentiment_Data']
         df = df.drop(columns=drop_cols)
         df = self.add_features(df)
         print(f"Added {self.ticker} features.")
@@ -221,7 +221,9 @@ class XGBoostModel:
         future_df = pd.DataFrame(index=future)
         future_df['isFuture'] = True
         df['isFuture'] = False
-        first_drop_cols = ['Low','High','Open','Volume', 'Sentiment_Data', 'News_Data']
+        sentiment_value = df['Sentiment_Data'].iloc[-1]
+        print('sentiment_value to adjust: ',sentiment_value)
+        first_drop_cols = ['Low','High','Open','Volume', 'Sentiment_Data']
         df = df.drop(columns=first_drop_cols)
         df_and_future = pd.concat([df, future_df])
         df_and_future = df_and_future.fillna(value=0)
@@ -247,8 +249,14 @@ class XGBoostModel:
             future_values = df_and_future.query('isFuture').copy()
             drop_cols = ['Close','isFuture']
             future_values = future_values.drop(columns=drop_cols)
-        predicted = df_and_future.tail(num_days+1).iloc[:-1]['Close']
-        return predicted
+        predicted_prices = df_and_future.tail(num_days+1).iloc[:-1]['Close']
+        print("Future Predictions:", predicted_prices)
+        normalized_sentiment = sentiment_value / 6
+        print("Normalized sentiment: ", normalized_sentiment)
+        adjustment_factor = 1 + (normalized_sentiment * 0.02)
+        print("Adjustment factor: ", adjustment_factor)
+        predicted_prices *= adjustment_factor
+        return predicted_prices
 
     def model_evaluation(self, y_pred, y_test):
         """
