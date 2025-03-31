@@ -157,6 +157,16 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     return config;
   }, [chartData]);
 
+  const YAxisLabels: Record<string, string> = {
+    stock_close: "Closing Price ($)",
+    stock_open: "Opening Price ($)",
+    stock_high: "High Price ($)",
+    stock_low: "Low Price ($)",
+    stock_volume: "Volume (# shares)",
+    sentiment_data: "Social Score (-6 to 6) higher is better",
+    news_data: "News Score (-6 to 6) higher is better",
+  };
+
   return (
     <>
       {isLoading || arePredictionsLoading ? (
@@ -339,7 +349,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   domain={["auto", "auto"]}
                 >
                   <ChartLabel
-                    // TODO: add a conditional y-axis for each data input
+                    value={YAxisLabels[dataInput]}
                     angle={-90}
                     position="insideLeft"
                     style={{ textAnchor: "middle" }}
