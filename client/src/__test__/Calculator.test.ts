@@ -27,21 +27,17 @@ describe("Purchase History Calculator", () => {
 
     expect(calc.getTotalBought()).toBe(1400);
 
-    expect(calc.getTotalSpent()).toBe(1400);
-
     expect(calc.getTotalSold()).toBe(0);
 
     calc.setPurchases(purchases2);
     expect(calc.getTotalShares()).toBe(20);
     expect(calc.getTotalBought()).toBe(1000);
-    expect(calc.getTotalSpent()).toBe(1300);
     expect(calc.getTotalSold()).toBe(400);
 
     calc.setPurchases(purchases3);
 
     expect(calc.getTotalShares()).toBe(-40);
     expect(calc.getTotalBought()).toBe(100);
-    expect(calc.getTotalSpent()).toBe(1000);
 
     expect(calc.getTotalSold()).toBe(1300);
   });

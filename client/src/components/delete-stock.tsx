@@ -80,6 +80,9 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
                 return;
             }
             mutation.mutate({ stock_id: stock_id ?? 0, user_id: user?.id ?? '', supabase });
+            await queryClient.invalidateQueries({
+                queryKey: [cache_keys.USER_STOCKS],
+            });
             await navigate("/", { replace: true });
         } else {
             toast.error("Stock name does not match. Please enter the correct stock name to delete.");

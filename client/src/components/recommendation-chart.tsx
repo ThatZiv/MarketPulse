@@ -5,15 +5,19 @@ import {
   //   ChartTooltip,
   //   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { useApi } from "@/lib/ApiProvider";
-import { actions, cache_keys } from "@/lib/constants";
+import { cache_keys } from "@/lib/constants";
 // import { type PieSectorDataItem } from "recharts/types/polar/Pie";
 import moment from "moment";
 import { Separator } from "./ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+
+import { Suggestion } from "./buy_sell";
+import dataHandler from "@/lib/dataHandler";
+import { IApi } from "@/lib/api";
 
 // const chartData = [
 //   { action: "buy", suggest: 50, fill: "var(--color-buy)" },
@@ -41,28 +45,19 @@ interface RecommendationProps {
 }
 
 export default function Recommendation({ stock_ticker }: RecommendationProps) {
+  
+  const [currentPrice, setCurrentPrice] = useState<number>(0)
+  const [predictedPrice, setPredictedPrice] = useState<number>(0)
   const { state, dispatch } = useGlobal();
   const api = useApi();
   //   const [, setActiveIndex] = useState<number | null>(null);
   const { data, isError, isLoading } = useQuery({
     queryKey: [cache_keys.STOCK_DATA_REALTIME, stock_ticker],
     refetchInterval: () => 1000 * 60 * 5,
-    queryFn: async () => {
-      const data = await api?.getStockRealtime(stock_ticker);
-      if (!data) return [];
-      dispatch({
-        type: actions.SET_STOCK_PRICE,
-        payload: {
-          stock_ticker,
-          data: data[data.length - 1].stock_close,
-          timestamp: new Date(
-            data[data.length - 1].time_stamp.join(" ") + " UTC"
-          ).getTime(),
-        },
-      });
-      return data;
-    },
-    enabled: !!stock_ticker,
+    queryFn: dataHandler(dispatch)
+      .forApi(api as IApi)
+      .getStockRealtime(stock_ticker),
+    enabled: !!stock_ticker && !!api,
   });
   const profit = useMemo(() => {
     if (!data) return undefined;
@@ -77,7 +72,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     if (!predictions) return undefined;
     const lookAhead =
       predictions.length - timeWindow >= 0
-        ? predictions.length - timeWindow
+        ? timeWindow-1
         : 0;
     const lastPrediction = predictions[lookAhead];
     if (!lastPrediction) return undefined;
@@ -89,7 +84,8 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     if (!futurePrices.length) return undefined;
     const averageFuturePrice =
       futurePrices.reduce((a, b) => a + b, 0) / futurePrices.length;
-
+    setCurrentPrice(lastPrice)
+    setPredictedPrice(averageFuturePrice)
     return (averageFuturePrice - lastPrice).toFixed(2);
     // ).map((key) => ({[key]: lastPrediction[key]})); // TODO: weighted average here for models
   }, [
@@ -99,6 +95,10 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     state.stocks,
     stock_ticker,
   ]);
+
+  const purchaseHistory = useMemo(()=> {
+    return state.history
+  }, [state.history])
 
   const isLoss = Number(profit) < 0;
   //   const renderActiveShape = (props: PieSectorDataItem) => {
@@ -176,7 +176,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
                     It might be a good idea to{" "}
                   </div>
                   <div className="text-2xl font-bold text-left">
-                    {isLoss ? "Sell" : "Buy"} {stock_ticker}.
+                    <Suggestion current_price = {currentPrice} predicted_price={predictedPrice} purchases={purchaseHistory[stock_ticker]}/> {stock_ticker} Stock.
                   </div>
                 </div>
               </div>

@@ -13,8 +13,6 @@ import {
   Undo,
   X,
 } from "lucide-react";
-import useAsync from "@/hooks/useAsync";
-import { type Stock } from "@/types/stocks";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -28,7 +26,7 @@ import {
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cache_keys } from "@/lib/constants";
 import {
   Table,
@@ -41,14 +39,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import InfoTooltip from "@/components/InfoTooltip";
-
-const getTodayISOString = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+import dataHandler from "@/lib/dataHandler";
+import { useGlobal } from "@/lib/GlobalProvider";
+import moment from "moment";
 
 export interface StockFormData {
   ticker: string;
@@ -64,6 +57,7 @@ export interface StockFormData {
 export default function StockPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { dispatch } = useGlobal();
   const [searchParams] = useSearchParams();
   const { user, supabase } = useSupabase();
 
@@ -85,29 +79,26 @@ export default function StockPage() {
 
   const [error, setError] = useState<string>();
   const {
-    value: stocks,
+    data: stocks,
     error: stocksError,
-    loading: stocksLoading,
-  } = useAsync<Stock[]>(
-    () =>
-      new Promise((resolve, reject) => {
-        supabase
-          .from("Stocks")
-          .select("*")
-          .then(({ data, error }) => {
-            if (error) reject(error);
-            return resolve(data || []);
-          });
-      }),
-    [supabase]
-  );
+    isLoading: stocksLoading,
+  } = useQuery({
+    queryKey: [cache_keys.STOCKS],
+    queryFn: dataHandler().forSupabase(supabase).getAllStocks(),
+    enabled: !!user,
+  });
 
   useEffect(() => {
     if (searchParams.has("ticker") && stocks) {
       const ticker = (searchParams.get("ticker") as string).toUpperCase();
       const stock = stocks.find((stock) => stock.stock_ticker === ticker);
       if (stock) {
-        setFormData((prev) => ({ ...prev, ticker: stock.stock_id.toString() }));
+        setFormData((prev) => {
+          if (prev.ticker !== stock.stock_id.toString()) {
+            return { ...prev, ticker: stock.stock_id.toString() };
+          }
+          return prev;
+        });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
     }
@@ -192,7 +183,6 @@ export default function StockPage() {
   ) => {
     const newPurchases = [...formData.purchases];
     if (field === "date") {
-      // ignore if date is already in use (PK unique con)
       if (newPurchases.some((purchase) => purchase.date === value)) {
         toast.error("Date already in use");
         return;
@@ -213,33 +203,40 @@ export default function StockPage() {
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
 
-  const fetchPurchaseHistory = async (ticker: string) => {
-    if (!user?.id) return;
+  const fetchPurchaseHistory = async (ticker_id: string) => {
+    try {
+      if (!user?.id) throw new Error("User not authenticated");
+      const thisStock = stocks?.find(
+        (stock) => stock.stock_id.toString() === ticker_id
+      );
+      const data = await queryClient.fetchQuery({
+        queryKey: [cache_keys.USER_STOCK_TRANSACTION, Number(ticker_id)],
+        queryFn: dataHandler(dispatch)
+          .forSupabase(supabase)
+          .getUserStockPurchasesForStock(
+            user.id,
+            ticker_id,
+            thisStock?.stock_ticker
+          ),
+      });
 
-    const { data, error } = await supabase
-      .from("User_Stock_Purchases")
-      .select("date, amount_purchased, price_purchased")
-      .order("date", { ascending: true })
-      .eq("user_id", user.id)
-      .eq("stock_id", ticker);
+      const purchases = data.map((purchase) => ({
+        date: moment(purchase.date).format("YYYY-MM-DDTHH:mm"),
+        shares: purchase.amount_purchased,
+        pricePurchased: purchase.price_purchased,
+      }));
+      setFormData((prev) => ({
+        ...prev,
+        ticker: ticker_id,
+        hasStocks: data.length > 0 ? "yes" : "no",
+        purchases,
+      }));
 
-    if (error) {
+      setPreviousPurchases(purchases);
+    } catch (error) {
+      toast.error("Error fetching purchase history");
       console.error("Error fetching purchase history:", error);
-      return;
     }
-    const purchases = data.map((purchase) => ({
-      date: purchase.date.split("T")[0],
-      shares: purchase.amount_purchased,
-      pricePurchased: purchase.price_purchased,
-    }));
-    setFormData((prev) => ({
-      ...prev,
-      ticker,
-      hasStocks: data.length > 0 ? "yes" : "no",
-      purchases,
-    }));
-
-    setPreviousPurchases(purchases);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -323,9 +320,25 @@ export default function StockPage() {
     toast.promise(updateStock, {
       loading: "Saving...",
       success: async () => {
-        await queryClient.invalidateQueries({
-          queryKey: [cache_keys.USER_STOCKS],
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: [cache_keys.USER_STOCKS],
+          }),
+          // FIXME: figure out why cache invalidation does not trigger refetch here
+          queryClient.refetchQueries({
+            queryKey: [
+              cache_keys.USER_STOCK_TRANSACTION,
+              Number(formData.ticker),
+            ],
+            exact: true,
+          }),
+          queryClient.refetchQueries({
+            // this is really bad but it's what's current being used in landing (to show update on redirected page)
+            // TODO: make individual stock data cached, no reset for all
+            queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
+            exact: true,
+          }),
+        ]);
         await navigate("/");
         return "Stock data saved successfully";
       },
@@ -337,7 +350,7 @@ export default function StockPage() {
     return (
       <div className="text-center flex items-center">
         <h1 className="text-3xl">Error</h1>
-        <p className="text-primary">
+        <p className="text-gray-600">
           Error fetching stocks: {(stocksError as Error).message}
         </p>
       </div>
@@ -425,10 +438,24 @@ export default function StockPage() {
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
-              <label className="block text-lg font-light">
-                Purchase History <span className="text-red-500">*</span>
-              </label>
-              <p className="mb-2 text-gray-600 text-muted-foreground font-medium">Note: Please enter your stock history in the correct time sequence.</p>
+              <div className="flex gap-1">
+                <label className="block text-lg font-light">
+                  Purchase History <span className="text-red-500">*</span>
+                </label>
+                <InfoTooltip className="self-center" side="right" size="md">
+                  <div className="mb-2">
+                    <ul className="list-disc list-inside">
+                      <li>Your stock history must be in chronological order</li>
+                      <li>
+                        You cannot sell more shares than you own on a given day
+                      </li>
+                      <li>
+                        Cumulatively, you cannot sell more shares than you own
+                      </li>
+                    </ul>
+                  </div>
+                </InfoTooltip>
+              </div>
               {formData.purchases.map((purchase, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <div className="flex-1 flex flex-col">
@@ -439,13 +466,44 @@ export default function StockPage() {
                     )}
                     <input
                       id={`date-${index}`}
-                      type="date"
+                      type="datetime-local"
                       required
                       value={purchase.date}
-                      min="2000-01-01"
-                      max={getTodayISOString()}
+                      min="2000-01-01T00:00"
+                      max={"2099-01-01T00:00"}
+                      onChange={(e) => {
+                        console.log(e.target.value);
+                        handlePurchaseChange(
+                          index,
+                          "date",
+                          moment(e.target.value).format("YYYY-MM-DDTHH:mm")
+                        );
+                      }}
+                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+
+                  <div className="flex-1 flex flex-col">
+                    {index === 0 && (
+                      <label
+                        htmlFor={`shares-${index}`}
+                        className="text-sm mb-1"
+                      >
+                        Shares
+                      </label>
+                    )}
+                    <input
+                      id={`shares-${index}`}
+                      type="number"
+                      step="0.01"
+                      required
+                      value={
+                        purchase.shares === null
+                          ? ""
+                          : Math.abs(purchase.shares)
+                      }
                       onChange={(e) =>
-                        handlePurchaseChange(index, "date", e.target.value)
+                        handlePurchaseChange(index, "shares", e.target.value)
                       }
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -498,32 +556,6 @@ export default function StockPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex-1 flex flex-col">
-                    {index === 0 && (
-                      <label
-                        htmlFor={`shares-${index}`}
-                        className="text-sm mb-1"
-                      >
-                        Shares
-                      </label>
-                    )}
-                    <input
-                      id={`shares-${index}`}
-                      type="number"
-                      step="0.01"
-                      required
-                      value={
-                        purchase.shares === null
-                          ? ""
-                          : Math.abs(purchase.shares)
-                      }
-                      onChange={(e) =>
-                        handlePurchaseChange(index, "shares", e.target.value)
-                      }
-                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
                   <div className="flex-1 flex flex-col">
                     {index === 0 && (
                       <label
@@ -614,11 +646,12 @@ export default function StockPage() {
                   <TableRow>
                     <TableCell>
                       <span
-                        className={`${calc.getProfit() > 0
-                          ? // totals.value * -1 is the value of profit
-                          "text-green-600"
-                          : "text-red-600"
-                          }`}
+                        className={`${
+                          calc.getProfit() > 0
+                            ? // totals.value * -1 is the value of profit
+                              "text-green-600"
+                            : "text-red-600"
+                        }`}
                       >
                         {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
                       </span>
@@ -632,8 +665,9 @@ export default function StockPage() {
                       {PurchaseHistoryCalculator.toDollar(calc.getTotalSold())}
                     </TableCell>
                     <TableCell
-                      className={`${calc.getTotalShares() < 0 ? "text-red-600" : ""
-                        } flex items-center gap-2`}
+                      className={`${
+                        calc.getTotalShares() < 0 ? "text-red-600" : ""
+                      } flex items-center gap-2`}
                     >
                       {calc.getTotalShares().toLocaleString(undefined, {
                         maximumFractionDigits: 2,
@@ -647,7 +681,7 @@ export default function StockPage() {
                   </TableRow>
                 </TableBody>
               </Table>
-              { }
+              {}
             </div>
           )}
 

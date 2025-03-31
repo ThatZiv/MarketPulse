@@ -107,4 +107,22 @@ describe("Forgot Password", () => {
     expect(mockSupabase).toHaveBeenCalledTimes(1);
     expect(login).toHaveBeenCalledTimes(2);
   });
+
+  test("Bad Email", async () => {
+    render(<ResetPassword resetPasswordState={login} />);
+    const reset = await screen.findByText("Recover");
+    expect(reset).toBeInTheDocument();
+    expect(reset).not.toBeDisabled();
+    expect(reset).toBeVisible();
+
+    const email = await screen.findByPlaceholderText("Email Address");
+    await act(async () => {
+      await fireEvent.change(email, { target: { value: "bob@bob.com" } });
+    });
+
+    await act(async () => {
+      await fireEvent.click(reset);
+    });
+    
+  });
 });

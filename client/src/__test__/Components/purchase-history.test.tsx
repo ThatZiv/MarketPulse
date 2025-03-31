@@ -94,7 +94,9 @@ describe("PurchaseHistory Component", () => {
 
       expect(screen.getByText("$1,500.00")).toBeInTheDocument();
       expect(
-        screen.getByText(moment(mockData[0].date).format("MMMM DD, yyyy"))
+        screen.getByText(
+          moment(mockData[0].date).format("MMMM DD, YYYY hh:mm A")
+        )
       ).toBeInTheDocument();
     });
   });

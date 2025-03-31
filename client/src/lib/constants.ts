@@ -1,4 +1,5 @@
 export const cache_keys = {
+  STOCKS: "stocks",
   USER_STOCKS: "user:stocks",
   USER_FULL_NAME: "user:full_name",
   USER_STOCK_TRANSACTION: "user:stock:transaction:",
