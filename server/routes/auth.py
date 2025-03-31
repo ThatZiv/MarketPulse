@@ -4,17 +4,14 @@
 # pylint: disable=line-too-long
 
 import os
-import json
-import copy
 import flask_jwt_extended as jw
 import requests
-from flask import Blueprint, Response, jsonify, request, send_file, current_app
-from sqlalchemy import desc, select, exc
+from flask import Blueprint, Response, jsonify, request, send_file
+from sqlalchemy import desc, select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker
-from database.tables import Stock_Info, Stock_Predictions, Stocks
-from engine import get_engine, global_engine
+from database.tables import Stock_Info, Stocks
 from routes.llm import llm_bp
+from routes.access import get_forcasts, create_session
 from cache import cache
 
 auth_bp = Blueprint('auth', __name__)
@@ -25,14 +22,6 @@ def dump_datetime(value):
     if value is None:
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
-
-def create_session():
-    try:
-        session = sessionmaker(bind=global_engine())
-    except exc.OperationalError:
-        with current_app.config["MUTEX"]:
-            session = sessionmaker(bind=get_engine())
-    return session()
 
 def stock_query_single(query, session):
     return session.connection().execute(query).first()
@@ -71,8 +60,6 @@ def ticker_logo():
             with open(loc, 'wb') as f:
                 f.write(fallback.content)
     return send_file(f'{cache_dir}/{ticker}.png', mimetype='image/png')
-
-
 
 #What do we want this path to return?
 @auth_bp.route('stockchart', methods=['GET'])
@@ -124,7 +111,7 @@ def chart():
                 session.close()
     return Response(status=401, mimetype='application/json')
 
-# Has been tested with out any data
+
 @auth_bp.route('forecast', methods=['GET'])
 @jw.jwt_required()
 def forecast_route():
@@ -140,49 +127,9 @@ def forecast_route():
         return cache_value
 
     if request.method == 'GET':
-        session = create_session()
-        ticker = request.args['ticker']
-        s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-        output_id = stock_query_single(s_id, session)
-        if output_id :
-            forecast = select(Stock_Predictions).where(Stock_Predictions.stock_id == output_id.stock_id).order_by(desc(Stock_Predictions.created_at)).limit(lookback)
-            output = stock_query_all(forecast, session)
-            out = []
-            out_array = []
-            columns = [column.key for column in Stock_Predictions.__table__.columns if column.key.startswith("model_")]
-            session.close()
-            for o in output:
-                # pylint: disable=protected-access
-                output_dict = o._mapping
-                out = []
-                # pylint: enable=protected-access
-                for column in columns:
-                    forecast_data = output_dict[column]
-                    out.append(json.loads(forecast_data))
+        response = get_forcasts(ticker=ticker, lookback=lookback)
 
-                # "model" for average of all models
-                forecast_window = len(out[0]['forecast'])
-                model_len = len(out)
-                avg_model = {'name': 'average', 'forecast': [0] * forecast_window}
-
-                for j in range(forecast_window):
-                    day_avg = 0
-                    for i in range(model_len):
-                        model = out[i]
-                        day_avg += model['forecast'][j]
-                    day_avg /= model_len
-                    avg_model['forecast'][j] = day_avg
-
-                out.append(avg_model)
-
-                out_array.append({
-                    "stock_id": output_dict["stock_id"],
-                    "created_at": output_dict["created_at"],
-                    "output": copy.deepcopy(out)
-                })
-            cache.set("forecast_"+ticker+lookback, jsonify(out_array), timeout = 10000)
-            return jsonify(out_array)
-        session.close()
-        return Response(status=400, mimetype='application/json')
-    session.close()
+        if response is None:
+            return Response(status=400, mimetype='application/json')
+        return jsonify(response)
     return Response(status=503, mimetype='application/json')

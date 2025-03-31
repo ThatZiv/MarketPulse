@@ -8,6 +8,7 @@ import database.yfinanceapi as yf
 import routes.auth as a
 import main as m
 from main import app
+import routes.access as f
 
 def mock_base(a):
     return 1
@@ -106,9 +107,9 @@ def test_forecast(client, monkeypatch):
         f.close()
         return data
 
-    monkeypatch.setattr(a, "create_session", mock_session)
-    monkeypatch.setattr(a, "stock_query_single", mock_forecast)
-    monkeypatch.setattr(a, "stock_query_all", mock_forecast_all)
+    monkeypatch.setattr(f, "create_session", mock_session)
+    monkeypatch.setattr(f, "stock_query_single", mock_forecast)
+    monkeypatch.setattr(f, "stock_query_all", mock_forecast_all)
     response = client.get('/auth/forecast')
     assert response.status_code == 401
 
