@@ -36,7 +36,6 @@ def run_models():
 
     for stock in stock_out:
         stock_q= select(Stock_Info).where(Stock_Info.stock_id == stock.stock_id)
-
         output = session.connection().execute(stock_q).all()
         s_open = []
         s_close = []
@@ -45,21 +44,21 @@ def run_models():
         s_volume = []
         s_sentiment_data = []
         s_news_data = []
+        print(output)
 
         for row in output:
-            s_open.append(row[3])
-            s_close.append(row[1])
-            s_high.append(row[4])
-            s_low.append(row[5])
-            s_volume.append(row[2])
-            s_sentiment_data.append(row[6])
-            s_news_data.append(row[7])
+            print(row)
+            s_open.append(row.stock_open)
+            s_close.append(row.stock_close)
+            s_high.append(row.stock_high)
+            s_low.append(row.stock_low)
+            s_volume.append(row.stock_volume)
+            s_sentiment_data.append(row.sentiment_data)
+            s_news_data.append(row.news_data)
 
         data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume, 'Sentiment_Data':s_sentiment_data, 'News_Data':s_news_data}
         data = pd.DataFrame(data)
         one_day = []
-
-
         one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", stock.stock_ticker))
         one_day.append(CNNLSTMTransformer("cnn-lstm", stock.stock_ticker))
         one_day.append(ZavTransformer(Transformer(), "transformer", stock.stock_ticker))
@@ -68,12 +67,8 @@ def run_models():
         # one_day.append(AzArima("az-arima", stock.stock_ticker))
 
         prediction = ForecastModels(one_day)
-
         prediction.train_all(copy.deepcopy(data))
-
         pred = prediction.run_all(copy.deepcopy(data), 7)
-        print(pred[3])
-        print(pred[4])
         model_1 = pred[0]
         model_2 = pred[1]
         model_3 = pred[2]

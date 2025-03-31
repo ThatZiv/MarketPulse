@@ -41,50 +41,27 @@ export class PurchaseHistoryCalculator {
    * calculates all totals
    */
   private calculateTotals() {
-    this.totalShares = this.purchases.reduce(
-      (acc, purchase) => acc + (purchase.amount_purchased ?? 0),
-      0
-    );
-
-    this.totalBought = this.purchases
-      .filter(
-        (purchase) =>
-          purchase.amount_purchased !== null && purchase?.amount_purchased > 0
-      )
-      .reduce(
-        (acc, purchase) =>
-          acc +
-          (purchase.price_purchased ?? 0) * (purchase.amount_purchased ?? 0),
-        0
-      );
-
-    this.totalSold = this.purchases
-      .filter(
-        (purchase) =>
-          purchase.amount_purchased !== null && purchase?.amount_purchased < 0
-      )
-      .reduce(
-        (acc, purchase) =>
-          acc +
-          (purchase.price_purchased ?? 0) *
-            (purchase.amount_purchased ?? 0) *
-            -1,
-        0
-      );
+    this.totalShares = 0;
+    this.totalBought = 0;
+    this.totalSold = 0;
     this.profit = 0;
+
     let curr = 0;
-    if (this.totalSold > 0) {
-      for (const purchase of this.purchases) {
-        curr +=
-          (purchase.price_purchased ?? 0) * (purchase.amount_purchased ?? 0);
-        if (purchase.amount_purchased && purchase.amount_purchased < 0) {
-          // if sell
-          this.profit = curr * -1;
-          curr = 0;
-          continue;
-        }
+    for (const { amount_purchased, price_purchased } of this.purchases) {
+      const value = amount_purchased * price_purchased;
+      curr += value;
+      this.totalShares += amount_purchased;
+      if (amount_purchased > 0) {
+        this.totalBought += value;
+      } else {
+        this.totalSold += Math.abs(value);
+        this.profit = curr * -1;
+        curr = 0;
+        continue;
       }
     }
+
+    // this.profit = this.totalSold === 0 ? 0 : this.totalSold - this.totalBought;
   }
 
   /**
@@ -139,12 +116,8 @@ export class PurchaseHistoryCalculator {
     )}`;
   }
 
-  getTotalSpent(): number {
-    return this.totalBought + this.profit;
-  }
-
   getAveragePrice(): number {
-    return this.totalBought / this.totalShares;
+    return this.totalShares === 0 ? 0 : this.totalBought / this.totalShares;
   }
 
   getTotalValue(currentPrice: number): number {
@@ -152,6 +125,6 @@ export class PurchaseHistoryCalculator {
   }
 
   getTotalProfit(currentPrice: number): number {
-    return this.getTotalValue(currentPrice) - this.getTotalSpent();
+    return this.getTotalValue(currentPrice) - this.totalBought;
   }
 }

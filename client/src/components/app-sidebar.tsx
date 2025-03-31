@@ -91,7 +91,7 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "mailto:zavaar.shah@wayne.edu",
+      url: "/support",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],
@@ -201,7 +201,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     className="h-10 w-10 mr-2"
                   />
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">MarketPulse</span>
+                    <span className="truncate font-semibold text-xl">MarketPulse</span>
                   </div>
                 </div>
               </Link>

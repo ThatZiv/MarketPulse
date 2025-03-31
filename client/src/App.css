@@ -16,6 +16,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1
 }
 
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(0.8);
+}
+
 /* Only for gauge meters in StockEstimation.tsx */
 :root {
   --tick-label-color: black;
