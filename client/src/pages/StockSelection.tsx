@@ -41,14 +41,7 @@ import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import InfoTooltip from "@/components/InfoTooltip";
 import dataHandler from "@/lib/dataHandler";
 import { useGlobal } from "@/lib/GlobalProvider";
-
-const getTodayISOString = () => {
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const day = String(today.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+import moment from "moment";
 
 export interface StockFormData {
   ticker: string;
@@ -190,7 +183,6 @@ export default function StockPage() {
   ) => {
     const newPurchases = [...formData.purchases];
     if (field === "date") {
-      // ignore if date is already in use (PK unique con)
       if (newPurchases.some((purchase) => purchase.date === value)) {
         toast.error("Date already in use");
         return;
@@ -229,7 +221,7 @@ export default function StockPage() {
       });
 
       const purchases = data.map((purchase) => ({
-        date: purchase.date.split("T")[0],
+        date: moment(purchase.date).format("YYYY-MM-DDTHH:mm"),
         shares: purchase.amount_purchased,
         pricePurchased: purchase.price_purchased,
       }));
@@ -446,13 +438,24 @@ export default function StockPage() {
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
-              <label className="block text-lg font-light">
-                Purchase History <span className="text-red-500">*</span>
-              </label>
-              <p className="mb-2 text-gray-600 text-muted-foreground font-medium">
-                Note: Please enter your stock history in the correct time
-                sequence.
-              </p>
+              <div className="flex gap-1">
+                <label className="block text-lg font-light">
+                  Purchase History <span className="text-red-500">*</span>
+                </label>
+                <InfoTooltip className="self-center" side="right" size="md">
+                  <div className="mb-2">
+                    <ul className="list-disc list-inside">
+                      <li>Your stock history must be in chronological order</li>
+                      <li>
+                        You cannot sell more shares than you own on a given day
+                      </li>
+                      <li>
+                        Cumulatively, you cannot sell more shares than you own
+                      </li>
+                    </ul>
+                  </div>
+                </InfoTooltip>
+              </div>
               {formData.purchases.map((purchase, index) => (
                 <div key={index} className="flex gap-2 mb-2">
                   <div className="flex-1 flex flex-col">
@@ -463,13 +466,44 @@ export default function StockPage() {
                     )}
                     <input
                       id={`date-${index}`}
-                      type="date"
+                      type="datetime-local"
                       required
                       value={purchase.date}
-                      min="2000-01-01"
-                      max={getTodayISOString()}
+                      min="2000-01-01T00:00"
+                      max={"2099-01-01T00:00"}
+                      onChange={(e) => {
+                        console.log(e.target.value);
+                        handlePurchaseChange(
+                          index,
+                          "date",
+                          moment(e.target.value).format("YYYY-MM-DDTHH:mm")
+                        );
+                      }}
+                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
+                  </div>
+
+                  <div className="flex-1 flex flex-col">
+                    {index === 0 && (
+                      <label
+                        htmlFor={`shares-${index}`}
+                        className="text-sm mb-1"
+                      >
+                        Shares
+                      </label>
+                    )}
+                    <input
+                      id={`shares-${index}`}
+                      type="number"
+                      step="0.01"
+                      required
+                      value={
+                        purchase.shares === null
+                          ? ""
+                          : Math.abs(purchase.shares)
+                      }
                       onChange={(e) =>
-                        handlePurchaseChange(index, "date", e.target.value)
+                        handlePurchaseChange(index, "shares", e.target.value)
                       }
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -522,32 +556,6 @@ export default function StockPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex-1 flex flex-col">
-                    {index === 0 && (
-                      <label
-                        htmlFor={`shares-${index}`}
-                        className="text-sm mb-1"
-                      >
-                        Shares
-                      </label>
-                    )}
-                    <input
-                      id={`shares-${index}`}
-                      type="number"
-                      step="0.01"
-                      required
-                      value={
-                        purchase.shares === null
-                          ? ""
-                          : Math.abs(purchase.shares)
-                      }
-                      onChange={(e) =>
-                        handlePurchaseChange(index, "shares", e.target.value)
-                      }
-                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
-                  </div>
-
                   <div className="flex-1 flex flex-col">
                     {index === 0 && (
                       <label

@@ -4,7 +4,7 @@ import {
   CartesianGrid,
   Cell,
   Label,
-  LabelList,
+  XAxis,
   YAxis,
 } from "recharts";
 
@@ -102,7 +102,7 @@ export default function PurchaseHistory({
     if (!purchases) return points;
     for (const { date, amount_purchased, price_purchased } of purchases) {
       points.push({
-        date: moment(date).format("MMM DD"),
+        date: moment(date).format("MMM D hh:mm A"),
         amount_purchased,
         price_purchased,
       });
@@ -140,6 +140,12 @@ export default function PurchaseHistory({
                   cursor={false}
                   content={<ChartTooltipContent hideLabel hideIndicator />}
                 />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
                 <YAxis
                   dataKey="amount_purchased"
                   label={
@@ -152,12 +158,6 @@ export default function PurchaseHistory({
                   }}
                 />
                 <Bar dataKey="amount_purchased" name="Shares">
-                  <LabelList
-                    className="text-sm sm:text-md"
-                    position="bottom"
-                    dataKey="date"
-                    fillOpacity={3}
-                  />
                   {chartData.map((item) => (
                     <Cell
                       key={item.date}
@@ -185,7 +185,7 @@ export default function PurchaseHistory({
                 {purchases.map((purchase) => (
                   <TableRow key={purchase.date}>
                     <TableCell>
-                      {moment(purchase.date).format("MMMM DD, yyyy")}
+                      {moment(purchase.date).format("MMMM DD, yyyy hh:mm A")}
                     </TableCell>
                     <TableCell>
                       {purchase.amount_purchased > 0 ? "Buy" : "Sell"}
@@ -233,9 +233,9 @@ export default function PurchaseHistory({
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-bold">
-                  {PurchaseHistoryCalculator.toDollar(calc.getTotalSpent())}
+                  {PurchaseHistoryCalculator.toDollar(calc.getTotalBought())}
                 </span>{" "}
-                has been spent in total.
+                has been bought in total.
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-bold">{calc.getTotalShares()}</span>{" "}
