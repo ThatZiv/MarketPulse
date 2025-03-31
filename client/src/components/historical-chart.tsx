@@ -111,7 +111,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     // TODO: skip weekends
     const filteredData = data?.map((item) => {
       const thisDate = moment(new Date(item.time_stamp.join(" ") + " EST"))
-        // .add(1, "days") // this will align with prediction forecast
+        // .add(2, "days") // this will align with prediction forecast
         .toDate();
 
       console.log(thisDate);
@@ -120,7 +120,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
           isSameDay(
             thisDate,
             moment(point.created_at + " EST")
-              .add(-1, "days")
+              .add(1, "days")
               .toDate()
           )
         // isSameDay(thisDate, moment(point.created_at + " EST").toDate())
