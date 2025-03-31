@@ -67,7 +67,7 @@ def get_forcasts(ticker, lookback):
                 "created_at": output_dict["created_at"],
                 "output": copy.deepcopy(out)
             })
-            cache.set("forecast_"+ticker+lookback, out_array, timeout = 10000)
-            return out_array
+        cache.set("forecast_"+ticker+lookback, out_array, timeout = 10000)
+        return out_array
     session.close()
     return None

@@ -48,7 +48,7 @@ if __name__ == "__main__":
     except exc.TimeoutError as e:
         print(e)
 
-    stock_q = select(Stock_Info).where(Stock_Info.stock_id == 4)
+    stock_q = select(Stock_Info).where(Stock_Info.stock_id == 2)
     Session = sessionmaker(bind=engine)
     session = Session()
     data2 = session.connection().execute(stock_q).all()
@@ -57,15 +57,19 @@ if __name__ == "__main__":
     s_high = []
     s_low = []
     s_volume = []
+    s_sentiment_data = []
+    s_news_data = []
     for row in data2:
         s_open.append(row[3])
         s_close.append(row[1])
         s_high.append(row[4])
         s_low.append(row[5])
         s_volume.append(row[2])
-    data2 = {'Close': s_close, 'Open': s_open, 'High': s_high, 'Low': s_low, 'Volume': s_volume}
+        s_sentiment_data.append(row[6])
+        s_news_data.append(row[8])
+    data2 = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume, 'Sentiment_Data':s_sentiment_data, 'News_Data':s_news_data}
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
-    model = XGBoost("XGBoost-model", "TM")
+    model = XGBoost("XGBoost-model", "F")
     model.train(data2)
     print(model.run(data_copy, 7))
