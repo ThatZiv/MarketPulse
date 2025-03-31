@@ -2,14 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Disclaimer() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
-      <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-transparent px-6 py-10">
+      <Card className="max-w-4xl w-full shadow-l border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
         <CardHeader className="text-center">
-          <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <CardTitle className="text-4xl font-bold tracking-tight">
             Disclaimer
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-left text-gray-700 dark:text-gray-300 flex flex-wrap gap-4">
+        <CardContent className="text-left flex flex-wrap gap-4">
           <p className="w-full">
             The information provided by MarketPulse, including AI-generated
             financial recommendations and outputs, is for informational purposes
@@ -23,11 +23,10 @@ export default function Disclaimer() {
           </p>
           <p>
             You should conduct your own research and consult with a qualified
-            financial advisor before making <strong>any</strong> investment
-            decisions. MarketPulse is not liable for any financial losses,
-            damages, or other consequences arising from the use of this platform
-            or reliance on its outputs. Past performance is not indicative of
-            future results.
+            financial advisor before making <i>any investment decisions. </i>
+            MarketPulse is not liable for any financial losses, damages, or other
+            consequences arising from the use of this platform or reliance on its
+            outputs. Past performance is not indicative of future results.
           </p>
           <p className="font-bold text-sm">
             Investing in financial markets carries inherent risks. Consider your

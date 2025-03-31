@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "react-router";
 
 export default function Documentation() {
   return (
@@ -11,30 +12,30 @@ export default function Documentation() {
         </CardHeader>
         <CardContent className="text-lg text-gray-700 dark:text-gray-300">
           <div className="flex flex-col items-center gap-4">
-            <a
+            <Link
               className="w-full text-lg font-semibold px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-center hover:bg-gray-200 dark:hover:bg-gray-700"
-              href="/documentation/introduction"
+              to="/documentation/introduction"
             >
               Introduction
-            </a>
-            <a
+            </Link>
+            <Link
               className="w-full text-lg font-semibold px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-center hover:bg-gray-300 dark:hover:bg-gray-600"
-              href="/documentation/tutorials"
+              to="/documentation/tutorials"
             >
               Tutorials
-            </a>
-            <a
+            </Link>
+            <Link
               className="w-full text-lg font-semibold px-4 py-2 text-gray-900 dark:text-white bg-white dark:bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-center hover:bg-gray-400 dark:hover:bg-gray-500"
-              href="/documentation/faq"
+              to="/documentation/faq"
             >
               FAQ
-            </a>
-            <a
+            </Link>
+            <Link
               className="w-full text-lg font-semibold px-4 py-2 text-gray-900 dark:text-white bg-transparent border border-gray-300 dark:border-gray-700 rounded-lg text-center hover:bg-gray-400 dark:hover:bg-gray-500"
-              href="/documentation/disclaimer"
+              to="/documentation/disclaimer"
             >
               Disclaimer
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>

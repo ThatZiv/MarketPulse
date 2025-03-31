@@ -32,20 +32,20 @@ export default function Dashboard() {
   // Disclaimer addition
   const [showDisclaimer, setShowDisclaimer] = useState(false);
 
-useEffect(() => {
-  if (user) {
-    const hasAgreed = localStorage.getItem(`hasAgreedToDisclaimer_${user.id}`);
-    setShowDisclaimer(hasAgreed !== "true");
-  }
-}, [user]);
+  useEffect(() => {
+    if (user) {
+      const hasAgreed = localStorage.getItem(`hasAgreedToDisclaimer_${user.id}`);
+      setShowDisclaimer(hasAgreed !== "true");
+    }
+  }, [user]);
 
 
-const handleAgreeDisclaimer = () => {
-  if (user) {
-    localStorage.setItem(`hasAgreedToDisclaimer_${user.id}`, "true");
-    setShowDisclaimer(false);
-  }
-};
+  const handleAgreeDisclaimer = () => {
+    if (user) {
+      localStorage.setItem(`hasAgreedToDisclaimer_${user.id}`, "true");
+      setShowDisclaimer(false);
+    }
+  };
 
 
   return (
@@ -136,15 +136,15 @@ const handleAgreeDisclaimer = () => {
               <h2 className="text-xl font-bold mb-4">Disclaimer</h2>
               <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                 The stock information provided on this platform is for
-                informational purposes only. By using this website, 
+                informational purposes only. By using this website,
                 you acknowledge that any decisions you make based on
-                the information provided are at your own risk. 
-                We are not responsible for any financial losses, 
+                the information provided are at your own risk.
+                We are not responsible for any financial losses,
                 damages, or liabilities incurred as a result of reliance on our content.
               </p>
               <div className="flex justify-end">
-                <Button 
-                  onClick={handleAgreeDisclaimer} 
+                <Button
+                  onClick={handleAgreeDisclaimer}
                   className="bg-primary text-white"
                 >
                   I Agree
