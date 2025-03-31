@@ -108,32 +108,23 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const chartData = React.useMemo(() => {
     if (!data) return [];
     if (!predictionHistory) return [];
-    // TODO: skip weekends
     const filteredData = data?.map((item) => {
-      const thisDate = moment(new Date(item.time_stamp.join(" ") + " EST"))
-        // .add(2, "days") // this will align with prediction forecast
-        .toDate();
+      const thisDate = moment(
+        new Date(item.time_stamp.join(" ") + " EST")
+      ).toDate();
 
       console.log(thisDate);
-      const thisPredictionHistory = predictionHistory.find(
-        (point) => {
-          const tday = moment(point.created_at + " EST");
-          return isSameDay(
-            thisDate,
-            // we need to skip fridays to align w/ historical
-            tday.add(tday.weekday() == 5 ? 3 : 1, "days").toDate()
-          );
-        }
-        // isSameDay(thisDate, moment(point.created_at + " EST").toDate())
-      );
+      const thisPredictionHistory = predictionHistory.find((point) => {
+        const tday = moment(point.created_at + " EST");
+        return isSameDay(
+          thisDate,
+          // we need to skip fridays to align w/ historical
+          tday.add(tday.weekday() == 5 ? 3 : 1, "days").toDate()
+        );
+      });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const point: Record<string, any> = {
         date: thisDate,
-        // stock_close: item.stock_close,
-        // stock_open: item.stock_open,
-        // stock_high: item.stock_high,
-        // stock_low: item.stock_low,
-        // stock_volume: item.stock_volume,
       };
       if (dataInput !== "stock_close") {
         setShowPredictions(false);
