@@ -250,7 +250,7 @@ class XGBoostModel:
             future_values = future_values.drop(columns=drop_cols)
         predicted_prices = df_and_future.tail(num_days+1).iloc[:-1]['Close']
         normalized_sentiment = sentiment_value / 6
-        adjustment_factor = 1 + (normalized_sentiment * 0.02) # may need to adjust this factor later.
+        adjustment_factor = 1 + (normalized_sentiment * 0.02) #may need to adjust this factor later
         predicted_prices *= adjustment_factor
         return predicted_prices
 
