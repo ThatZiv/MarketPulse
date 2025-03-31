@@ -212,16 +212,16 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
             </div>
             <div className="flex items-center space-x-2">
               <InfoTooltip side="left">
-                <p className="text-xs">
+                <div className="text-xs">
                   Toggle to show or hide the average predictions on the chart.
                   The average predictions are based on the average output from
                   all the forecast models.{" "}
-                  <strong>
+                  <span className="font-bold">
                     You can only view predictions only when viewing stock
                     closing
-                  </strong>{" "}
+                  </span>{" "}
                   because the predictions are based on stock closing prices.
-                </p>
+                </div>
               </InfoTooltip>
               <Switch
                 checked={showPredictions}
@@ -279,7 +279,11 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   "sentiment_data",
                   "news_data",
                 ].map((item) => (
-                  <SelectItem key={item} value={item} className="rounded-lg">
+                  <SelectItem
+                    key={"select-" + item}
+                    value={item}
+                    className="rounded-lg"
+                  >
                     {normalizeName(item)}
                   </SelectItem>
                 ))}
