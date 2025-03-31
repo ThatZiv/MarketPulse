@@ -46,6 +46,7 @@ import { v4 as uuidv4 } from "uuid";
 export default function SettingsPage() {
   const { session, supabase, user, signOut } = useSupabase();
   const { dispatch } = useGlobal();
+  const {state:globalState} = useGlobal()
   const [state, setState] = React.useState<"loading" | "error" | "done">(
     "loading"
   );
@@ -186,6 +187,9 @@ export default function SettingsPage() {
             });
           if (!response.error) 
                 {
+          const response = await supabase.storage
+          .from("profile_pictures")
+          .createSignedUrl(file, 3600);
           const { error } = await supabase
             .from("Account")
             .upsert({
@@ -201,15 +205,22 @@ export default function SettingsPage() {
             toast.error("Failed updating your profile", {
               description: error.message,
             });
-          } else {
-            toast.success("Profile updated successfully!");
-            dispatch({
-              type: actions.SET_USER_FULL_NAME,
-              payload: [values.first_name, values.last_name]
-                .filter((x) => x)
-                .join(" ")
-                .trim(),
+          } else if(response.error) 
+          {
+            toast.error("Failed updating your profile", {
+              description: response.error.message,
             });
+          }
+          else
+          {
+            toast.success("Profile updated successfully!");
+            globalState.user.url = response.data.signedUrl
+            globalState.user.name = values.first_name+" "+values.last_name
+            dispatch({
+              type: actions.SET_USER,
+              payload: globalState.user,
+            });
+      
             navigate("/");}
           }
           else
