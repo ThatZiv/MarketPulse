@@ -14,6 +14,8 @@ import Tutorials from "@/pages/Tutorials";
 import FAQ from "@/pages/FAQ";
 import Disclaimer from "./pages/Disclaimers";
 import Feedback from "@/pages/Feedback";
+import Support from "@/pages/Support";
+
 
 
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -44,6 +46,8 @@ function App() {
           <Route path="/stocks" element={<StockSelection />} />
           <Route path="/stocks/:ticker" element={<StockEstimation />} />
           <Route path="/feedback" element={<Feedback />} />
+          <Route path="/support" element={<Support />} />
+
           <Route path="/settings">
             <Route path=":tab" element={<Settings />} />
             <Route index element={<Settings />} />
