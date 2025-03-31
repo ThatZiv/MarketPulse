@@ -119,6 +119,7 @@ if __name__ == "__main__":
     }
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
+    
 
     # Train ARIMA
     arima_model = AzArima("az-arima", "TSLA")
