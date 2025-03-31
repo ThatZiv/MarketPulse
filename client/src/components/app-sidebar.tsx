@@ -91,7 +91,7 @@ const data = {
   navSecondary: [
     {
       title: "Support",
-      url: "mailto:zavaar.shah@wayne.edu",
+      url: "/support",
       icon: LifeBuoy,
       isActive: undefined,
       items: [],

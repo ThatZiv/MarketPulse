@@ -46,7 +46,7 @@ export default function Feedback() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
-      <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
+      <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             Feedback
@@ -64,7 +64,7 @@ export default function Feedback() {
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
               placeholder="Enter your feedback here..."
-              className="min-h-[120px] resize-none border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="min-h-[120px] resize-none border border-gray-300 dark:border-gray-600 p-2 rounded-md w-full bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
               disabled={loading}
             />
           </div>
