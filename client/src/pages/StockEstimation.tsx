@@ -1,5 +1,5 @@
 import { useSupabase } from "@/database/SupabaseProvider";
-import Stock_Chart from "@/components/stock_chart_demo";
+import HistoricalChart from "@/components/historical-chart";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MdEdit } from "react-icons/md";
@@ -256,7 +256,12 @@ export default function Stocks() {
         </div>
       </div>
       <div className="flex flex-col md:items-center pt-4">
-        <Stock_Chart ticker={ticker ?? ""} />
+        {currentStock && (
+          <HistoricalChart
+            ticker={ticker ?? ""}
+            stock_id={currentStock?.Stocks.stock_id}
+          />
+        )}
       </div>
       <div className="flex flex-col md:items-center pt-4">
         <Card className="border border-black dark:border-white w-full p-1">
