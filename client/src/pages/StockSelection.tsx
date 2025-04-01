@@ -70,8 +70,6 @@ export default function StockPage() {
 
   const {
       data: userStocks,
-      error: userStocksError,
-      status: userStocksStatus,
     } = useQuery<UserStock[]>({
       queryKey: [cache_keys.USER_STOCKS],
       queryFn: dataHandler(dispatch)
