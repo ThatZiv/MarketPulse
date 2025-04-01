@@ -61,8 +61,8 @@ export default function StockPage() {
   const [searchParams] = useSearchParams();
   const { user, supabase } = useSupabase();
 
-  const title = useMemo(
-    () => (searchParams.has("ticker") ? "Edit Stock" : "Add New Stock"),
+  const IsEditPage = useMemo<boolean>(
+    () => searchParams.has("ticker"),
     [searchParams]
   );
 
@@ -361,7 +361,7 @@ export default function StockPage() {
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
         <h1 className="text-4xl mb-2 text-center flex-1 tracking-tight">
-          {title}
+          {IsEditPage ? "Edit Stock" : "Add New Stock"}
         </h1>
       </header>
 
@@ -384,6 +384,7 @@ export default function StockPage() {
             ) : (
               <Select
                 value={formData.ticker}
+                disabled={IsEditPage}
                 onValueChange={async (value: string) => {
                   await fetchPurchaseHistory(value);
                 }}
@@ -415,6 +416,7 @@ export default function StockPage() {
             </label>
             <Select
               value={formData.hasStocks}
+              disabled={stocksLoading || !formData.ticker}
               onValueChange={(value: string) =>
                 setFormData((prev) => ({
                   ...prev,
