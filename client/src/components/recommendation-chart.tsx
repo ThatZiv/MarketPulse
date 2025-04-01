@@ -45,9 +45,8 @@ interface RecommendationProps {
 }
 
 export default function Recommendation({ stock_ticker }: RecommendationProps) {
-  
-  const [currentPrice, setCurrentPrice] = useState<number>(0)
-  const [predictedPrice, setPredictedPrice] = useState<number>(0)
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [predictedPrice, setPredictedPrice] = useState<number>(0);
   const { state, dispatch } = useGlobal();
   const api = useApi();
   //   const [, setActiveIndex] = useState<number | null>(null);
@@ -70,10 +69,7 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     if (!lastPrice) return undefined;
     const predictions = state.predictions[stock_ticker];
     if (!predictions) return undefined;
-    const lookAhead =
-      predictions.length - timeWindow >= 0
-        ? timeWindow-1
-        : 0;
+    const lookAhead = predictions.length - timeWindow >= 0 ? timeWindow - 1 : 0;
     const lastPrediction = predictions[lookAhead];
     if (!lastPrediction) return undefined;
     const futurePrices = Object.keys(lastPrediction)
@@ -84,8 +80,8 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     if (!futurePrices.length) return undefined;
     const averageFuturePrice =
       futurePrices.reduce((a, b) => a + b, 0) / futurePrices.length;
-    setCurrentPrice(lastPrice)
-    setPredictedPrice(averageFuturePrice)
+    setCurrentPrice(lastPrice);
+    setPredictedPrice(averageFuturePrice);
     return (averageFuturePrice - lastPrice).toFixed(2);
     // ).map((key) => ({[key]: lastPrediction[key]})); // TODO: weighted average here for models
   }, [
@@ -96,9 +92,9 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
     stock_ticker,
   ]);
 
-  const purchaseHistory = useMemo(()=> {
-    return state.history
-  }, [state.history])
+  const purchaseHistory = useMemo(() => {
+    return state.history;
+  }, [state.history]);
 
   const isLoss = Number(profit) < 0;
   //   const renderActiveShape = (props: PieSectorDataItem) => {
@@ -176,7 +172,16 @@ export default function Recommendation({ stock_ticker }: RecommendationProps) {
                     It might be a good idea to{" "}
                   </div>
                   <div className="text-2xl font-bold text-left">
-                    <Suggestion current_price = {currentPrice} predicted_price={predictedPrice} purchases={purchaseHistory[stock_ticker]}/> {stock_ticker} Stock.
+                    {purchaseHistory[stock_ticker] && (
+                      <span>
+                        <Suggestion
+                          current_price={currentPrice}
+                          predicted_price={predictedPrice}
+                          purchases={purchaseHistory[stock_ticker]}
+                        />
+                        {stock_ticker} Stock.
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

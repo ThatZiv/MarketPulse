@@ -61,13 +61,11 @@ export default function Predictions({
     },
     enabled: !!stock_id && !!api,
   });
-  
-  let predictions = null
-  if(data)
-  {
-  predictions = data[0].output;
+
+  let predictions = null;
+  if (data) {
+    predictions = data[0].output;
   }
-  
 
   const chartData = React.useMemo(() => {
     const points: Array<PredictionDatapoint> = [];
@@ -77,7 +75,7 @@ export default function Predictions({
     // - predictions are made on a weekend
     // - predictions are made on a friday
     //// predictions are made on a monday
-    let startDate = moment(new Date(data[0].created_at));
+    let startDate = moment(new Date(data[0].created_at)).add(2, "days");
 
     // initial weekend day check
     if (startDate.isoWeekday() === 6) {
@@ -285,7 +283,7 @@ export default function Predictions({
                     if (key === "day") return null;
                     return (
                       <Line
-                        key={index}
+                        key={"prediction-line-" + index}
                         type="monotone"
                         dataKey={key}
                         strokeWidth={2}
