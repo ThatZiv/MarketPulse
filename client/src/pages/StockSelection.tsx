@@ -43,6 +43,8 @@ import dataHandler from "@/lib/dataHandler";
 import { useGlobal } from "@/lib/GlobalProvider";
 import moment from "moment";
 
+import { UserStock } from "@/types/stocks";
+
 export interface StockFormData {
   ticker: string;
   hasStocks: string;
@@ -66,6 +68,17 @@ export default function StockPage() {
     [searchParams]
   );
 
+  const {
+      data: userStocks,
+      error: userStocksError,
+      status: userStocksStatus,
+    } = useQuery<UserStock[]>({
+      queryKey: [cache_keys.USER_STOCKS],
+      queryFn: dataHandler(dispatch)
+        .forSupabase(supabase)
+        .getUserStocks(user?.id ?? ""),
+      enabled: !!user,
+    });
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
@@ -101,8 +114,21 @@ export default function StockPage() {
         });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
+      if(userStocks)
+      {
+        for(const currTicker of userStocks)
+        {
+          if(ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase())
+          {
+            setFormData((prev) => ({
+              ...prev,
+              cashToInvest: currTicker.desired_investiture
+            }));
+          }
+        }
+      }
     }
-  }, [searchParams, stocks]);
+  }, [searchParams, stocks, userStocks]);
 
   const formSchema = z
     .object({
@@ -357,6 +383,33 @@ export default function StockPage() {
     );
   }
 
+function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:string})
+{
+  if(userStocks)
+  {
+  if(!IsEditPage){
+    for(const userTicker of userStocks)
+      {
+        if(props.stock_ticker == (userTicker.Stocks.stock_ticker as string).toUpperCase())
+        {
+          return <></>
+        }
+      }
+
+      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+              {props.stock_name} ({props.stock_ticker})
+              </SelectItem>
+
+    }
+    else
+    {
+      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+              {props.stock_name} ({props.stock_ticker})
+              </SelectItem>
+
+    }
+  }
+}
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -397,9 +450,9 @@ export default function StockPage() {
                   <SelectGroup>
                     <SelectLabel>Stocks</SelectLabel>
                     {stocks?.map(({ stock_id, stock_name, stock_ticker }) => (
-                      <SelectItem key={stock_id} value={stock_id.toString()}>
-                        {stock_name} ({stock_ticker})
-                      </SelectItem>
+                      <div key = {stock_id}>
+                      <TickerItem stock_id={stock_id} stock_name={stock_name} stock_ticker={stock_ticker}/>   
+                      </div>
                     ))}
                   </SelectGroup>
                 </SelectContent>
@@ -416,7 +469,7 @@ export default function StockPage() {
             </label>
             <Select
               value={formData.hasStocks}
-              disabled={stocksLoading || !formData.ticker}
+              disabled={stocksLoading || !formData.ticker || (IsEditPage && formData.purchases.length > 0 )}
               onValueChange={(value: string) =>
                 setFormData((prev) => ({
                   ...prev,
