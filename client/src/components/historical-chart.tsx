@@ -53,6 +53,7 @@ const normalizeName = (name: string) =>
 
 export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
+  const { state } = useGlobal();
   const [dataInput, setDataInput] =
     React.useState<keyof StockDataItem>("stock_close");
   const api = useApi();
@@ -131,9 +132,11 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
       }
       point[dataInput] = item[dataInput];
       if (showPredictions) {
-        point["prediction"] = thisPredictionHistory?.output.find(
-          (point) => point.name === "average"
-        )?.forecast[0];
+        point[`${state.views.predictions.model || "average"}_prediction`] =
+          thisPredictionHistory?.output.find(
+            (point) =>
+              point.name === (state.views.predictions.model || "average")
+          )?.forecast[0];
       }
       return point;
     });
@@ -141,7 +144,14 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
       filteredData.length - timeRangeValue,
       filteredData.length
     );
-  }, [data, timeRangeValue, predictionHistory, showPredictions, dataInput]);
+  }, [
+    data,
+    timeRangeValue,
+    predictionHistory,
+    showPredictions,
+    dataInput,
+    state.views.predictions.model,
+  ]);
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const config: ChartConfig = {};
@@ -213,14 +223,13 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
             <div className="flex items-center space-x-2">
               <InfoTooltip side="left">
                 <div className="text-xs">
-                  Toggle to show or hide the average predictions on the chart.
-                  The average predictions are based on the average output from
-                  all the forecast models.{" "}
+                  Toggle to show/hide predictions on the chart. Initially,
+                  average predictions are based on the average output from all
+                  the forecast models.{" "}
                   <span className="font-bold">
-                    You can only view predictions only when viewing stock
-                    closing
+                    You can view predictions only when viewing stock closing
                   </span>{" "}
-                  because the predictions are based on stock closing prices.
+                  because predictions are based on stock closing prices.
                 </div>
               </InfoTooltip>
               <Switch
@@ -304,7 +313,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                           id={key}
                           key={"linear-" + key}
                           x1="0"
-                          y1="1"
+                          y1="0"
                           x2="0"
                           y2="1"
                         >
