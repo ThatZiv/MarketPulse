@@ -507,7 +507,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <ChartLegend content={<ChartLegendContent />} />
               </ComposedChart>
             </ChartContainer>
-            <div className="flex items-center gap-2 space-y-0 py-2 sm:flex-row">
+            <div className="flex items-center justify-end gap-2 space-y-0 py-2 sm:flex-row">
               <div className="flex items-center space-x-2">
                 <InfoTooltip side="left">
                   <span className="text-sm">
