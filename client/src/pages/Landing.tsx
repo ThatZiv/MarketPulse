@@ -444,12 +444,11 @@ function StockCard({
                         </span>
                         <span className="inline">last sale profit</span>
                         <InfoTooltip side="right">
-                          This is the profit you have made from this stock based
-                          on your last sale. It is calculated by summing up the
-                          cost of your purchases, and if a sale occurs, takes
-                          the difference between your total purchased amount and{" "}
-                          <strong>last</strong> sale amount. If you never sold,
-                          this value will remain zero.
+                          This is the profit you have made from the last sale of
+                          this stock. It is calculated with the amount spent on
+                          your remaining shares and <strong>last</strong> sale
+                          amount. If you never sold, this value will remain
+                          zero.
                         </InfoTooltip>
                       </div>
                     </div>
