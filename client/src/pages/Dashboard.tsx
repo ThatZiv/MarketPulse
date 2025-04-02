@@ -27,18 +27,22 @@ const capitalize = (str: string) => {
 export default function Dashboard() {
   const location = useLocation();
   const { user, status } = useSupabase();
-  const paths = useMemo(() => location.pathname.split("/"), [location.pathname]);
+  const paths = useMemo(
+    () => location.pathname.split("/"),
+    [location.pathname]
+  );
 
   // Disclaimer addition
   const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   useEffect(() => {
     if (user) {
-      const hasAgreed = localStorage.getItem(`hasAgreedToDisclaimer_${user.id}`);
+      const hasAgreed = localStorage.getItem(
+        `hasAgreedToDisclaimer_${user.id}`
+      );
       setShowDisclaimer(hasAgreed !== "true");
     }
   }, [user]);
-
 
   const handleAgreeDisclaimer = () => {
     if (user) {
@@ -46,7 +50,6 @@ export default function Dashboard() {
       setShowDisclaimer(false);
     }
   };
-
 
   return (
     <SidebarProvider>
@@ -124,23 +127,23 @@ export default function Dashboard() {
           </div>
         </header>
         <div
-          className={`flex p-4 justify-center transition-all duration-300 w-full bg-light-themed dark:bg-dark-themed bg-center bg-no-repeat bg-cover`}
+          className={`flex pt-4 justify-center transition-all duration-300 w-full bg-light-themed dark:bg-dark-themed bg-center bg-no-repeat bg-cover`}
         >
           <Outlet />
         </div>
 
         {/* Disclaimer addition*/}
-        {showDisclaimer && user && location.pathname === '/' && (
+        {showDisclaimer && user && location.pathname === "/" && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-lg w-full">
               <h2 className="text-xl font-bold mb-4">Disclaimer</h2>
               <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
                 The stock information provided on this platform is for
-                informational purposes only. By using this website,
-                you acknowledge that any decisions you make based on
-                the information provided are at your own risk.
-                We are not responsible for any financial losses,
-                damages, or liabilities incurred as a result of reliance on our content.
+                informational purposes only. By using this website, you
+                acknowledge that any decisions you make based on the information
+                provided are at your own risk. We are not responsible for any
+                financial losses, damages, or liabilities incurred as a result
+                of reliance on our content.
               </p>
               <div className="flex justify-end">
                 <Button

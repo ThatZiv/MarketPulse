@@ -1,4 +1,4 @@
-import { actions, cache_keys } from "@/lib/constants";
+import { actions, cache_keys, model_colors } from "@/lib/constants";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -133,7 +133,7 @@ export default function Predictions({
       }
       return chartData.slice(0, timeIndex);
     }
-    const final = Object.keys(chartData[0])
+    const final = Object.keys(chartData[0] ?? {})
       .reduce((acc, key) => {
         if (key === "day" || key === model) {
           acc.push(key);
@@ -149,7 +149,6 @@ export default function Predictions({
         });
       })
       .filter((points) => {
-        console.log(points);
         return points.some((point) => point["day"] && point[model]);
       })
       .flat();
@@ -165,14 +164,7 @@ export default function Predictions({
   // console.log(shownChartData);
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {};
-    const colors = [
-      "#6644e2",
-      "#E2C541",
-      "#BF0F52",
-      "#92E98C",
-      "#479BC6",
-      "#ea580c",
-    ];
+    const colors = [...model_colors];
     for (const { name } of predictions ?? []) {
       config[name] = {
         label: name,
