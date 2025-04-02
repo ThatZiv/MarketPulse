@@ -35,7 +35,7 @@ export default function InfoTooltip({
         )}
       </TooltipTrigger>
       <TooltipContent side={side}>
-        <p className="text-sm">{children}</p>
+        <span className="text-sm">{children}</span>
         <TooltipArrow />
       </TooltipContent>
     </Tooltip>
