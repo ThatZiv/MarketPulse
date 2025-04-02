@@ -81,7 +81,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     null
   );
   const api = useApi();
-  const [showPredictions, setShowPredictions] = React.useState(true);
+  const [showPredictions, setShowPredictions] = React.useState(false);
 
   const timeRangeValue = React.useMemo(() => {
     return parseInt(timeRange.match(/(\d+)/)?.[0] || "0");
@@ -90,7 +90,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   React.useEffect(() => {
     // reset when page switch
     return () => {
-      setShowPredictions(true);
+      setShowPredictions(false);
       setDataKeyInput("stock_close");
     };
   }, [ticker]);
@@ -299,33 +299,35 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 </div>
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
-              <InfoTooltip side="left">
-                <div className="text-xs">
-                  Toggle to show/hide predictions on the chart. Initially,
-                  average predictions are based on the average output from all
-                  the forecast models.{" "}
-                  <span className="font-bold">
-                    You can view predictions only when viewing stock closing
-                  </span>{" "}
-                  because predictions are based on stock closing prices.
-                </div>
-              </InfoTooltip>
-              <Switch
-                checked={showPredictions}
-                onCheckedChange={(checked) => {
-                  setShowPredictions(checked);
-                }}
-                disabled={
-                  arePredictionsLoading ||
-                  isLoading ||
-                  dataKeyInput !== "stock_close"
-                }
-                className="data-[state=checked]:bg-[#ea580c]"
-                id="showPreds"
-              />
-              <Label htmlFor="showPreds">Show Predictions</Label>
-            </div>
+            {isAdvanced && (
+              <div className="flex items-center space-x-2">
+                <InfoTooltip side="left">
+                  <div className="text-xs">
+                    Toggle to show/hide predictions on the chart. Initially,
+                    average predictions are based on the average output from all
+                    the forecast models.{" "}
+                    <span className="font-bold">
+                      You can view predictions only when viewing stock closing
+                    </span>{" "}
+                    because predictions are based on stock closing prices.
+                  </div>
+                </InfoTooltip>
+                <Switch
+                  checked={showPredictions}
+                  onCheckedChange={(checked) => {
+                    setShowPredictions(checked);
+                  }}
+                  disabled={
+                    arePredictionsLoading ||
+                    isLoading ||
+                    dataKeyInput !== "stock_close"
+                  }
+                  className="data-[state=checked]:bg-[#ea580c]"
+                  id="showPreds"
+                />
+                <Label htmlFor="showPreds">Show Predictions</Label>
+              </div>
+            )}
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger
                 className="w-[160px] rounded-lg sm:ml-auto"
@@ -504,8 +506,11 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
               <div className="flex items-center space-x-2">
                 <InfoTooltip side="left">
                   <div className="text-xs">
-                    Toggle to enable advanced view. Advanced view allows you to:
-                    <ul className="list-disc list-inside">
+                    <span>
+                      Toggle to enable advanced view. Advanced view allows you
+                      to:
+                    </span>
+                    <div className="list-disc list-inside">
                       <li>
                         View the historical forecast, as well as for a specific
                         date - Click on the chart to view the forecast for that
@@ -521,7 +526,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                         you can view others like high/low price, volume,
                         sentiment data, and more!
                       </li>
-                    </ul>
+                    </div>
                   </div>
                 </InfoTooltip>
                 <Switch
