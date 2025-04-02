@@ -64,7 +64,8 @@ const normalizeName = (name: string) =>
 
 export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
-  const [isAdvanced, setIsAdvanced] = React.useState(false);
+  const [isAdvanced, setAdvanced] = React.useState(false);
+  const [isCondensed, setCondensed] = React.useState(false);
   const [cursorForecast, setCursorForecast] = React.useState<ChartDatapoint[]>(
     []
   );
@@ -474,7 +475,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <YAxis
                   tickLine={true}
                   axisLine={true}
-                  dataKey={dataKeyInput}
+                  dataKey={isCondensed ? dataKeyInput : undefined}
                   allowDataOverflow
                   tickMargin={4}
                   tickCount={9}
@@ -532,7 +533,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <Switch
                   checked={isAdvanced}
                   onCheckedChange={(checked) => {
-                    setIsAdvanced(checked);
+                    setAdvanced(checked);
                   }}
                   disabled={arePredictionsLoading || isLoading}
                   className="data-[state=checked]:bg-[#4db8d8]"
@@ -585,6 +586,20 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+              )}
+              {isAdvanced && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={isCondensed}
+                    onCheckedChange={(checked) => {
+                      setCondensed(checked);
+                    }}
+                    disabled={arePredictionsLoading || isLoading}
+                    className="data-[state=checked]:bg-[#4db8d8]"
+                    id="condensed"
+                  />
+                  <Label htmlFor="condensed">Condense</Label>
+                </div>
               )}
             </div>
           </CardContent>
