@@ -275,15 +275,17 @@ export default function StockPage() {
     if (badDay) {
       const bad = new Date(badDay);
       setError(
-        `You cannot sell more shares than you own on ${String(
-          bad.getMonth() + 1
-        ).padStart(2, "0")}/${String(bad.getDate()).padStart(
-          2,
-          "0"
-        )}/${bad.getFullYear()} ${String(bad.getHours()).padStart(
-          2,
-          "0"
-        )}:${String(bad.getMinutes()).padStart(2, "0")}`
+        `You cannot sell more shares than you own on ${bad.toLocaleString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          }
+        )}`
       );
 
       return;
@@ -328,15 +330,17 @@ export default function StockPage() {
 
             reject(
               new Error(
-                `You cannot sell more shares than you own on ${String(
-                  bad.getMonth() + 1
-                ).padStart(2, "0")}/${String(bad.getDate()).padStart(
-                  2,
-                  "0"
-                )}/${bad.getFullYear()} ${String(bad.getHours()).padStart(
-                  2,
-                  "0"
-                )}:${String(bad.getMinutes()).padStart(2, "0")}`
+                `You cannot sell more shares than you own on ${bad.toLocaleString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  }
+                )}`
               )
             );
             return;
