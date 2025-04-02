@@ -68,15 +68,13 @@ export default function StockPage() {
     [searchParams]
   );
 
-  const {
-      data: userStocks,
-    } = useQuery<UserStock[]>({
-      queryKey: [cache_keys.USER_STOCKS],
-      queryFn: dataHandler(dispatch)
-        .forSupabase(supabase)
-        .getUserStocks(user?.id ?? ""),
-      enabled: !!user,
-    });
+  const { data: userStocks } = useQuery<UserStock[]>({
+    queryKey: [cache_keys.USER_STOCKS],
+    queryFn: dataHandler(dispatch)
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user,
+  });
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
@@ -112,15 +110,14 @@ export default function StockPage() {
         });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
-      if(userStocks)
-      {
-        for(const currTicker of userStocks)
-        {
-          if(ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase())
-          {
+      if (userStocks) {
+        for (const currTicker of userStocks) {
+          if (
+            ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
             setFormData((prev) => ({
               ...prev,
-              cashToInvest: currTicker.desired_investiture
+              cashToInvest: currTicker.desired_investiture,
             }));
           }
         }
@@ -274,7 +271,19 @@ export default function StockPage() {
 
     const badDay = calc.isInvalidHistory();
     if (badDay) {
-      setError(`You cannot sell more shares than you own on ${badDay}`);
+      const bad = new Date(badDay);
+      setError(
+        `You cannot sell more shares than you own on ${String(
+          bad.getMonth() + 1
+        ).padStart(2, "0")}/${String(bad.getDate()).padStart(
+          2,
+          "0"
+        )}/${bad.getFullYear()} ${String(bad.getHours()).padStart(
+          2,
+          "0"
+        )}:${String(bad.getMinutes()).padStart(2, "0")}`
+      );
+
       return;
     }
 
@@ -313,8 +322,20 @@ export default function StockPage() {
           //duplicate check
           const badDay = calc.isInvalidHistory();
           if (badDay) {
+            const bad = new Date(badDay);
+
             reject(
-              new Error(`You cannot sell more shares than you own on ${badDay}`)
+              new Error(
+                `You cannot sell more shares than you own on ${String(
+                  bad.getMonth() + 1
+                ).padStart(2, "0")}/${String(bad.getDate()).padStart(
+                  2,
+                  "0"
+                )}/${bad.getFullYear()} ${String(bad.getHours()).padStart(
+                  2,
+                  "0"
+                )}:${String(bad.getMinutes()).padStart(2, "0")}`
+              )
             );
             return;
           }
@@ -381,33 +402,48 @@ export default function StockPage() {
     );
   }
 
-function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:string})
-{
-  if(userStocks)
-  {
-  if(!IsEditPage){
-    for(const userTicker of userStocks)
-      {
-        if(props.stock_ticker == (userTicker.Stocks.stock_ticker as string).toUpperCase())
-        {
-          return <></>
+  function TickerItem(props: {
+    stock_ticker: string;
+    stock_id: number;
+    stock_name: string;
+  }) {
+    if (userStocks) {
+      if (!IsEditPage) {
+        for (const userTicker of userStocks) {
+          if (
+            props.stock_ticker ==
+            (userTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
+            return <></>;
+          }
         }
+
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
+      } else {
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
       }
-
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
-    }
-    else
-    {
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
     }
   }
-}
+
+  const formatToday = () => {
+    const currentDate = new Date();
+    return `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+      2,
+      "0"
+    )}T${String(currentDate.getHours()).padStart(2, "0")}:${String(
+      currentDate.getMinutes()
+    ).padStart(2, "0")}`;
+  };
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -448,8 +484,12 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                   <SelectGroup>
                     <SelectLabel>Stocks</SelectLabel>
                     {stocks?.map(({ stock_id, stock_name, stock_ticker }) => (
-                      <div key = {stock_id}>
-                      <TickerItem stock_id={stock_id} stock_name={stock_name} stock_ticker={stock_ticker}/>   
+                      <div key={stock_id}>
+                        <TickerItem
+                          stock_id={stock_id}
+                          stock_name={stock_name}
+                          stock_ticker={stock_ticker}
+                        />
                       </div>
                     ))}
                   </SelectGroup>
@@ -467,7 +507,11 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
             </label>
             <Select
               value={formData.hasStocks}
-              disabled={stocksLoading || !formData.ticker || (IsEditPage && formData.purchases.length > 0 )}
+              disabled={
+                stocksLoading ||
+                !formData.ticker ||
+                (IsEditPage && formData.purchases.length > 0)
+              }
               onValueChange={(value: string) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -523,7 +567,7 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                       required
                       value={purchase.date}
                       min="2000-01-01T00:00"
-                      max={"2099-01-01T00:00"}
+                      max={formatToday()}
                       onChange={(e) => {
                         console.log(e.target.value);
                         handlePurchaseChange(
