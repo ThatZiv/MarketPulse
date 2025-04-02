@@ -65,7 +65,7 @@ const normalizeName = (name: string) =>
 export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
   const [isAdvanced, setAdvanced] = React.useState(false);
-  const [isCondensed, setCondensed] = React.useState(false);
+  const [isCondensed, setCondensed] = React.useState(true);
   const [cursorForecast, setCursorForecast] = React.useState<ChartDatapoint[]>(
     []
   );
@@ -93,7 +93,9 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     return () => {
       setShowPredictions(false);
       setDataKeyInput("stock_close");
+      resetCursor();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticker]);
 
   const { data, isLoading, isError } = useQuery<StockDataItem[], Error>({
@@ -303,7 +305,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
             {isAdvanced && (
               <div className="flex items-center space-x-2">
                 <InfoTooltip side="left">
-                  <div className="text-xs">
+                  <div className="text-sm">
                     Toggle to show/hide predictions on the chart. Initially,
                     average predictions are based on the average output from all
                     the forecast models.{" "}
@@ -506,34 +508,34 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
             <div className="flex items-center gap-2 space-y-0 py-2 sm:flex-row">
               <div className="flex items-center space-x-2">
                 <InfoTooltip side="left">
-                  <div className="text-xs">
-                    <span>
-                      Toggle to enable advanced view. Advanced view allows you
-                      to:
-                    </span>
+                  <span className="text-sm">
+                    Toggle to enable advanced view. Advanced view allows you to:
                     <div className="list-disc list-inside">
                       <li>
-                        View the historical forecast, as well as for a specific
-                        date - Click on the chart to view the forecast for that
-                        date.
+                        View the historical predictions, as well as for a
+                        specific date. Click on the chart to view the forecast
+                        for that date.
                       </li>
                       <li>
                         Select a model to view the forecast. By default, the
                         chart shows the average forecast from all models.
                       </li>
                       <li>
-                        Select a different data input to view on the chart. By
+                        Select a different data point to view on the chart. By
                         default, the chart shows the stock closing price, but
                         you can view others like high/low price, volume,
-                        sentiment data, and more!
+                        sentiment data, and more.
                       </li>
                     </div>
-                  </div>
+                  </span>
                 </InfoTooltip>
                 <Switch
                   checked={isAdvanced}
                   onCheckedChange={(checked) => {
+                    resetCursor();
                     setAdvanced(checked);
+                    if (checked) setCondensed(checked);
+                    setShowPredictions(checked);
                   }}
                   disabled={arePredictionsLoading || isLoading}
                   className="data-[state=checked]:bg-[#4db8d8]"
@@ -541,52 +543,56 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 />
                 <Label htmlFor="advanced">Advanced View</Label>
               </div>
-              {isAdvanced && (
-                <Select
-                  value={state.views.predictions.model ?? "average"}
-                  onValueChange={(value) => {
-                    resetCursor();
-                    dispatch({
-                      type: actions.SET_PREDICTION_VIEW_MODEL,
-                      payload: { model: value },
-                    });
-                  }}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Filter by model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Models</SelectLabel>
-                      {/* FIXME: POTENTIAL CACHE MISMATCH (datahandler doesnt store predictions in global state yet) */}
-                      {Object.keys(state.predictions[ticker][0]).map((key) => {
-                        if (key === "day") return null;
-                        return (
-                          <SelectItem key={key} value={key}>
-                            {key}
-                          </SelectItem>
-                        );
-                      })}
-                      <SelectSeparator />
-                      <Button
-                        className="w-full px-2"
-                        variant="secondary"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          resetCursor();
-                          dispatch({
-                            type: actions.SET_PREDICTION_VIEW_MODEL,
-                            payload: { model: "" },
-                          });
-                        }}
-                      >
-                        Clear
-                      </Button>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              )}
+              {isAdvanced &&
+                predictionHistory &&
+                state.predictions[ticker][0] && (
+                  <Select
+                    value={state.views.predictions.model ?? "average"}
+                    onValueChange={(value) => {
+                      resetCursor();
+                      dispatch({
+                        type: actions.SET_PREDICTION_VIEW_MODEL,
+                        payload: { model: value },
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Models</SelectLabel>
+                        {/* FIXME: POTENTIAL CACHE MISMATCH (datahandler doesnt store predictions in global state yet) */}
+                        {Object.keys(state.predictions[ticker][0]).map(
+                          (key) => {
+                            if (key === "day") return null;
+                            return (
+                              <SelectItem key={key} value={key}>
+                                {key}
+                              </SelectItem>
+                            );
+                          }
+                        )}
+                        <SelectSeparator />
+                        <Button
+                          className="w-full px-2"
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            resetCursor();
+                            dispatch({
+                              type: actions.SET_PREDICTION_VIEW_MODEL,
+                              payload: { model: "" },
+                            });
+                          }}
+                        >
+                          Clear
+                        </Button>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
               {isAdvanced && (
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -595,7 +601,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                       setCondensed(checked);
                     }}
                     disabled={arePredictionsLoading || isLoading}
-                    className="data-[state=checked]:bg-[#4db8d8]"
+                    className="data-[state=checked]:bg-[#8e8e8e]"
                     id="condensed"
                   />
                   <Label htmlFor="condensed">Condense</Label>
