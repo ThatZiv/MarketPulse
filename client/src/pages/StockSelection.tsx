@@ -273,7 +273,19 @@ export default function StockPage() {
 
     const badDay = calc.isInvalidHistory();
     if (badDay) {
-      setError(`You cannot sell more shares than you own on ${badDay}`);
+      const bad = new Date(badDay);
+      setError(
+        `You cannot sell more shares than you own on ${String(
+          bad.getMonth() + 1
+        ).padStart(2, "0")}/${String(bad.getDate()).padStart(
+          2,
+          "0"
+        )}/${bad.getFullYear()} ${String(bad.getHours()).padStart(
+          2,
+          "0"
+        )}:${String(bad.getMinutes()).padStart(2, "0")}`
+      );
+
       return;
     }
 
@@ -312,8 +324,20 @@ export default function StockPage() {
           //duplicate check
           const badDay = calc.isInvalidHistory();
           if (badDay) {
+            const bad = new Date(badDay);
+
             reject(
-              new Error(`You cannot sell more shares than you own on ${badDay}`)
+              new Error(
+                `You cannot sell more shares than you own on ${String(
+                  bad.getMonth() + 1
+                ).padStart(2, "0")}/${String(bad.getDate()).padStart(
+                  2,
+                  "0"
+                )}/${bad.getFullYear()} ${String(bad.getHours()).padStart(
+                  2,
+                  "0"
+                )}:${String(bad.getMinutes()).padStart(2, "0")}`
+              )
             );
             return;
           }
@@ -410,6 +434,19 @@ export default function StockPage() {
       }
     }
   }
+
+  const formatToday = () => {
+    const currentDate = new Date();
+    return `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+      2,
+      "0"
+    )}T${String(currentDate.getHours()).padStart(2, "0")}:${String(
+      currentDate.getMinutes()
+    ).padStart(2, "0")}`;
+  };
+
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -527,7 +564,7 @@ export default function StockPage() {
                       required
                       value={purchase.date}
                       min="2000-01-01T00:00"
-                      max={"2099-01-01T00:00"}
+                      max={formatToday()}
                       onChange={(e) => {
                         console.log(e.target.value);
                         handlePurchaseChange(
