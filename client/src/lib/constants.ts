@@ -18,3 +18,12 @@ export enum actions {
   SET_PREDICTION_VIEW_TIME,
   SET_PREDICTION_VIEW_MODEL,
 }
+
+export const model_colors = [
+  "#6644e2",
+  "#E2C541",
+  "#BF0F52",
+  "#92E98C",
+  "#479BC6",
+  "#ea580c",
+];
