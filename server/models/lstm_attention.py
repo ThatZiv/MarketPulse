@@ -217,7 +217,7 @@ class AttentionLstm:
         self.model.eval()
 
         average = sum(sentiment) / len(sentiment)
-        adjustment = .05 * (sentiment[len(sentiment)-1]-average)
+        adjustment =1-( .05 * (sentiment[len(sentiment)-1]-average))
         p = []
         count=0
         for _ in range(period):
