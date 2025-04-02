@@ -220,7 +220,9 @@ export default function PurchaseHistory({
                     calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
                   }
                 >
-                  {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+                  {calc.getProfit() > 0
+                    ? PurchaseHistoryCalculator.toDollar(calc.getProfit())
+                    : PurchaseHistoryCalculator.toDollar(calc.getProfit() * -1)}
                 </span>
                 was {calc.getProfit() > 0 ? "made" : "lost"} from your last
                 sale.
