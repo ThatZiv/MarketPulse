@@ -63,15 +63,9 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [cursorForecast, setCursorForecast] = React.useState<ChartDatapoint[]>(
     []
   );
-  const [historicalForecast, setHistoricalForecast] = React.useState<
-    ChartDatapoint[]
-  >([]);
-  // chart data is union of cursorForecast and historicalForecast
-  const chartData = React.useMemo<ChartDatapoint[]>(() => {
-    return historicalForecast;
-    if (!historicalForecast) return [];
-    if (!cursorForecast) return historicalForecast;
-  }, [historicalForecast, cursorForecast]);
+
+  // chart data eventually takes a union with cursorForecast
+  const [chartData, setChartData] = React.useState<ChartDatapoint[]>([]);
   const [cursor, setCursor] = React.useState<string | null>(null);
   const { state } = useGlobal();
 
@@ -162,7 +156,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
       }
       return point;
     });
-    setHistoricalForecast(
+    setChartData(
       filteredData.slice(
         filteredData.length - timeRangeValue,
         filteredData.length
@@ -176,7 +170,6 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     dataKeyInput,
     state.views.predictions.model,
   ]);
-  console.log(chartData);
   React.useEffect(() => {
     // side effect to get the forecast for the cursor date
 
