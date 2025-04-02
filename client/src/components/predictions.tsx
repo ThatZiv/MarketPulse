@@ -133,7 +133,7 @@ export default function Predictions({
       }
       return chartData.slice(0, timeIndex);
     }
-    const final = Object.keys(chartData[0])
+    const final = Object.keys(chartData[0] ?? {})
       .reduce((acc, key) => {
         if (key === "day" || key === model) {
           acc.push(key);
