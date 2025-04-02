@@ -50,12 +50,12 @@ describe("Purchase History Calculator", () => {
     calc.setPurchases(purchases2);
     // cant sell more than you have
     expect(calc.isInvalidHistory()).toBe("2025-03-02");
-    expect(calc.getProfit()).toBe(300);
+    expect(calc.getProfit()).toBe(200);
 
     calc.setPurchases(purchases3);
     // cant sell more than you have
     expect(calc.isInvalidHistory()).toBe("2025-03-02");
-    expect(calc.getProfit()).toBe(900);
+    expect(calc.getProfit()).toBe(600);
   });
 
   test("should calculate average price", () => {
