@@ -233,7 +233,9 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const config: ChartConfig = {};
-    const colors = ["#479BC6", "#ea580c", "#f6c244", "#f26419", "#f6c244"];
+    // TODO: match the model colors from predictions to this below
+    // const colors = ["#479BC6", ...model_colors.reverse()];
+    const colors = ["#479BC6", "#ea580c", "#f0c929"];
     if (!chartData) return config;
 
     for (const name of expandDomain(chartData.concat(cursorForecast))) {
