@@ -34,3 +34,18 @@ export function formatNumber(number: number) {
   const scaled = number / scale;
   return scaled.toFixed(1) + suffix;
 }
+
+/**
+ * Expands the domain of an array of objects
+ * @param arr array of objects
+ * @returns array of keys from expanded object
+ */
+export function expandDomain(arr: Record<string, unknown>[]) {
+  const keys = new Set<string>();
+  for (const datapoint of arr) {
+    for (const name of Object.keys(datapoint)) {
+      keys.add(name);
+    }
+  }
+  return Array.from(keys);
+}

@@ -1,9 +1,10 @@
 import * as React from "react";
 import {
   Area,
-  AreaChart,
   CartesianGrid,
   Label as ChartLabel,
+  ComposedChart,
+  Line,
   XAxis,
   YAxis,
 } from "recharts";
@@ -36,10 +37,16 @@ import { useQuery } from "@tanstack/react-query";
 import { StockDataItem } from "@/types/stocks";
 import { actions, cache_keys } from "@/lib/constants";
 import moment from "moment";
-import { capitalizeFirstLetter, formatNumber, isSameDay } from "@/lib/utils";
+import {
+  capitalizeFirstLetter,
+  expandDomain,
+  formatNumber,
+  isSameDay,
+} from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import InfoTooltip from "./InfoTooltip";
+import { ChartDatapoint } from "@/types/global_state";
 interface StockChartProps {
   ticker: string;
   stock_id: number;
@@ -53,9 +60,27 @@ const normalizeName = (name: string) =>
 
 export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
+  const [cursorForecast, setCursorForecast] = React.useState<ChartDatapoint[]>(
+    []
+  );
+  const [historicalForecast, setHistoricalForecast] = React.useState<
+    ChartDatapoint[]
+  >([]);
+  // chart data is union of cursorForecast and historicalForecast
+  const chartData = React.useMemo<ChartDatapoint[]>(() => {
+    return historicalForecast;
+    if (!historicalForecast) return [];
+    if (!cursorForecast) return historicalForecast;
+  }, [historicalForecast, cursorForecast]);
+  const [cursor, setCursor] = React.useState<string | null>(null);
   const { state } = useGlobal();
-  const [dataInput, setDataInput] =
+
+  // data labels for chart 'dataKey'
+  const [dataKeyInput, setDataKeyInput] =
     React.useState<keyof StockDataItem>("stock_close");
+  const [cursorKeyInput, setCursorKeyInput] = React.useState<string | null>(
+    null
+  );
   const api = useApi();
   const { dispatch } = useGlobal();
   const [showPredictions, setShowPredictions] = React.useState(true);
@@ -64,16 +89,11 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     return parseInt(timeRange.match(/(\d+)/)?.[0] || "0");
   }, [timeRange]);
 
-  // React.useEffect(() => {
-  //   queryClient.invalidateQueries({
-  //     queryKey: [cache_keys.STOCK_PREDICTION, stock_id],
-  //   });
-  // }, [timeRangeValue]);
-
   React.useEffect(() => {
+    // reset when page switch
     return () => {
       setShowPredictions(true);
-      setDataInput("stock_close");
+      setDataKeyInput("stock_close");
     };
   }, [ticker]);
 
@@ -106,15 +126,16 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     enabled: !!stock_id && !!api && !!ticker && timeRangeValue > 0,
   });
 
-  const chartData = React.useMemo(() => {
-    if (!data) return [];
-    if (!predictionHistory) return [];
+  React.useEffect(() => {
+    // side effect to get the historical forecast for the last n days for x model
+
+    if (!data) return;
+    if (!predictionHistory) return;
     const filteredData = data?.map((item) => {
       const thisDate = moment(
         new Date(item.time_stamp.join(" ") + " EST")
       ).toDate();
 
-      console.log(thisDate);
       const thisPredictionHistory = predictionHistory.find((point) => {
         const tday = moment(point.created_at + " EST");
         return isSameDay(
@@ -123,41 +144,87 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
           tday.add(tday.weekday() == 5 ? 3 : 1, "days").toDate()
         );
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const point: Record<string, any> = {
+      // @ts-expect-error initially wont have data
+      const point: ChartDatapoint = {
         date: thisDate,
       };
-      if (dataInput !== "stock_close") {
+      if (dataKeyInput !== "stock_close") {
         setShowPredictions(false);
       }
-      point[dataInput] = item[dataInput];
+      point[dataKeyInput] = item[dataKeyInput] as number;
       if (showPredictions) {
+        const forecast = thisPredictionHistory?.output.find(
+          (point) => point.name === (state.views.predictions.model || "average")
+        )?.forecast;
+        if (!forecast) return point; // this should never happen
         point[`${state.views.predictions.model || "average"}_prediction`] =
-          thisPredictionHistory?.output.find(
-            (point) =>
-              point.name === (state.views.predictions.model || "average")
-          )?.forecast[0];
+          forecast[0];
       }
       return point;
     });
-    return filteredData.slice(
-      filteredData.length - timeRangeValue,
-      filteredData.length
+    setHistoricalForecast(
+      filteredData.slice(
+        filteredData.length - timeRangeValue,
+        filteredData.length
+      )
     );
   }, [
     data,
     timeRangeValue,
     predictionHistory,
     showPredictions,
-    dataInput,
+    dataKeyInput,
     state.views.predictions.model,
   ]);
+  console.log(chartData);
+  React.useEffect(() => {
+    // side effect to get the forecast for the cursor date
+
+    const doCursorForecast = async () => {
+      // get current cursor date
+      const startDate = cursor && new Date(cursor);
+      if (!startDate || !predictionHistory) return;
+      // find the forecast for that date
+      const thisForecastHistory = predictionHistory?.find((point) => {
+        const today = moment(point.created_at + " EST");
+        return isSameDay(
+          startDate,
+          // we need to skip fridays to align w/ historical
+          today.add(today.weekday() == 5 ? 3 : 1, "days").toDate()
+        );
+      });
+      if (!thisForecastHistory) return;
+      const today = moment(startDate);
+      const todayCursorLabel = moment(startDate).format("MMMM_D") + "_forecast";
+      setCursorKeyInput(todayCursorLabel);
+      const filteredForecast = thisForecastHistory?.output
+        .find(
+          (point) => point.name === (state.views.predictions.model || "average")
+        )
+        ?.forecast.map((val, index) => {
+          // add only after first forecast date
+          if (index > 0) today.add(today.weekday() == 5 ? 3 : 1, "days");
+          return {
+            date: today.toDate(),
+            [todayCursorLabel]: val,
+          } as unknown as ChartDatapoint;
+        });
+      // we do the data merge with historical predictions in chartData
+      if (!filteredForecast) return;
+      setCursorForecast(filteredForecast);
+    };
+
+    doCursorForecast();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cursor, predictionHistory]);
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const config: ChartConfig = {};
-    const colors = ["#479BC6", "#ea580c"];
+    const colors = ["#479BC6", "#ea580c", "#f6c244", "#f26419", "#f6c244"];
     if (!chartData) return config;
-    for (const name of Object.keys(chartData[0] ?? {}) ?? []) {
+
+    for (const name of expandDomain(chartData.concat(cursorForecast))) {
       if (name === "date") continue;
       config[name] = {
         label: normalizeName(name),
@@ -165,7 +232,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
       };
     }
     return config;
-  }, [chartData]);
+  }, [chartData, cursorForecast]);
 
   const YAxisLabels: Record<string, string> = {
     stock_close: "Closing Price ($)",
@@ -207,7 +274,10 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
           )}
         </Card>
       ) : (
-        <Card className="w-full p-4 border border-black dark:border-white">
+        <Card
+          className="w-full p-4 border border-black dark:border-white"
+          // onMouseLeave={() => setCursor(null)}
+        >
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
               <CardTitle>{ticker} Historical Prices</CardTitle>
@@ -240,7 +310,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 disabled={
                   arePredictionsLoading ||
                   isLoading ||
-                  dataInput !== "stock_close"
+                  dataKeyInput !== "stock_close"
                 }
                 className="data-[state=checked]:bg-[#ea580c]"
                 id="showPreds"
@@ -267,9 +337,9 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
               </SelectContent>
             </Select>
             <Select
-              value={dataInput}
+              value={dataKeyInput}
               onValueChange={(value) =>
-                setDataInput(value as keyof StockDataItem)
+                setDataKeyInput(value as keyof StockDataItem)
               }
             >
               <SelectTrigger
@@ -304,7 +374,25 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
               config={chartConfig}
               className="aspect-auto h-[275px] w-full"
             >
-              <AreaChart data={chartData} dataKey="date" accessibilityLayer>
+              <ComposedChart
+                onClick={(chartEvent) => {
+                  if (!chartEvent || !chartEvent.activeLabel) return;
+                  const clickedDate = chartEvent.activeLabel;
+                  setCursorForecast([]);
+                  setCursorKeyInput(null);
+                  setCursor(clickedDate);
+                }}
+                data={chartData.map((point) => {
+                  return {
+                    ...point,
+                    ...cursorForecast?.find((f) =>
+                      isSameDay(f.date, new Date(point.date))
+                    ),
+                  };
+                })}
+                dataKey="date"
+                accessibilityLayer
+              >
                 <defs>
                   {chartConfig &&
                     Object.entries(chartConfig)?.map(([key, val]) => {
@@ -332,7 +420,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                     })}
                 </defs>
                 {chartData &&
-                  Object.keys(chartData[0] ?? {}).map((key, index) => {
+                  expandDomain(chartData).map((key, index) => {
                     if (key === "date") return null;
                     return (
                       <Area
@@ -348,6 +436,19 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                       />
                     );
                   })}
+
+                {cursor &&
+                  cursorForecast &&
+                  showPredictions &&
+                  cursorKeyInput && (
+                    <Line
+                      type="monotone"
+                      dataKey={cursorKeyInput}
+                      stroke="#ff0000" // Use a distinct color for the forecast line
+                      strokeWidth={2}
+                      activeDot={{ r: 5 }}
+                    />
+                  )}
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="date"
@@ -359,7 +460,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <YAxis
                   tickLine={true}
                   axisLine={true}
-                  dataKey={dataInput}
+                  dataKey={dataKeyInput}
                   allowDataOverflow
                   tickMargin={4}
                   tickCount={9}
@@ -369,7 +470,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   domain={["auto", "auto"]}
                 >
                   <ChartLabel
-                    value={YAxisLabels[dataInput]}
+                    value={YAxisLabels[dataKeyInput]}
                     angle={-90}
                     position="insideLeft"
                     style={{ textAnchor: "middle" }}
@@ -385,7 +486,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 />
 
                 <ChartLegend content={<ChartLegendContent />} />
-              </AreaChart>
+              </ComposedChart>
             </ChartContainer>
           </CardContent>
         </Card>
