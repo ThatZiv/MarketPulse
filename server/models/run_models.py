@@ -44,10 +44,10 @@ def run_models():
         s_volume = []
         s_sentiment_data = []
         s_news_data = []
-        print(output)
+        #print(output)
 
         for row in output:
-            print(row)
+            #print(row)
             s_open.append(row.stock_open)
             s_close.append(row.stock_close)
             s_high.append(row.stock_high)

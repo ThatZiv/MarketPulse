@@ -12,9 +12,9 @@ from tensorflow.keras.layers import Conv1D, MaxPooling1D, Dense, Dropout, LSTM, 
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.metrics import mean_squared_error, r2_score
-from server.models.forecast.forecast_types import DataForecastType, DatasetType
-from server.models.forecast.model import ForecastModel
-from server.database.tables import Stock_Info
+from models.forecast.forecast_types import DataForecastType, DatasetType
+from models.forecast.model import ForecastModel
+from database.tables import Stock_Info
 
 
 class CNNLSTMTransformer(ForecastModel):
