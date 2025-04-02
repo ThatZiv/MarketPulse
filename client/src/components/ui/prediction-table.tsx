@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { actions } from "@/lib/constants";
 import InfoTooltip from "@/components/InfoTooltip";
+import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 
 interface PredictionTableProps {
   ticker: string;
@@ -41,18 +42,25 @@ function ColoredRow(row: { row: (number | string)[]; value: number }) {
     }
   });
 
-  const valueStr = "$" + Number(row.value).toFixed(2);
-  if (greatest) {
-    return <div className = "flex"><p className="text-green-700 px-2">{valueStr} </p><InfoTooltip side="right">
-                            This is the prediction with the highest value on this day.
-                            </InfoTooltip></div>;
-  } else if (least) {
-    return <div className = "flex"><p className="text-red-700 px-2">{valueStr}</p><InfoTooltip side="right">
-                             This is the prediction with the lowest value on this day
-                            </InfoTooltip></div>;
-  } else {
-    return <div className = "flex"><p className= "px-2">{valueStr}</p><p></p></div>;
-  }
+  const valueStr = PurchaseHistoryCalculator.toDollar(row.value);
+  return (
+    <div className="flex justify-center">
+      <p
+        className={`${
+          greatest ? "text-green-700" : least ? "text-red-700" : ""
+        } px-2`}
+      >
+        {valueStr}
+      </p>
+      {(greatest || least) && (
+        <InfoTooltip side="right">
+          {greatest
+            ? "This is the prediction with the highest value on this day."
+            : "This is the prediction with the lowest value on this day"}
+        </InfoTooltip>
+      )}
+    </div>
+  );
 }
 
 export default function PredictionTable({ ticker }: PredictionTableProps) {
@@ -60,7 +68,7 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
   const { predictions } = state;
   const model = state.views.predictions.model;
   const days = state.views.predictions.timeWindow;
-  
+
   const data = predictions[ticker];
   if (!data || data.length === 0) {
     return <div>Prediction table is currently unavailable</div>;
@@ -166,9 +174,13 @@ export default function PredictionTable({ ticker }: PredictionTableProps) {
                         <TableCell key={`${i}:${j}`}>
                           {j === Object.values(row).length - 1 ? (
                             // last column is for AVERAGE model!
-                            <div className="flex"><p className="text-orange-600 px-2">{valueStr}</p><InfoTooltip side="right">
-                                                      This is the average of the model predictions on this day.
-                                                    </InfoTooltip></div>
+                            <div className="flex justify-center items-center">
+                              <p className="text-orange-600 px-2">{valueStr}</p>
+                              <InfoTooltip side="right">
+                                This is the average of the model predictions on
+                                this day.
+                              </InfoTooltip>
+                            </div>
                           ) : (
                             <ColoredRow
                               row={Object.values(row)}
