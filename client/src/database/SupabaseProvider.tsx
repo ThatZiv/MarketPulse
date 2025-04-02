@@ -98,21 +98,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
         setSession(session.data.session ?? null);
         if (thisUser) {
           // preload account "profile" data
-          const { data: accountData } = await supabase
-            .from("Account")
-            .select(`first_name, last_name`)
-            .eq("user_id", thisUser.id)
-            .maybeSingle();
-          setAccount(accountData ?? null);
-          dispatch({
-            type: actions.SET_USER_FULL_NAME,
-            payload: accountData
-              ? [accountData.first_name, accountData.last_name]
-                  .filter((x) => x)
-                  .join(" ")
-                  .trim()
-              : "",
-          });
+          await loadUserProfile(thisUser.id);
         }
         setStatus("success");
       } catch (error) {
@@ -159,6 +145,28 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, status]);
 
+  const loadUserProfile = React.useCallback(
+    async (userId: string) => {
+      const { data: accountData } = await supabase
+        .from("Account")
+        .select("first_name, last_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      setAccount(accountData ?? null);
+      dispatch({
+        type: actions.SET_USER_FULL_NAME,
+        payload: accountData
+          ? [accountData.first_name, accountData.last_name]
+              .filter((x) => x)
+              .join(" ")
+              .trim()
+          : "",
+      });
+    },
+    [supabase, dispatch]
+  );
+
   const signUpNewUser = React.useCallback(
     async (email: string, password: string) => {
       const signUp = new Promise<AuthResponse>((resolve, reject) => {
@@ -201,7 +209,14 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
               email: email,
               password: password,
             })
-            .then(({ data, error }) => {
+            .then(async ({ data, error }) => {
+              try {
+                if (data.user?.id) {
+                  await loadUserProfile(data.user?.id);
+                }
+              } catch (err) {
+                console.log("error loading profile: ", err);
+              }
               return error ? reject(error) : resolve({ data, error });
             })
             .catch((error) => {
