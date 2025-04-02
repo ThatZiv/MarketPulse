@@ -149,7 +149,6 @@ export default function Predictions({
         });
       })
       .filter((points) => {
-        console.log(points);
         return points.some((point) => point["day"] && point[model]);
       })
       .flat();

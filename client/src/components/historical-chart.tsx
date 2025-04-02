@@ -27,7 +27,10 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -47,6 +50,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import InfoTooltip from "./InfoTooltip";
 import { ChartDatapoint } from "@/types/global_state";
+import { Button } from "./ui/button";
 interface StockChartProps {
   ticker: string;
   stock_id: number;
@@ -60,6 +64,7 @@ const normalizeName = (name: string) =>
 
 export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   const [timeRange, setTimeRange] = React.useState("7d");
+  const [isAdvanced, setIsAdvanced] = React.useState(false);
   const [cursorForecast, setCursorForecast] = React.useState<ChartDatapoint[]>(
     []
   );
@@ -67,7 +72,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
   // chart data eventually takes a union with cursorForecast
   const [chartData, setChartData] = React.useState<ChartDatapoint[]>([]);
   const [cursor, setCursor] = React.useState<string | null>(null);
-  const { state } = useGlobal();
+  const { state, dispatch } = useGlobal();
 
   // data labels for chart 'dataKey'
   const [dataKeyInput, setDataKeyInput] =
@@ -76,7 +81,6 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     null
   );
   const api = useApi();
-  const { dispatch } = useGlobal();
   const [showPredictions, setShowPredictions] = React.useState(true);
 
   const timeRangeValue = React.useMemo(() => {
@@ -119,6 +123,12 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     queryFn: () => api?.getStockPredictions(ticker, 30),
     enabled: !!stock_id && !!api && !!ticker && timeRangeValue > 0,
   });
+
+  const resetCursor = React.useCallback(() => {
+    setCursorForecast([]);
+    setCursorKeyInput(null);
+    setCursor(null);
+  }, []);
 
   React.useEffect(() => {
     // side effect to get the historical forecast for the last n days for x model
@@ -174,6 +184,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     // side effect to get the forecast for the cursor date
 
     const doCursorForecast = async () => {
+      if (!isAdvanced) return; // only run if advanced view is enabled
       // get current cursor date
       const startDate = cursor && new Date(cursor);
       if (!startDate || !predictionHistory) return;
@@ -211,6 +222,11 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cursor, predictionHistory]);
+
+  React.useEffect(() => {
+    // reset cursor when model changes
+    resetCursor();
+  }, [state.views.predictions.model, resetCursor]);
 
   const chartConfig = React.useMemo<ChartConfig>(() => {
     const config: ChartConfig = {};
@@ -329,38 +345,40 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={dataKeyInput}
-              onValueChange={(value) =>
-                setDataKeyInput(value as keyof StockDataItem)
-              }
-            >
-              <SelectTrigger
-                className="w-[160px] rounded-lg sm:ml-auto"
-                aria-label="Select a data input"
+            {isAdvanced && (
+              <Select
+                value={dataKeyInput}
+                onValueChange={(value) =>
+                  setDataKeyInput(value as keyof StockDataItem)
+                }
               >
-                <SelectValue placeholder="Stock Close" />
-              </SelectTrigger>
-              <SelectContent className="rounded-xl">
-                {[
-                  "stock_close",
-                  "stock_open",
-                  "stock_high",
-                  "stock_low",
-                  "stock_volume",
-                  "sentiment_data",
-                  "news_data",
-                ].map((item) => (
-                  <SelectItem
-                    key={"select-" + item}
-                    value={item}
-                    className="rounded-lg"
-                  >
-                    {normalizeName(item)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <SelectTrigger
+                  className="w-[160px] rounded-lg sm:ml-auto"
+                  aria-label="Select a data input"
+                >
+                  <SelectValue placeholder="Stock Close" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  {[
+                    "stock_close",
+                    "stock_open",
+                    "stock_high",
+                    "stock_low",
+                    "stock_volume",
+                    "sentiment_data",
+                    "news_data",
+                  ].map((item) => (
+                    <SelectItem
+                      key={"select-" + item}
+                      value={item}
+                      className="rounded-lg"
+                    >
+                      {normalizeName(item)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </CardHeader>
           <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
             <ChartContainer
@@ -433,7 +451,8 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 {cursor &&
                   cursorForecast &&
                   showPredictions &&
-                  cursorKeyInput && (
+                  cursorKeyInput &&
+                  isAdvanced && (
                     <Line
                       type="monotone"
                       dataKey={cursorKeyInput}
@@ -481,6 +500,88 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                 <ChartLegend content={<ChartLegendContent />} />
               </ComposedChart>
             </ChartContainer>
+            <div className="flex items-center gap-2 space-y-0 py-2 sm:flex-row">
+              <div className="flex items-center space-x-2">
+                <InfoTooltip side="left">
+                  <div className="text-xs">
+                    Toggle to enable advanced view. Advanced view allows you to:
+                    <ul className="list-disc list-inside">
+                      <li>
+                        View the historical forecast, as well as for a specific
+                        date - Click on the chart to view the forecast for that
+                        date.
+                      </li>
+                      <li>
+                        Select a model to view the forecast. By default, the
+                        chart shows the average forecast from all models.
+                      </li>
+                      <li>
+                        Select a different data input to view on the chart. By
+                        default, the chart shows the stock closing price, but
+                        you can view others like high/low price, volume,
+                        sentiment data, and more!
+                      </li>
+                    </ul>
+                  </div>
+                </InfoTooltip>
+                <Switch
+                  checked={isAdvanced}
+                  onCheckedChange={(checked) => {
+                    setIsAdvanced(checked);
+                  }}
+                  disabled={arePredictionsLoading || isLoading}
+                  className="data-[state=checked]:bg-[#4db8d8]"
+                  id="advanced"
+                />
+                <Label htmlFor="advanced">Advanced View</Label>
+              </div>
+              {isAdvanced && (
+                <Select
+                  value={state.views.predictions.model ?? "average"}
+                  onValueChange={(value) => {
+                    resetCursor();
+                    dispatch({
+                      type: actions.SET_PREDICTION_VIEW_MODEL,
+                      payload: { model: value },
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Models</SelectLabel>
+                      {/* FIXME: POTENTIAL CACHE MISMATCH (datahandler doesnt store predictions in global state yet) */}
+                      {Object.keys(state.predictions[ticker][0]).map((key) => {
+                        if (key === "day") return null;
+                        return (
+                          <SelectItem key={key} value={key}>
+                            {key}
+                          </SelectItem>
+                        );
+                      })}
+                      <SelectSeparator />
+                      <Button
+                        className="w-full px-2"
+                        variant="secondary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          resetCursor();
+                          dispatch({
+                            type: actions.SET_PREDICTION_VIEW_MODEL,
+                            payload: { model: "" },
+                          });
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
