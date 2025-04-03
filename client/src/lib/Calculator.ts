@@ -1,15 +1,88 @@
 import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 
-export class Calculator {
-  static generateHype(...sentiment_data: number[]): number {
-    return (
-      sentiment_data.reduce((acc, curr) => acc + curr, 0) /
-      sentiment_data.length
-    );
+export class ForecastModelCalculator {
+  private actual: number[];
+  private predicted: number[];
+
+  constructor(actual: number[], predicted: number[]) {
+    if (actual.length !== predicted.length) {
+      throw new Error("actual and predicted arrays must have the same length.");
+    }
+    this.actual = actual;
+    this.predicted = predicted;
   }
 
-  static generateImpact(...news_data: number[]): number {
-    return news_data.reduce((acc, curr) => acc + curr, 0) / news_data.length;
+  public meanAbsoluteError(): number {
+    const totalError = this.actual.reduce((sum, actualValue, index) => {
+      return sum + Math.abs(actualValue - this.predicted[index]);
+    }, 0);
+    return totalError / this.actual.length;
+  }
+
+  public meanSquaredError(): number {
+    const totalError = this.actual.reduce((sum, actualValue, index) => {
+      return sum + Math.pow(actualValue - this.predicted[index], 2);
+    }, 0);
+    return totalError / this.actual.length;
+  }
+
+  public rootMeanSquaredError(): number {
+    return Math.sqrt(this.meanSquaredError());
+  }
+
+  public rSquared(): number {
+    const meanActual =
+      this.actual.reduce((sum, value) => sum + value, 0) / this.actual.length;
+    const totalSumOfSquares = this.actual.reduce(
+      (sum, value) => sum + Math.pow(value - meanActual, 2),
+      0
+    );
+    const residualSumOfSquares = this.actual.reduce(
+      (sum, actualValue, index) => {
+        return sum + Math.pow(actualValue - this.predicted[index], 2);
+      },
+      0
+    );
+    return 1 - residualSumOfSquares / totalSumOfSquares;
+  }
+
+  public meanAbsolutePercentageError(): number {
+    const totalError = this.actual.reduce((sum, actualValue, index) => {
+      return (
+        sum + Math.abs((actualValue - this.predicted[index]) / actualValue)
+      );
+    }, 0);
+    return (totalError / this.actual.length) * 100;
+  }
+
+  /**
+   * @description calculates the accuracy of the predictions
+   * @param threshold - the threshold for considering a prediction to be correct (default is 1 dollar)
+   * @returns {number} - the accuracy of the predictions as a percentage
+   * @example
+   * const calculator = new ForecastModelCalculator([100, 200], [101, 199]);
+   * const accuracy = calculator.accuracy(1);
+   * console.log(accuracy); // 100
+   */
+  public accuracy(threshold: number = 1): number {
+    let correctPredictions = 0;
+    for (let i = 0; i < this.actual.length; i++) {
+      if (Math.abs(this.actual[i] - this.predicted[i]) <= threshold) {
+        correctPredictions++;
+      }
+    }
+    return correctPredictions / this.actual.length;
+  }
+
+  public summary(): void {
+    console.log("Mean Absolute Error (MAE):", this.meanAbsoluteError());
+    console.log("Mean Squared Error (MSE):", this.meanSquaredError());
+    console.log("Root Mean Squared Error (RMSE):", this.rootMeanSquaredError());
+    console.log("R-squared (R²):", this.rSquared());
+    console.log(
+      "Mean Absolute Percentage Error (MAPE):",
+      this.meanAbsolutePercentageError()
+    );
   }
 }
 
