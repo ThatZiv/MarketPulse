@@ -48,10 +48,9 @@ export class PurchaseHistoryCalculator {
     this.totalSold = 0;
     this.profit = 0;
 
-    //let curr = 0;
     for (const { amount_purchased, price_purchased } of this.purchases) {
       const value = amount_purchased * price_purchased;
-      //curr += value;
+
       this.totalShares += amount_purchased;
       if (amount_purchased > 0) {
         this.totalBought += value;
@@ -67,14 +66,8 @@ export class PurchaseHistoryCalculator {
           this.totalOwned +
           (this.totalOwned / (this.totalShares - amount_purchased)) *
             amount_purchased;
-
-        //this.profit = curr * -1;
-        //curr = 0;
-        //continue;
       }
     }
-
-    // this.profit = this.totalSold === 0 ? 0 : this.totalSold - this.totalBought;
   }
 
   /**
