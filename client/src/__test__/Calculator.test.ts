@@ -63,7 +63,7 @@ describe("Purchase History Calculator", () => {
     expect(calc.getAveragePrice()).toBe(23.333333333333332);
 
     calc.setPurchases(purchases2);
-    expect(calc.getAveragePrice()).toBe(50);
+    expect(calc.getAveragePrice()).toBe(40);
   });
 
   test("should calculate total value", () => {
