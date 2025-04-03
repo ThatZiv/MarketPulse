@@ -660,6 +660,7 @@ export default function StockPage() {
                   className="mt-2"
                 >
                   Add Transaction <Plus className="h-4 w-4" />
+                  Add Transaction <Plus className="h-4 w-4" />
                 </Button>
                 {previousPurchases != formData.purchases && (
                   <Button
