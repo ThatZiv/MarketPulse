@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   ArrowRight,
   ArrowLeft,
@@ -459,41 +461,37 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
           </div>
 
           <div className="mb-6">
-            <label
-              htmlFor="hasStocks"
-              className="block text-lg font-light mb-2"
-            >
-              Do you own this stock? <span className="text-red-500">*</span>
-            </label>
-            <Select
-              value={formData.hasStocks}
-              disabled={stocksLoading || !formData.ticker || (IsEditPage && formData.purchases.length > 0 )}
-              onValueChange={(value: string) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  hasStocks: value,
-                  purchases: value === "no" ? [] : prev.purchases,
-                }))
-              }
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Option" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
+  <Label htmlFor="hasStocks" className="block text-lg font-light mb-2">
+    Do you own this stock? <span className="text-red-500">*</span>
+  </Label>
+  <div className="flex items-center gap-2">
+    <Switch
+      id="hasStocks"
+      checked={formData.hasStocks === "yes"}
+      onCheckedChange={(checked) => {
+        setFormData((prev) => ({
+          ...prev,
+          hasStocks: checked ? "yes" : "no",
+          purchases: checked ? prev.purchases : [],
+        }));
+      }}
+      disabled={
+        stocksLoading ||
+        !formData.ticker ||
+        (IsEditPage && formData.purchases.length > 0)
+      }
+    />
+    <span className="font-medium">
+      {formData.hasStocks === "yes" ? "Yes" : "No"}
+    </span>
+  </div>
+</div>
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
               <div className="flex gap-1">
                 <label className="block text-lg font-light">
-                  Purchase History <span className="text-red-500">*</span>
+                  Transaction History <span className="text-red-500">*</span>
                 </label>
                 <InfoTooltip className="self-center" side="right" size="md">
                   <div className="mb-2">
@@ -654,13 +652,18 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                   onClick={addPurchaseEntry}
                   className="mt-2"
                 >
-                  Add Purchase <Plus className="h-4 w-4" />
+                  Add Transaction <Plus className="h-4 w-4" />
                 </Button>
                 {previousPurchases != formData.purchases && (
-                  <Button type="button" onClick={resetPurchaseEntries}>
-                    <Undo className="h-4 w-4" />
-                    Revert Changes
-                  </Button>
+                  <Button
+                  type="button"
+                  onClick={resetPurchaseEntries}
+                  className="h-8 px-3 text-sm"
+                >
+                  <Undo className="h-3.5 w-3.5 mr-1" />
+                  Revert Changes
+                </Button>
+                
                 )}
               </div>
               <Separator className="my-2" />
