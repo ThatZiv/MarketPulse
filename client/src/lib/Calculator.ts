@@ -67,7 +67,7 @@ export class PurchaseHistoryCalculator {
           this.totalOwned +
           (this.totalOwned / (this.totalShares - amount_purchased)) *
             amount_purchased;
-        console.log(this.totalOwned);
+
         //this.profit = curr * -1;
         //curr = 0;
         //continue;

@@ -573,7 +573,7 @@ export default function StockPage() {
                       min="2000-01-01T00:00"
                       max={formatToday()}
                       onChange={(e) => {
-                        console.log(e.target.value);
+                        //console.log(e.target.value);
                         handlePurchaseChange(
                           index,
                           "date",
