@@ -19,7 +19,7 @@ export default function UserAuth() {
           <div className="flex sm:justify-center justify-left items-center gap-2">
             <span className="text-white">MarketPulse</span>
             <img
-              src="/public/images/MarketPulse_Logo.png"
+              src="/images/MarketPulse_Logo.png"
               alt="MarketPulse Logo"
               className="sm:h-24 sm:w-24 w-12 h-12"
             />
