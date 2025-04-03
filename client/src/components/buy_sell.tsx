@@ -31,13 +31,13 @@ export function Suggestion(props: props) {
   const upper_offset =
     0.025 *
     Math.atan(
-      (100 * (props.predicted_price - investment_value.average)) /
+      (100 * -(props.predicted_price - investment_value.average)) /
         props.current_price
     );
   const lower_offset =
     0.025 *
     Math.atan(
-      (100 * (props.predicted_price - investment_value.average)) /
+      (100 * -(props.predicted_price - investment_value.average)) /
         props.current_price
     );
 

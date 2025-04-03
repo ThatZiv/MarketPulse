@@ -130,7 +130,7 @@ export class PurchaseHistoryCalculator {
   }
 
   getAveragePrice(): number {
-    return this.totalShares === 0 ? 0 : this.totalBought / this.totalShares;
+    return this.totalShares === 0 ? 0 : this.totalOwned / this.totalShares;
   }
 
   getTotalValue(currentPrice: number): number {

@@ -381,7 +381,9 @@ function StockCard({
                         calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
                       } text-sm`}
                     >
-                      {toDollar(calc.getProfit())}
+                      {calc.getProfit() < 0
+                        ? toDollar(-1 * calc.getProfit())
+                        : toDollar(calc.getProfit())}
                     </span>{" "}
                     {calc.getProfit() < 0 ? "loss" : "profit"},
                   </span>
