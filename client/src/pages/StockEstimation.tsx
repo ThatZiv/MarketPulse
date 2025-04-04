@@ -189,7 +189,9 @@ export default function Stocks() {
 
   const calc = useMemo(
     () =>
-      new PurchaseHistoryCalculator(ticker ? state.history[ticker] ?? [] : []),
+      new PurchaseHistoryCalculator(
+        ticker ? (state.history[ticker] ?? []) : []
+      ),
     [state.history, ticker]
   );
 

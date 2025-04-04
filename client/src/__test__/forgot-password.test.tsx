@@ -123,6 +123,5 @@ describe("Forgot Password", () => {
     await act(async () => {
       await fireEvent.click(reset);
     });
-    
   });
 });

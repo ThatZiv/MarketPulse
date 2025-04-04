@@ -12,11 +12,11 @@ import "@testing-library/jest-dom";
 import { toast } from "sonner";
 
 jest.mock("sonner", () => ({
-    toast: {
-      success: jest.fn(),
-      error: jest.fn(),
-    },
-  }));
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+  },
+}));
 
 const mockInsertFeedback = jest.fn();
 const mockNavigate = jest.fn();
@@ -75,7 +75,6 @@ describe("Feedback Page", () => {
     expect(feedbackInput).toHaveValue("This is a test feedback.");
   });
 
-
   test("validates empty feedback submission", async () => {
     const submitButton = screen.getByText("Submit Feedback");
 
@@ -86,7 +85,6 @@ describe("Feedback Page", () => {
     expect(mockInsertFeedback).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledWith("Feedback cannot be empty!");
   });
-
 
   test("submits feedback successfully", async () => {
     const feedbackInput = screen.getByPlaceholderText(
@@ -111,8 +109,6 @@ describe("Feedback Page", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/");
   });
 
-
-
   test("handles feedback submission error", async () => {
     const feedbackInput = screen.getByPlaceholderText(
       "Enter your feedback here..."
@@ -136,10 +132,8 @@ describe("Feedback Page", () => {
     expect(mockInsertFeedback).toHaveBeenCalledWith([
       { content: "This is a test feedback." },
     ]);
-    expect(toast.error).toHaveBeenCalledWith(errorMessage); 
-   });
-
-
+    expect(toast.error).toHaveBeenCalledWith(errorMessage);
+  });
 
   test("disables submit button while loading", async () => {
     const feedbackInput = screen.getByPlaceholderText(
@@ -163,7 +157,4 @@ describe("Feedback Page", () => {
 
     expect(submitButton).toBeDisabled();
   });
-
-
-
 });

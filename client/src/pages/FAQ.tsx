@@ -45,8 +45,7 @@ export default function FAQ() {
     },
     {
       question: "Is there a mobile app available?",
-      answer:
-        "No, MarketPulse is currently only a web application.",
+      answer: "No, MarketPulse is currently only a web application.",
     },
     {
       question: "Is there customer support available?",

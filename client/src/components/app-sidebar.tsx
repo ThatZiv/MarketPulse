@@ -196,12 +196,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Link to={window.location.origin}>
                 <div className="flex items-center">
                   <img
-                    src='/images/MarketPulse_Logo.png'
+                    src="/images/MarketPulse_Logo.png"
                     alt="MarketPulse Logo"
                     className="h-10 w-10 mr-2"
                   />
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold text-xl">MarketPulse</span>
+                    <span className="truncate font-semibold text-xl">
+                      MarketPulse
+                    </span>
                   </div>
                 </div>
               </Link>

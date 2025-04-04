@@ -68,15 +68,13 @@ export default function StockPage() {
     [searchParams]
   );
 
-  const {
-      data: userStocks,
-    } = useQuery<UserStock[]>({
-      queryKey: [cache_keys.USER_STOCKS],
-      queryFn: dataHandler(dispatch)
-        .forSupabase(supabase)
-        .getUserStocks(user?.id ?? ""),
-      enabled: !!user,
-    });
+  const { data: userStocks } = useQuery<UserStock[]>({
+    queryKey: [cache_keys.USER_STOCKS],
+    queryFn: dataHandler(dispatch)
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user,
+  });
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
@@ -112,15 +110,14 @@ export default function StockPage() {
         });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
-      if(userStocks)
-      {
-        for(const currTicker of userStocks)
-        {
-          if(ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase())
-          {
+      if (userStocks) {
+        for (const currTicker of userStocks) {
+          if (
+            ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
             setFormData((prev) => ({
               ...prev,
-              cashToInvest: currTicker.desired_investiture
+              cashToInvest: currTicker.desired_investiture,
             }));
           }
         }
@@ -381,33 +378,36 @@ export default function StockPage() {
     );
   }
 
-function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:string})
-{
-  if(userStocks)
-  {
-  if(!IsEditPage){
-    for(const userTicker of userStocks)
-      {
-        if(props.stock_ticker == (userTicker.Stocks.stock_ticker as string).toUpperCase())
-        {
-          return <></>
+  function TickerItem(props: {
+    stock_ticker: string;
+    stock_id: number;
+    stock_name: string;
+  }) {
+    if (userStocks) {
+      if (!IsEditPage) {
+        for (const userTicker of userStocks) {
+          if (
+            props.stock_ticker ==
+            (userTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
+            return <></>;
+          }
         }
+
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
+      } else {
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
       }
-
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
-    }
-    else
-    {
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
     }
   }
-}
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -448,8 +448,12 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                   <SelectGroup>
                     <SelectLabel>Stocks</SelectLabel>
                     {stocks?.map(({ stock_id, stock_name, stock_ticker }) => (
-                      <div key = {stock_id}>
-                      <TickerItem stock_id={stock_id} stock_name={stock_name} stock_ticker={stock_ticker}/>   
+                      <div key={stock_id}>
+                        <TickerItem
+                          stock_id={stock_id}
+                          stock_name={stock_name}
+                          stock_ticker={stock_ticker}
+                        />
                       </div>
                     ))}
                   </SelectGroup>
@@ -467,7 +471,11 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
             </label>
             <Select
               value={formData.hasStocks}
-              disabled={stocksLoading || !formData.ticker || (IsEditPage && formData.purchases.length > 0 )}
+              disabled={
+                stocksLoading ||
+                !formData.ticker ||
+                (IsEditPage && formData.purchases.length > 0)
+              }
               onValueChange={(value: string) =>
                 setFormData((prev) => ({
                   ...prev,

@@ -5,7 +5,6 @@ import { useState } from "react";
 import { CreateForm } from "@/components/create_user_form";
 import { ResetPassword } from "@/components/forgot-password";
 
-
 export default function UserAuth() {
   const [pageState, setPageState] = useState("login"); // "login" or "signup"
   const [passwordState, resetPasswordState] = useState(false);

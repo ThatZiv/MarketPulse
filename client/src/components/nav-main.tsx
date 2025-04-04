@@ -42,10 +42,10 @@ export function NavMain({
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                className={`font-medium text-md ${location.pathname == item.url &&
+                className={`font-medium text-md ${
+                  location.pathname == item.url &&
                   "dark:bg-gray-700 bg-gray-200 font-bold"
-                  }  `}
-
+                }  `}
                 tooltip={item.title}
               >
                 <Link to={item.url}>
@@ -66,9 +66,10 @@ export function NavMain({
                       {item.items?.map((subItem) => (
                         <SidebarMenuSubItem
                           key={subItem.title}
-                          className={`${location.pathname == subItem.url &&
+                          className={`${
+                            location.pathname == subItem.url &&
                             "dark:bg-gray-700 bg-gray-200 font-bold"
-                            }`}
+                          }`}
                         >
                           <SidebarMenuSubButton asChild>
                             <Link to={subItem.url}>

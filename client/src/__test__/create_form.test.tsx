@@ -10,9 +10,9 @@ import {
 import "@testing-library/jest-dom";
 
 jest.mock("lucide-react", () => ({
-    Eye: () => <span>Eye Icon</span>,
-    EyeOff: () => <span>EyeOff Icon</span>,
-  }));
+  Eye: () => <span>Eye Icon</span>,
+  EyeOff: () => <span>EyeOff Icon</span>,
+}));
 
 const mockSignUpNewUser = jest.fn();
 const mockSignInWithGoogle = jest.fn();
@@ -46,7 +46,8 @@ describe("CreateForm Component", () => {
     );
     const emailInput = screen.getByPlaceholderText("Email Address");
     const passwordInput = screen.getByPlaceholderText("Password");
-    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
     const createButton = screen.getByText("Create");
 
     expect(title).toBeInTheDocument();
@@ -60,12 +61,15 @@ describe("CreateForm Component", () => {
   test("handles email and password input", async () => {
     const emailInput = screen.getByPlaceholderText("Email Address");
     const passwordInput = screen.getByPlaceholderText("Password");
-    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
 
     await act(async () => {
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
       fireEvent.change(passwordInput, { target: { value: "Password123!" } });
-      fireEvent.change(confirmPasswordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "Password123!" },
+      });
     });
 
     expect(emailInput).toHaveValue("test@example.com");
@@ -76,13 +80,16 @@ describe("CreateForm Component", () => {
   test("calls signUpNewUser on form submission", async () => {
     const emailInput = screen.getByPlaceholderText("Email Address");
     const passwordInput = screen.getByPlaceholderText("Password");
-    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
     const createButton = screen.getByText("Create");
 
     await act(async () => {
       fireEvent.change(emailInput, { target: { value: "test@example.com" } });
       fireEvent.change(passwordInput, { target: { value: "Password123!" } });
-      fireEvent.change(confirmPasswordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "Password123!" },
+      });
       fireEvent.click(createButton);
     });
 
@@ -101,20 +108,27 @@ describe("CreateForm Component", () => {
     });
 
     expect(screen.getByText("❌ At least 8 characters")).toBeInTheDocument();
-    expect(screen.getByText("❌ At least 1 uppercase letter")).toBeInTheDocument();
+    expect(
+      screen.getByText("❌ At least 1 uppercase letter")
+    ).toBeInTheDocument();
     expect(screen.getByText("❌ At least 1 number")).toBeInTheDocument();
-    expect(screen.getByText("❌ At least 1 special character")).toBeInTheDocument();
+    expect(
+      screen.getByText("❌ At least 1 special character")
+    ).toBeInTheDocument();
 
     await act(async () => {
       fireEvent.change(passwordInput, { target: { value: "Password123!" } });
     });
 
     expect(screen.getByText("✅ At least 8 characters")).toBeInTheDocument();
-    expect(screen.getByText("✅ At least 1 uppercase letter")).toBeInTheDocument();
+    expect(
+      screen.getByText("✅ At least 1 uppercase letter")
+    ).toBeInTheDocument();
     expect(screen.getByText("✅ At least 1 number")).toBeInTheDocument();
-    expect(screen.getByText("✅ At least 1 special character")).toBeInTheDocument();
+    expect(
+      screen.getByText("✅ At least 1 special character")
+    ).toBeInTheDocument();
   });
-
 
   test("toggles password visibility", async () => {
     const passwordInput = screen.getByPlaceholderText("Password");
@@ -134,11 +148,11 @@ describe("CreateForm Component", () => {
     expect(passwordInput).toHaveAttribute("type", "text");
   });
 
-
   test("toggles confirm password visibility", async () => {
-    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
     const toggleVisibilityButtons = screen.getAllByText("Eye Icon");
-    const toggleVisibilityButton = toggleVisibilityButtons[1]; 
+    const toggleVisibilityButton = toggleVisibilityButtons[1];
 
     expect(confirmPasswordInput).toHaveAttribute("type", "password");
 
@@ -162,6 +176,4 @@ describe("CreateForm Component", () => {
 
     expect(mockTogglePageState).toHaveBeenCalledTimes(1);
   });
-
-
 });
