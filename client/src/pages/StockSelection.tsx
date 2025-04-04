@@ -652,24 +652,16 @@ export default function StockPage() {
                   </Button>
                 </div>
               ))}
-              <div className="flex justify-between">
-                <Button
-                  type="button"
-                  onClick={addPurchaseEntry}
-                  className="mt-2"
-                >
+              <div className="flex justify-between mt-2">
+                <Button type="button" onClick={addPurchaseEntry}>
                   Add Transaction <Plus className="h-4 w-4" />
+                </Button>
                 {previousPurchases != formData.purchases && (
-                  <Button
-                    type="button"
-                    onClick={resetPurchaseEntries}
-                    className="h-8 px-3 text-sm"
-                  >
+                  <Button type="button" onClick={resetPurchaseEntries}>
                     <Undo className="h-3.5 w-3.5 mr-1" />
                     Revert Changes
                   </Button>
                 )}
-                
               </div>
               <Separator className="my-2" />
               <Table>
