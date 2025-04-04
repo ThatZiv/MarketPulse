@@ -505,41 +505,34 @@ export default function StockPage() {
           </div>
 
           <div className="mb-6">
-
-            <label
+            <Label
               htmlFor="hasStocks"
               className="block text-lg font-light mb-2"
             >
               Do you own this stock? <span className="text-red-500">*</span>
-            </label>
-            <Select
-              value={formData.hasStocks}
-              disabled={
-                stocksLoading ||
-                !formData.ticker ||
-                (IsEditPage && formData.purchases.length > 0)
-              }
-              onValueChange={(value: string) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  hasStocks: value,
-                  purchases: value === "no" ? [] : prev.purchases,
-                }))
-              }
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Option" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            </Label>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="hasStocks"
+                checked={formData.hasStocks === "yes"}
+                onCheckedChange={(checked) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    hasStocks: checked ? "yes" : "no",
+                    purchases: checked ? prev.purchases : [],
+                  }));
+                }}
+                disabled={
+                  stocksLoading ||
+                  !formData.ticker ||
+                  (IsEditPage && formData.purchases.length > 0)
+                }
+              />
+              <span className="font-medium">
+                {formData.hasStocks === "yes" ? "Yes" : "No"}
+              </span>
+            </div>
           </div>
-
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
@@ -710,14 +703,13 @@ export default function StockPage() {
                 </Button>
                 {previousPurchases != formData.purchases && (
                   <Button
-                  type="button"
-                  onClick={resetPurchaseEntries}
-                  className="h-8 px-3 text-sm"
-                >
-                  <Undo className="h-3.5 w-3.5 mr-1" />
-                  Revert Changes
-                </Button>
-                
+                    type="button"
+                    onClick={resetPurchaseEntries}
+                    className="h-8 px-3 text-sm"
+                  >
+                    <Undo className="h-3.5 w-3.5 mr-1" />
+                    Revert Changes
+                  </Button>
                 )}
               </div>
               <Separator className="my-2" />
