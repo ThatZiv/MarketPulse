@@ -70,15 +70,13 @@ export default function StockPage() {
     [searchParams]
   );
 
-  const {
-      data: userStocks,
-    } = useQuery<UserStock[]>({
-      queryKey: [cache_keys.USER_STOCKS],
-      queryFn: dataHandler(dispatch)
-        .forSupabase(supabase)
-        .getUserStocks(user?.id ?? ""),
-      enabled: !!user,
-    });
+  const { data: userStocks } = useQuery<UserStock[]>({
+    queryKey: [cache_keys.USER_STOCKS],
+    queryFn: dataHandler(dispatch)
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user,
+  });
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
@@ -114,15 +112,14 @@ export default function StockPage() {
         });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
-      if(userStocks)
-      {
-        for(const currTicker of userStocks)
-        {
-          if(ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase())
-          {
+      if (userStocks) {
+        for (const currTicker of userStocks) {
+          if (
+            ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
             setFormData((prev) => ({
               ...prev,
-              cashToInvest: currTicker.desired_investiture
+              cashToInvest: currTicker.desired_investiture,
             }));
           }
         }
@@ -276,7 +273,21 @@ export default function StockPage() {
 
     const badDay = calc.isInvalidHistory();
     if (badDay) {
-      setError(`You cannot sell more shares than you own on ${badDay}`);
+      const bad = new Date(badDay);
+      setError(
+        `You cannot sell more shares than you own on ${bad.toLocaleString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          }
+        )}`
+      );
+
       return;
     }
 
@@ -315,8 +326,22 @@ export default function StockPage() {
           //duplicate check
           const badDay = calc.isInvalidHistory();
           if (badDay) {
+            const bad = new Date(badDay);
+
             reject(
-              new Error(`You cannot sell more shares than you own on ${badDay}`)
+              new Error(
+                `You cannot sell more shares than you own on ${bad.toLocaleString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  }
+                )}`
+              )
             );
             return;
           }
@@ -383,33 +408,48 @@ export default function StockPage() {
     );
   }
 
-function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:string})
-{
-  if(userStocks)
-  {
-  if(!IsEditPage){
-    for(const userTicker of userStocks)
-      {
-        if(props.stock_ticker == (userTicker.Stocks.stock_ticker as string).toUpperCase())
-        {
-          return <></>
+  function TickerItem(props: {
+    stock_ticker: string;
+    stock_id: number;
+    stock_name: string;
+  }) {
+    if (userStocks) {
+      if (!IsEditPage) {
+        for (const userTicker of userStocks) {
+          if (
+            props.stock_ticker ==
+            (userTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
+            return <></>;
+          }
         }
+
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
+      } else {
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
       }
-
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
-    }
-    else
-    {
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
     }
   }
-}
+
+  const formatToday = () => {
+    const currentDate = new Date();
+    return `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+      2,
+      "0"
+    )}T${String(currentDate.getHours()).padStart(2, "0")}:${String(
+      currentDate.getMinutes()
+    ).padStart(2, "0")}`;
+  };
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -450,8 +490,12 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                   <SelectGroup>
                     <SelectLabel>Stocks</SelectLabel>
                     {stocks?.map(({ stock_id, stock_name, stock_ticker }) => (
-                      <div key = {stock_id}>
-                      <TickerItem stock_id={stock_id} stock_name={stock_name} stock_ticker={stock_ticker}/>   
+                      <div key={stock_id}>
+                        <TickerItem
+                          stock_id={stock_id}
+                          stock_name={stock_name}
+                          stock_ticker={stock_ticker}
+                        />
                       </div>
                     ))}
                   </SelectGroup>
@@ -461,31 +505,34 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
           </div>
 
           <div className="mb-6">
-  <Label htmlFor="hasStocks" className="block text-lg font-light mb-2">
-    Do you own this stock? <span className="text-red-500">*</span>
-  </Label>
-  <div className="flex items-center gap-2">
-    <Switch
-      id="hasStocks"
-      checked={formData.hasStocks === "yes"}
-      onCheckedChange={(checked) => {
-        setFormData((prev) => ({
-          ...prev,
-          hasStocks: checked ? "yes" : "no",
-          purchases: checked ? prev.purchases : [],
-        }));
-      }}
-      disabled={
-        stocksLoading ||
-        !formData.ticker ||
-        (IsEditPage && formData.purchases.length > 0)
-      }
-    />
-    <span className="font-medium">
-      {formData.hasStocks === "yes" ? "Yes" : "No"}
-    </span>
-  </div>
-</div>
+            <Label
+              htmlFor="hasStocks"
+              className="block text-lg font-light mb-2"
+            >
+              Do you own this stock? <span className="text-red-500">*</span>
+            </Label>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="hasStocks"
+                checked={formData.hasStocks === "yes"}
+                onCheckedChange={(checked) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    hasStocks: checked ? "yes" : "no",
+                    purchases: checked ? prev.purchases : [],
+                  }));
+                }}
+                disabled={
+                  stocksLoading ||
+                  !formData.ticker ||
+                  (IsEditPage && formData.purchases.length > 0)
+                }
+              />
+              <span className="font-medium">
+                {formData.hasStocks === "yes" ? "Yes" : "No"}
+              </span>
+            </div>
+          </div>
 
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
@@ -521,9 +568,9 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                       required
                       value={purchase.date}
                       min="2000-01-01T00:00"
-                      max={"2099-01-01T00:00"}
+                      max={formatToday()}
                       onChange={(e) => {
-                        console.log(e.target.value);
+                        //console.log(e.target.value);
                         handlePurchaseChange(
                           index,
                           "date",
@@ -656,14 +703,13 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                 </Button>
                 {previousPurchases != formData.purchases && (
                   <Button
-                  type="button"
-                  onClick={resetPurchaseEntries}
-                  className="h-8 px-3 text-sm"
-                >
-                  <Undo className="h-3.5 w-3.5 mr-1" />
-                  Revert Changes
-                </Button>
-                
+                    type="button"
+                    onClick={resetPurchaseEntries}
+                    className="h-8 px-3 text-sm"
+                  >
+                    <Undo className="h-3.5 w-3.5 mr-1" />
+                    Revert Changes
+                  </Button>
                 )}
               </div>
               <Separator className="my-2" />
