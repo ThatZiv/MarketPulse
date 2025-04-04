@@ -493,7 +493,6 @@ export default function StockPage() {
               </span>
             </div>
           </div>
-
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
               <div className="flex gap-1">
@@ -660,8 +659,6 @@ export default function StockPage() {
                   className="mt-2"
                 >
                   Add Transaction <Plus className="h-4 w-4" />
-                  Add Transaction <Plus className="h-4 w-4" />
-                </Button>
                 {previousPurchases != formData.purchases && (
                   <Button
                     type="button"
@@ -672,6 +669,7 @@ export default function StockPage() {
                     Revert Changes
                   </Button>
                 )}
+                
               </div>
               <Separator className="my-2" />
               <Table>
