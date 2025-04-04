@@ -15,24 +15,20 @@ export default function Avatar() {
   const { state, dispatch } = useGlobal();
   const [imagestatus, setImageStatus] = useState(status);
   const imageUrl = useMemo(() => {
-  if(state.user.url == "")
-  {
-    return ""
-  }
-  else
-  {
-    setImageReady(true)
-    setImageStatus("success")
-    return state.user.url
-  }
-  }, [state.user.url])
-  
-  
+    if (state.user.url == "") {
+      return "";
+    } else {
+      setImageReady(true);
+      setImageStatus("success");
+      return state.user.url;
+    }
+  }, [state.user.url]);
+
   useEffect(() => {
     if (state.user.url === "") {
       setImageStatus("loading");
       const image_url = async () => {
-        const {data} = await supabase
+        const { data } = await supabase
           .from("Account")
           .select("profile_picture")
           .eq("user_id", user?.id);
@@ -41,7 +37,6 @@ export default function Avatar() {
             .from("profile_pictures")
             .createSignedUrl(data[0].profile_picture, 3600);
           if (image.data) {
-            
             setImageReady(true);
             state.user.url = image.data.signedUrl;
             dispatch({
@@ -64,7 +59,11 @@ export default function Avatar() {
   }, []);
 
   if (status === "loading" && imagestatus === "loading")
-    return <div><Skeleton className="h-8 w-8 rounded-lg" /></div>;
+    return (
+      <div>
+        <Skeleton className="h-8 w-8 rounded-lg" />
+      </div>
+    );
   return (
     <_Avatar className="h-8 w-8 rounded-lg">
       {imageReady ? (
@@ -79,4 +78,3 @@ export default function Avatar() {
     </_Avatar>
   );
 }
-

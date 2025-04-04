@@ -16,8 +16,6 @@ import Disclaimer from "./pages/Disclaimers";
 import Feedback from "@/pages/Feedback";
 import Support from "@/pages/Support";
 
-
-
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 function App() {
   const { status } = useSupabase();

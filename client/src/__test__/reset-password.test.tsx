@@ -68,9 +68,8 @@ describe("Forgot Password", () => {
     const reset = await screen.findByText("Reset");
     const back = await screen.findByText("Back");
     const password = await screen.findByPlaceholderText("Password");
-    const confirmPassword = await screen.findByPlaceholderText(
-      "Confirm Password"
-    );
+    const confirmPassword =
+      await screen.findByPlaceholderText("Confirm Password");
 
     expect(title).toBeInTheDocument();
     expect(reset).toBeInTheDocument();
@@ -110,9 +109,8 @@ describe("Forgot Password", () => {
     );
     const reset = await screen.findByText("Reset");
     const password = await screen.findByPlaceholderText("Password");
-    const confirmPassword = await screen.findByPlaceholderText(
-      "Confirm Password"
-    );
+    const confirmPassword =
+      await screen.findByPlaceholderText("Confirm Password");
     expect(reset).toBeInTheDocument();
     expect(reset).not.toBeDisabled();
     expect(reset).toBeVisible();

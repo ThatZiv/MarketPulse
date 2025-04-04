@@ -450,6 +450,7 @@ export default function StockPage() {
       currentDate.getMinutes()
     ).padStart(2, "0")}`;
   };
+
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -533,7 +534,6 @@ export default function StockPage() {
               </span>
             </div>
           </div>
-
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
               <div className="flex gap-1">
@@ -693,20 +693,12 @@ export default function StockPage() {
                   </Button>
                 </div>
               ))}
-              <div className="flex justify-between">
-                <Button
-                  type="button"
-                  onClick={addPurchaseEntry}
-                  className="mt-2"
-                >
+              <div className="flex justify-between mt-2">
+                <Button type="button" onClick={addPurchaseEntry}>
                   Add Transaction <Plus className="h-4 w-4" />
                 </Button>
                 {previousPurchases != formData.purchases && (
-                  <Button
-                    type="button"
-                    onClick={resetPurchaseEntries}
-                    className="h-8 px-3 text-sm"
-                  >
+                  <Button type="button" onClick={resetPurchaseEntries}>
                     <Undo className="h-3.5 w-3.5 mr-1" />
                     Revert Changes
                   </Button>

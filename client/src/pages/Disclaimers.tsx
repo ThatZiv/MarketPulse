@@ -24,9 +24,10 @@ export default function Disclaimer() {
           <p>
             You should conduct your own research and consult with a qualified
             financial advisor before making <i>any investment decisions. </i>
-            MarketPulse is not liable for any financial losses, damages, or other
-            consequences arising from the use of this platform or reliance on its
-            outputs. Past performance is not indicative of future results.
+            MarketPulse is not liable for any financial losses, damages, or
+            other consequences arising from the use of this platform or reliance
+            on its outputs. Past performance is not indicative of future
+            results.
           </p>
           <p className="font-bold text-sm">
             Investing in financial markets carries inherent risks. Consider your

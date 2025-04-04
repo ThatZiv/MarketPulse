@@ -229,7 +229,9 @@ export default function PurchaseHistory({
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-bold">
-                  {PurchaseHistoryCalculator.toDollar(calc.getAveragePrice())}{" "}
+                  {PurchaseHistoryCalculator.toDollar(
+                    calc.getAveragePrice()
+                  )}{" "}
                 </span>
                 average price per share.
               </div>
