@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   ArrowRight,
   ArrowLeft,
@@ -503,6 +505,7 @@ export default function StockPage() {
           </div>
 
           <div className="mb-6">
+
             <label
               htmlFor="hasStocks"
               className="block text-lg font-light mb-2"
@@ -537,11 +540,12 @@ export default function StockPage() {
             </Select>
           </div>
 
+
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
               <div className="flex gap-1">
                 <label className="block text-lg font-light">
-                  Purchase History <span className="text-red-500">*</span>
+                  Transaction History <span className="text-red-500">*</span>
                 </label>
                 <InfoTooltip className="self-center" side="right" size="md">
                   <div className="mb-2">
@@ -702,13 +706,18 @@ export default function StockPage() {
                   onClick={addPurchaseEntry}
                   className="mt-2"
                 >
-                  Add Purchase <Plus className="h-4 w-4" />
+                  Add Transaction <Plus className="h-4 w-4" />
                 </Button>
                 {previousPurchases != formData.purchases && (
-                  <Button type="button" onClick={resetPurchaseEntries}>
-                    <Undo className="h-4 w-4" />
-                    Revert Changes
-                  </Button>
+                  <Button
+                  type="button"
+                  onClick={resetPurchaseEntries}
+                  className="h-8 px-3 text-sm"
+                >
+                  <Undo className="h-3.5 w-3.5 mr-1" />
+                  Revert Changes
+                </Button>
+                
                 )}
               </div>
               <Separator className="my-2" />
