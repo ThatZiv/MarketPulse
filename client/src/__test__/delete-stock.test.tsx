@@ -1,7 +1,6 @@
 import { DeleteStock } from "../components/delete-stock";
 import { describe, test, beforeEach } from "@jest/globals";
 import {
-    fireEvent,
     render,
     screen,
 } from "@testing-library/react";
@@ -9,12 +8,25 @@ import "@testing-library/jest-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom"; // Import MemoryRouter
 import userEvent from '@testing-library/user-event';
-
-const queryClient = new QueryClient();
+import { Toaster } from "sonner";
 
 jest.mock("lucide-react", () => ({
     AlertCircle: () => <span>AlertCircle Icon</span>,
 }));
+jest.mock('@/database/SupabaseProvider', () => ({
+    useSupabase: () => ({
+        user: { id: 'test-user-id', email: 'test@example.com' },
+        supabase: {
+            from: jest.fn().mockReturnValue({
+                delete: jest.fn().mockReturnValue({
+                    match: jest.fn().mockResolvedValueOnce({ data: [], error: null })
+                }),
+            }),
+        },
+    }),
+}));
+
+const queryClient = new QueryClient();
 
 describe("DeleteStock Component", () => {
 
@@ -26,6 +38,7 @@ describe("DeleteStock Component", () => {
                         ticker="Tesla"
                         stock_id={1}
                     />
+                    <Toaster />
                 </QueryClientProvider>
             </MemoryRouter>
         );
@@ -72,6 +85,20 @@ describe("DeleteStock Component", () => {
         for (let item of listItems) {
             expect(await screen.findByText(item)).toBeInTheDocument();
         }
+    });
+    test("testing error toast", async () => {
+        const deleteButton = screen.getByRole("button", { name: /Delete/i });
+        const invalidInput = "Tesla Corp";
+        expect(deleteButton).toBeInTheDocument();
+        await userEvent.click(deleteButton);
+        const inputPlaceHolder = screen.getByPlaceholderText("Tesla");
+        expect(inputPlaceHolder).toBeInTheDocument();
+
+        await userEvent.type(inputPlaceHolder, invalidInput);
+        const confirmDeleteButton = screen.getByRole("button", { name: /I understand the consequences of removing this stock./i });
+        await userEvent.click(confirmDeleteButton);
+        const toastMessage = await screen.findByText("Stock name does not match. Please enter the correct stock name to delete.");
+        expect(toastMessage).toBeInTheDocument();
     });
 });
 
