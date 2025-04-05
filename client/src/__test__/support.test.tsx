@@ -25,3 +25,17 @@ jest.mock("sonner", () => ({
     Eye: () => <span>Eye Icon</span>,
     EyeOff: () => <span>EyeOff Icon</span>,
   }));
+
+
+const mockInsertSupportRequest = jest.fn();
+const mockNavigate = jest.fn();
+
+jest.mock("@/database/SupabaseProvider", () => ({
+  useSupabase: () => ({
+    supabase: {
+      from: () => ({
+        insert: mockInsertSupportRequest,
+      }),
+    },
+  }),
+}));
