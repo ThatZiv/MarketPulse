@@ -190,6 +190,30 @@ describe("LoginForm Component", () => {
     );
   });
 
+  test("toggles password visibility and displays the entered password", async () => {
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const toggleVisibilityButton = screen.getByText("Eye Icon");
+  
+    await act(async () => {
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+    });
+  
+    expect(passwordInput).toHaveAttribute("type", "password");
+  
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+  
+    expect(passwordInput).toHaveAttribute("type", "text");
+    expect(passwordInput).toHaveValue("Password123!");
+  
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+  
+    expect(passwordInput).toHaveAttribute("type", "text");
+  });
+
 
 
 
