@@ -23,6 +23,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 
+
 type googleResponse = {
   clientId: string;
   client_id: string;
@@ -60,7 +61,13 @@ export function LoginForm({
 
   async function onSubmit(values: z.infer<typeof formSchema>, event?: Event) {
     event?.preventDefault();
-    await signInWithEmail(values.email, values.password);
+    try {
+      await signInWithEmail(values.email, values.password);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message); 
+      }
+    }
   }
 
   window.handleSignInWithGoogle = async (response: googleResponse) => {
