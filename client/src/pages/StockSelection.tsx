@@ -226,7 +226,6 @@ export default function StockPage() {
 
   const handleSort = (index: number) => {
     const newPurchases = [...formData.purchases];
-    console.log(newPurchases[index]);
     if (
       !(
         newPurchases[index]["date"] == "" ||
