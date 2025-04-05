@@ -16,3 +16,30 @@ jest.mock("react-router-dom", () => ({
       <a href={to}>{children}</a>
     ),
   }));
+
+
+  afterEach(() => {
+    cleanup();
+  });
+  
+  describe("Documentation Page", () => {
+    beforeEach(() => {
+      render(
+        <MemoryRouter>
+          <Documentation />
+        </MemoryRouter>
+      );
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+});
