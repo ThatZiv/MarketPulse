@@ -22,6 +22,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
+import { toast } from "sonner"; 
 
 
 type googleResponse = {
