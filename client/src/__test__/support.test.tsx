@@ -129,7 +129,31 @@ jest.mock("react-router-dom", () => ({
       });
     
 
-
+      test("handles support request submission error", async () => {
+        const issueTypeSelect = screen.getByLabelText("Issue Type");
+        const summaryTextarea = screen.getByLabelText("Summary");
+        const submitButton = screen.getByText("Submit Request");
+    
+        const errorMessage = "An unexpected error occurred";
+    
+        mockInsertSupportRequest.mockResolvedValueOnce({
+          error: { message: errorMessage },
+        });
+    
+        await act(async () => {
+          fireEvent.change(issueTypeSelect, { target: { value: "Bug" } });
+          fireEvent.change(summaryTextarea, {
+            target: { value: "This is a test summary." },
+          });
+          fireEvent.click(submitButton);
+        });
+    
+        expect(mockInsertSupportRequest).toHaveBeenCalledTimes(1);
+        expect(mockInsertSupportRequest).toHaveBeenCalledWith([
+          { issue_type: "Bug", summary: "This is a test summary." },
+        ]);
+        expect(toast.error).toHaveBeenCalledWith(errorMessage);
+      });
 
 
 });
