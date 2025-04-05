@@ -165,7 +165,30 @@ describe("LoginForm Component", () => {
     );
   });
 
-
+  test("displays error toast when login credentials are invalid", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const loginButton = screen.getByText("Login");
+  
+    mockSignInWithEmail.mockRejectedValueOnce(
+      new Error("Error logging in: Invalid login credentials.")
+    );
+  
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Passwo123!" } });
+      fireEvent.click(loginButton);
+    });
+  
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith("Error logging in: Invalid login credentials.");
+  
+    expect(mockSignInWithEmail).toHaveBeenCalledTimes(1);
+    expect(mockSignInWithEmail).toHaveBeenCalledWith(
+      "test2025@test.com",
+      "Passwo123!"
+    );
+  });
 
 
 
