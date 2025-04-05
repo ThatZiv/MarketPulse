@@ -8,6 +8,8 @@ import {
   cleanup,
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { toast } from "sonner";
+
 
 jest.mock("lucide-react", () => ({
   Eye: () => <span>Eye Icon</span>,
