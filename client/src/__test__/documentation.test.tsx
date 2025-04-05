@@ -40,6 +40,14 @@ jest.mock("react-router-dom", () => ({
       });
 
 
+      test("navigates to Introduction page when Introduction button is clicked", () => {
+        const introductionLink = screen.getByText("Introduction");
+        expect(introductionLink).toHaveAttribute("href", "/documentation/introduction");
+    
+        fireEvent.click(introductionLink);
+      });
+
+
 
 
 
