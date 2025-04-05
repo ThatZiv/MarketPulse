@@ -220,9 +220,23 @@ export default function StockPage() {
             : Number(value)
           : value,
     };
-    newPurchases.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+
+    setFormData((prev) => ({ ...prev, purchases: newPurchases }));
+  };
+
+  const handleSort = (index: number) => {
+    const newPurchases = [...formData.purchases];
+    console.log(newPurchases[index]);
+    if (
+      !(
+        newPurchases[index]["date"] == "" ||
+        newPurchases[index]["shares"] == null ||
+        newPurchases[index]["pricePurchased"] == null
+      )
+    )
+      newPurchases.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
 
@@ -570,12 +584,14 @@ export default function StockPage() {
                       min="2000-01-01T00:00"
                       max={formatToday()}
                       onChange={(e) => {
-                        //console.log(e.target.value);
                         handlePurchaseChange(
                           index,
                           "date",
                           moment(e.target.value).format("YYYY-MM-DDTHH:mm")
                         );
+                      }}
+                      onBlur={() => {
+                        handleSort(index);
                       }}
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -603,6 +619,9 @@ export default function StockPage() {
                       onChange={(e) =>
                         handlePurchaseChange(index, "shares", e.target.value)
                       }
+                      onBlur={() => {
+                        handleSort(index);
+                      }}
                       className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
@@ -678,6 +697,9 @@ export default function StockPage() {
                             e.target.value
                           )
                         }
+                        onBlur={() => {
+                          handleSort(index);
+                        }}
                         className="w-full  border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                       />
                     </div>
