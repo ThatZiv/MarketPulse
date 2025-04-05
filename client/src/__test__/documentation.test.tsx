@@ -31,8 +31,13 @@ jest.mock("react-router-dom", () => ({
       );
     });
 
-
-
+    test("renders Documentation page correctly", () => {
+        expect(screen.getByText("Documentation")).toBeInTheDocument();
+        expect(screen.getByText("Introduction")).toBeInTheDocument();
+        expect(screen.getByText("Tutorials")).toBeInTheDocument();
+        expect(screen.getByText("FAQ")).toBeInTheDocument();
+        expect(screen.getByText("Disclaimer")).toBeInTheDocument();
+      });
 
 
 
