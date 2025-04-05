@@ -316,6 +316,63 @@ describe("CreateForm Component", () => {
   });
 
 
+  test("completes registration flow and allows login after email verification", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+  
+    mockSignUpNewUser.mockResolvedValueOnce({
+      user: { id: "123", email: "test2025@test.com" },
+      session: null,
+      error: null,
+    });
+  
+    const mockSendVerificationEmail = jest.fn().mockResolvedValueOnce(true);
+  
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "Password123!" } });
+      fireEvent.click(createButton);
+    });
+  
+    expect(screen.getByText("✅ At least 8 characters")).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 uppercase letter")).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 number")).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 special character")).toBeInTheDocument();
+  
+    expect(mockSignUpNewUser).toHaveBeenCalledTimes(1);
+    expect(mockSignUpNewUser).toHaveBeenCalledWith("test2025@test.com", "Password123!");
+  
+    await act(async () => {
+      mockSendVerificationEmail();
+    });
+  
+    expect(mockSendVerificationEmail).toHaveBeenCalledTimes(1);
+  
+    const mockVerifyEmail = jest.fn().mockResolvedValueOnce(true);
+    await act(async () => {
+      mockVerifyEmail();
+    });
+  
+    expect(mockVerifyEmail).toHaveBeenCalledTimes(1);
+  
+    const mockSignIn = jest.fn().mockResolvedValueOnce({
+      user: { id: "123", email: "test2025@test.com" },
+      session: { access_token: "mock_token" },
+      error: null,
+    });
+  
+    await act(async () => {
+      mockSignIn("test2025@test.com", "Password123!");
+    });
+  
+    expect(mockSignIn).toHaveBeenCalledTimes(1);
+    expect(mockSignIn).toHaveBeenCalledWith("test2025@test.com", "Password123!");
+  });
+
+
 
 
 });
