@@ -129,4 +129,37 @@ describe("LoginForm Component", () => {
     });
     expect(passwordInput).toHaveAttribute("type", "text");
   });
+
+  test("displays error toast when login credentials are invalid", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const loginButton = screen.getByText("Login");
+  
+    mockSignInWithEmail.mockRejectedValueOnce(
+      new Error("Error logging in: Invalid login credentials.")
+    );
+  
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "johndoe@yahoo.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password!123" } });
+      fireEvent.click(loginButton);
+    });
+  
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith("Error logging in: Invalid login credentials.");
+  
+    expect(mockSignInWithEmail).toHaveBeenCalledTimes(1);
+    expect(mockSignInWithEmail).toHaveBeenCalledWith(
+      "johndoe@yahoo.com",
+      "Password!123"
+    );
+  });
+
+
+
+
+
+
+
+
 });
