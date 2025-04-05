@@ -56,6 +56,14 @@ jest.mock("react-router-dom", () => ({
       });
 
 
+      test("navigates to FAQ page when FAQ button is clicked", () => {
+        const faqLink = screen.getByText("FAQ");
+        expect(faqLink).toHaveAttribute("href", "/documentation/faq");
+    
+        fireEvent.click(faqLink);
+      });
+
+
 
 
 
