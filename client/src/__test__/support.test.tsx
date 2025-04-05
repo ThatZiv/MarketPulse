@@ -156,4 +156,27 @@ jest.mock("react-router-dom", () => ({
       });
 
 
+      test("disables submit button while loading", async () => {
+        const issueTypeSelect = screen.getByLabelText("Issue Type");
+        const summaryTextarea = screen.getByLabelText("Summary");
+        const submitButton = screen.getByText("Submit Request");
+    
+        mockInsertSupportRequest.mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              setTimeout(() => resolve({ error: null }), 1000);
+            })
+        );
+    
+        await act(async () => {
+          fireEvent.change(issueTypeSelect, { target: { value: "Bug" } });
+          fireEvent.change(summaryTextarea, {
+            target: { value: "This is a test summary." },
+          });
+          fireEvent.click(submitButton);
+        });
+    
+        expect(submitButton).toBeDisabled();
+      });
+
 });
