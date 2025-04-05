@@ -229,7 +229,22 @@ describe("CreateForm Component", () => {
     expect(mockSignUpNewUser).not.toHaveBeenCalled(); 
   });
 
-
+  test("validates special character requirement and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+  
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "Password123" } });
+      fireEvent.click(createButton);
+    });
+  
+    expect(screen.getByText("❌ At least 1 special character")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled();
+  });
 
 
 });
