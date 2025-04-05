@@ -16,6 +16,14 @@ jest.mock("lucide-react", () => ({
   EyeOff: () => <span>EyeOff Icon</span>,
 }));
 
+
+jest.mock("sonner", () => ({
+  toast: {
+    error: jest.fn(), 
+  },
+}));
+
+
 const mockSignInWithEmail = jest.fn();
 const mockSignInWithGoogle = jest.fn();
 const mockTogglePageState = jest.fn();
