@@ -81,8 +81,7 @@ describe("DeleteStock Component", () => {
         expect(await screen.findByText(warning)).toBeInTheDocument();
         expect(await screen.findByText(warningDescription)).toBeInTheDocument();
         expect(await screen.findByText(alertTitle)).toBeInTheDocument();
-        // expect(await heading2).toHaveTextContent(confirmationHeader);
-        for (let item of listItems) {
+        for (const item of listItems) {
             expect(await screen.findByText(item)).toBeInTheDocument();
         }
     });
