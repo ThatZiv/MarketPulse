@@ -100,5 +100,19 @@ describe("DeleteStock Component", () => {
         const toastMessage = await screen.findByText("Stock name does not match. Please enter the correct stock name to delete.");
         expect(toastMessage).toBeInTheDocument();
     });
+    test("testing successful deletion", async () => {
+        const deleteButton = screen.getByRole("button", { name: /Delete/i });
+        const invalidInput = "Tesla";
+        expect(deleteButton).toBeInTheDocument();
+        await userEvent.click(deleteButton);
+        const inputPlaceHolder = screen.getByPlaceholderText("Tesla");
+        expect(inputPlaceHolder).toBeInTheDocument();
+
+        await userEvent.type(inputPlaceHolder, invalidInput);
+        const confirmDeleteButton = screen.getByRole("button", { name: /I understand the consequences of removing this stock./i });
+        await userEvent.click(confirmDeleteButton);
+        const toastMessage = await screen.findByText("Deleting stock...");
+        expect(toastMessage).toBeInTheDocument();
+    });
 });
 
