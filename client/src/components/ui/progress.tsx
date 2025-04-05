@@ -20,11 +20,11 @@ const Progress = React.forwardRef<
       {/* Red part with hover effect */}
       <div
         className="absolute right-0 top-0 h-full bg-red-600 w-full transition-all hover:bg-red-800"
-        style={{ width: `${remaining}%` }} 
+        style={{ width: `${remaining}%` }}
       />
       <ProgressPrimitive.Indicator
         className="h-full w-full bg-green-600 transition-all hover:bg-green-800"
-        style={{ transform: `translateX(-${remaining}%)` }} 
+        style={{ transform: `translateX(-${remaining}%)` }}
       />
     </ProgressPrimitive.Root>
   );

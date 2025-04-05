@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-
 export default function Feedback() {
   const { supabase } = useSupabase();
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
 
   const submitFeedback = async () => {
     if (!feedback.trim()) {
@@ -54,9 +52,10 @@ export default function Feedback() {
         </CardHeader>
         <CardContent className="text-left text-gray-700 dark:text-gray-300 flex flex-wrap gap-4">
           <p className="w-full">
-            We value your feedback! Please share your thoughts, suggestions, or any issues
-            you've encountered while using <span className="italic">MarketPulse</span>.
-            Your input helps us improve the platform for everyone.
+            We value your feedback! Please share your thoughts, suggestions, or
+            any issues you've encountered while using{" "}
+            <span className="italic">MarketPulse</span>. Your input helps us
+            improve the platform for everyone.
           </p>
 
           <div className="w-full">

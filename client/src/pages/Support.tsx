@@ -54,7 +54,9 @@ const Support: React.FC = () => {
         </CardHeader>
         <CardContent className="text-left text-gray-700 dark:text-gray-300 flex flex-wrap gap-4">
           <p className="w-full">
-            Need help? Please select the type of issue you're facing and provide a brief summary. Our support team will get back to you as soon as possible.
+            Need help? Please select the type of issue you're facing and provide
+            a brief summary. Our support team will get back to you as soon as
+            possible.
           </p>
 
           <div className="w-full">
@@ -74,11 +76,15 @@ const Support: React.FC = () => {
               <option value="Bug">Bug</option>
               <option value="Security">Security</option>
               <option value="Privacy Concerns">Privacy Concerns</option>
-              <option value="Account & Login Issues">Account & Login Issues</option>
+              <option value="Account & Login Issues">
+                Account & Login Issues
+              </option>
               <option value="Feature Request">Feature Request</option>
               <option value="Performance Issue">Performance Issue</option>
               <option value="UI/UX Feedback">UI/UX Feedback</option>
-              <option value="Data Sync & Integration">Data Sync & Integration</option>
+              <option value="Data Sync & Integration">
+                Data Sync & Integration
+              </option>
               <option value="Notification Issues">Notification Issues</option>
               <option value="Other">Other</option>
             </select>

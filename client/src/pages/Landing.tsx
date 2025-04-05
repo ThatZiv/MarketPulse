@@ -381,7 +381,9 @@ function StockCard({
                         calc.getProfit() < 0 ? "text-red-600" : "text-green-600"
                       } text-sm`}
                     >
-                      {toDollar(calc.getProfit())}
+                      {calc.getProfit() < 0
+                        ? toDollar(-1 * calc.getProfit())
+                        : toDollar(calc.getProfit())}
                     </span>{" "}
                     {calc.getProfit() < 0 ? "loss" : "profit"},
                   </span>
@@ -433,23 +435,32 @@ function StockCard({
                     </div>
                     <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
                       <div className="flex items-center gap-1">
-                        <span
-                          className={`text-xl font-semibold ${
-                            calc.getProfit() < 0
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
-                        >
-                          {toDollar(calc.getProfit())}
-                        </span>
-                        <span className="inline">last sale profit</span>
+                        {calc.getProfit() < 0 ? (
+                          <div>
+                            <span
+                              className={`text-xl font-semibold $ text-red-600`}
+                            >
+                              {toDollar(calc.getProfit() * -1)}
+                            </span>
+                            <span className="inline"> last sale's losses</span>
+                          </div>
+                        ) : (
+                          <div>
+                            <span
+                              className={`text-xl font-semibold $ text-green-600`}
+                            >
+                              {toDollar(calc.getProfit())}
+                            </span>
+                            <span className="inline"> last sale's profits</span>
+                          </div>
+                        )}
+
                         <InfoTooltip side="right">
-                          This is the profit you have made from this stock based
-                          on your last sale. It is calculated by summing up the
-                          cost of your purchases, and if a sale occurs, takes
-                          the difference between your total purchased amount and{" "}
-                          <strong>last</strong> sale amount. If you never sold,
-                          this value will remain zero.
+                          This is the profit you have made from the last sale of
+                          this stock. It is calculated with the amount spent on
+                          your remaining shares and <strong>last</strong> sale
+                          amount. If you never sold, this value will remain
+                          zero.
                         </InfoTooltip>
                       </div>
                     </div>
@@ -471,28 +482,40 @@ function StockCard({
                         </div>
                         {calc.getTotalShares() > 0 && (
                           <div className="text-xs font-medium text-gray-600 dark:text-gray-300 inline">
-                            {calc.getTotalProfit(thisStock.current_price) < 0 ? 
-                            <div className="flex items-center gap-1">
-                              <span
-                                className={`text-xl animate-pulse font-semibold text-red-600`}>
-                                {toDollar(calc.getTotalProfit(thisStock.current_price)*-1)}
-                              </span>
-                              <span className="inline">potential loss</span>
-                              <InfoTooltip side="right">
-                                This is the potential loss you would make if
-                                you sold all your shares at the current price.
-                              </InfoTooltip>
-                            </div>:<div className="flex items-center gap-1">
-                              <span
-                                className={`text-xl animate-pulse font-semibold text-green-600`}>
-                                {toDollar(calc.getTotalProfit(thisStock.current_price))}
-                              </span>
-                              <span className="inline">potential profit</span>
-                              <InfoTooltip side="right">
-                                This is the potential profit you would make if
-                                you sold all your shares at the current price.
-                              </InfoTooltip>
-                            </div>}
+                            {calc.getTotalProfit(thisStock.current_price) <
+                            0 ? (
+                              <div className="flex items-center gap-1">
+                                <span
+                                  className={`text-xl animate-pulse font-semibold text-red-600`}
+                                >
+                                  {toDollar(
+                                    calc.getTotalProfit(
+                                      thisStock.current_price
+                                    ) * -1
+                                  )}
+                                </span>
+                                <span className="inline">potential loss</span>
+                                <InfoTooltip side="right">
+                                  This is the potential loss you would make if
+                                  you sold all your shares at the current price.
+                                </InfoTooltip>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <span
+                                  className={`text-xl animate-pulse font-semibold text-green-600`}
+                                >
+                                  {toDollar(
+                                    calc.getTotalProfit(thisStock.current_price)
+                                  )}
+                                </span>
+                                <span className="inline">potential profit</span>
+                                <InfoTooltip side="right">
+                                  This is the potential profit you would make if
+                                  you sold all your shares at the current price.
+                                </InfoTooltip>
+                              </div>
+                            )}
                           </div>
                         )}
                         <p className="text-[10px] font-light">

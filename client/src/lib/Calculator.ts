@@ -20,6 +20,7 @@ export class PurchaseHistoryCalculator {
   private purchases: PurchaseHistoryDatapoint[] = [];
   private totalShares: number = 0;
   private totalBought: number = 0;
+  private totalOwned: number = 0;
   private totalSold: number = 0;
   private profit: number = 0;
 
@@ -43,25 +44,30 @@ export class PurchaseHistoryCalculator {
   private calculateTotals() {
     this.totalShares = 0;
     this.totalBought = 0;
+    this.totalOwned = this.totalOwned = 0;
     this.totalSold = 0;
     this.profit = 0;
 
-    let curr = 0;
     for (const { amount_purchased, price_purchased } of this.purchases) {
       const value = amount_purchased * price_purchased;
-      curr += value;
+
       this.totalShares += amount_purchased;
       if (amount_purchased > 0) {
         this.totalBought += value;
+        this.totalOwned += value;
       } else {
         this.totalSold += Math.abs(value);
-        this.profit = curr * -1;
-        curr = 0;
-        continue;
+        this.profit =
+          (this.totalOwned / (this.totalShares - amount_purchased) -
+            price_purchased) *
+          amount_purchased;
+        // the total value of owned shares is reduced by the rolling average * the number of shares sold
+        this.totalOwned =
+          this.totalOwned +
+          (this.totalOwned / (this.totalShares - amount_purchased)) *
+            amount_purchased;
       }
     }
-
-    // this.profit = this.totalSold === 0 ? 0 : this.totalSold - this.totalBought;
   }
 
   /**
@@ -117,7 +123,7 @@ export class PurchaseHistoryCalculator {
   }
 
   getAveragePrice(): number {
-    return this.totalShares === 0 ? 0 : this.totalBought / this.totalShares;
+    return this.totalShares === 0 ? 0 : this.totalOwned / this.totalShares;
   }
 
   getTotalValue(currentPrice: number): number {
@@ -125,6 +131,6 @@ export class PurchaseHistoryCalculator {
   }
 
   getTotalProfit(currentPrice: number): number {
-    return this.getTotalValue(currentPrice) - this.totalBought;
+    return this.getTotalValue(currentPrice) - this.totalOwned;
   }
 }

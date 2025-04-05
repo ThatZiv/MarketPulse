@@ -220,14 +220,18 @@ export default function PurchaseHistory({
                     calc.getProfit() > 0 ? "text-green-600" : "text-red-600"
                   }
                 >
-                  {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+                  {calc.getProfit() > 0
+                    ? PurchaseHistoryCalculator.toDollar(calc.getProfit())
+                    : PurchaseHistoryCalculator.toDollar(calc.getProfit() * -1)}
                 </span>
                 was {calc.getProfit() > 0 ? "made" : "lost"} from your last
                 sale.
               </div>
               <div className="text-sm text-muted-foreground">
                 <span className="font-bold">
-                  {PurchaseHistoryCalculator.toDollar(calc.getAveragePrice())}{" "}
+                  {PurchaseHistoryCalculator.toDollar(
+                    calc.getAveragePrice()
+                  )}{" "}
                 </span>
                 average price per share.
               </div>

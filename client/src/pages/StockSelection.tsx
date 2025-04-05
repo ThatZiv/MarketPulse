@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   ArrowRight,
   ArrowLeft,
@@ -68,15 +70,13 @@ export default function StockPage() {
     [searchParams]
   );
 
-  const {
-      data: userStocks,
-    } = useQuery<UserStock[]>({
-      queryKey: [cache_keys.USER_STOCKS],
-      queryFn: dataHandler(dispatch)
-        .forSupabase(supabase)
-        .getUserStocks(user?.id ?? ""),
-      enabled: !!user,
-    });
+  const { data: userStocks } = useQuery<UserStock[]>({
+    queryKey: [cache_keys.USER_STOCKS],
+    queryFn: dataHandler(dispatch)
+      .forSupabase(supabase)
+      .getUserStocks(user?.id ?? ""),
+    enabled: !!user,
+  });
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
@@ -112,15 +112,14 @@ export default function StockPage() {
         });
         fetchPurchaseHistory(stock.stock_id.toString());
       }
-      if(userStocks)
-      {
-        for(const currTicker of userStocks)
-        {
-          if(ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase())
-          {
+      if (userStocks) {
+        for (const currTicker of userStocks) {
+          if (
+            ticker == (currTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
             setFormData((prev) => ({
               ...prev,
-              cashToInvest: currTicker.desired_investiture
+              cashToInvest: currTicker.desired_investiture,
             }));
           }
         }
@@ -274,7 +273,21 @@ export default function StockPage() {
 
     const badDay = calc.isInvalidHistory();
     if (badDay) {
-      setError(`You cannot sell more shares than you own on ${badDay}`);
+      const bad = new Date(badDay);
+      setError(
+        `You cannot sell more shares than you own on ${bad.toLocaleString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          }
+        )}`
+      );
+
       return;
     }
 
@@ -313,8 +326,22 @@ export default function StockPage() {
           //duplicate check
           const badDay = calc.isInvalidHistory();
           if (badDay) {
+            const bad = new Date(badDay);
+
             reject(
-              new Error(`You cannot sell more shares than you own on ${badDay}`)
+              new Error(
+                `You cannot sell more shares than you own on ${bad.toLocaleString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "numeric",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  }
+                )}`
+              )
             );
             return;
           }
@@ -381,33 +408,49 @@ export default function StockPage() {
     );
   }
 
-function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:string})
-{
-  if(userStocks)
-  {
-  if(!IsEditPage){
-    for(const userTicker of userStocks)
-      {
-        if(props.stock_ticker == (userTicker.Stocks.stock_ticker as string).toUpperCase())
-        {
-          return <></>
+  function TickerItem(props: {
+    stock_ticker: string;
+    stock_id: number;
+    stock_name: string;
+  }) {
+    if (userStocks) {
+      if (!IsEditPage) {
+        for (const userTicker of userStocks) {
+          if (
+            props.stock_ticker ==
+            (userTicker.Stocks.stock_ticker as string).toUpperCase()
+          ) {
+            return <></>;
+          }
         }
+
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
+      } else {
+        return (
+          <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
+            {props.stock_name} ({props.stock_ticker})
+          </SelectItem>
+        );
       }
-
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
-    }
-    else
-    {
-      return  <SelectItem key={props.stock_id} value={props.stock_id.toString()}>
-              {props.stock_name} ({props.stock_ticker})
-              </SelectItem>
-
     }
   }
-}
+
+  const formatToday = () => {
+    const currentDate = new Date();
+    return `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(currentDate.getDate()).padStart(
+      2,
+      "0"
+    )}T${String(currentDate.getHours()).padStart(2, "0")}:${String(
+      currentDate.getMinutes()
+    ).padStart(2, "0")}`;
+  };
+
   return (
     <main className="w-xl min-h-screen">
       <header className="px-4 border-b flex items-center justify-between mx-auto max-w-screen-sm">
@@ -448,8 +491,12 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                   <SelectGroup>
                     <SelectLabel>Stocks</SelectLabel>
                     {stocks?.map(({ stock_id, stock_name, stock_ticker }) => (
-                      <div key = {stock_id}>
-                      <TickerItem stock_id={stock_id} stock_name={stock_name} stock_ticker={stock_ticker}/>   
+                      <div key={stock_id}>
+                        <TickerItem
+                          stock_id={stock_id}
+                          stock_name={stock_name}
+                          stock_ticker={stock_ticker}
+                        />
                       </div>
                     ))}
                   </SelectGroup>
@@ -459,41 +506,39 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
           </div>
 
           <div className="mb-6">
-            <label
+            <Label
               htmlFor="hasStocks"
               className="block text-lg font-light mb-2"
             >
               Do you own this stock? <span className="text-red-500">*</span>
-            </label>
-            <Select
-              value={formData.hasStocks}
-              disabled={stocksLoading || !formData.ticker || (IsEditPage && formData.purchases.length > 0 )}
-              onValueChange={(value: string) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  hasStocks: value,
-                  purchases: value === "no" ? [] : prev.purchases,
-                }))
-              }
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Option" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="yes">Yes</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+            </Label>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="hasStocks"
+                checked={formData.hasStocks === "yes"}
+                onCheckedChange={(checked) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    hasStocks: checked ? "yes" : "no",
+                    purchases: checked ? prev.purchases : [],
+                  }));
+                }}
+                disabled={
+                  stocksLoading ||
+                  !formData.ticker ||
+                  (IsEditPage && formData.purchases.length > 0)
+                }
+              />
+              <span className="font-medium">
+                {formData.hasStocks === "yes" ? "Yes" : "No"}
+              </span>
+            </div>
           </div>
-
           {formData.hasStocks === "yes" && (
             <div className="mb-6">
               <div className="flex gap-1">
                 <label className="block text-lg font-light">
-                  Purchase History <span className="text-red-500">*</span>
+                  Transaction History <span className="text-red-500">*</span>
                 </label>
                 <InfoTooltip className="self-center" side="right" size="md">
                   <div className="mb-2">
@@ -523,9 +568,9 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                       required
                       value={purchase.date}
                       min="2000-01-01T00:00"
-                      max={"2099-01-01T00:00"}
+                      max={formatToday()}
                       onChange={(e) => {
-                        console.log(e.target.value);
+                        //console.log(e.target.value);
                         handlePurchaseChange(
                           index,
                           "date",
@@ -648,17 +693,13 @@ function TickerItem(props:{stock_ticker:string, stock_id:number, stock_name:stri
                   </Button>
                 </div>
               ))}
-              <div className="flex justify-between">
-                <Button
-                  type="button"
-                  onClick={addPurchaseEntry}
-                  className="mt-2"
-                >
-                  Add Purchase <Plus className="h-4 w-4" />
+              <div className="flex justify-between mt-2">
+                <Button type="button" onClick={addPurchaseEntry}>
+                  Add Transaction <Plus className="h-4 w-4" />
                 </Button>
                 {previousPurchases != formData.purchases && (
                   <Button type="button" onClick={resetPurchaseEntries}>
-                    <Undo className="h-4 w-4" />
+                    <Undo className="h-3.5 w-3.5 mr-1" />
                     Revert Changes
                   </Button>
                 )}
