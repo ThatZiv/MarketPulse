@@ -44,3 +44,35 @@ jest.mock("react-router-dom", () => ({
     ...jest.requireActual("react-router-dom"),
     useNavigate: () => mockNavigate,
   }));
+
+
+  afterEach(() => {
+    cleanup();
+    jest.clearAllMocks();
+  });
+  
+  describe("Support Page", () => {
+    beforeEach(() => {
+      render(
+        <MemoryRouter>
+          <Support />
+        </MemoryRouter>
+      );
+    });
+  
+    test("renders Support page correctly", () => {
+      expect(screen.getByText("Support")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /Need help\? Please select the type of issue you're facing and provide a brief summary/i
+        )
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText("Issue Type")).toBeInTheDocument();
+      expect(screen.getByLabelText("Summary")).toBeInTheDocument();
+      expect(screen.getByText("Submit Request")).toBeInTheDocument();
+    });
+
+
+
+
+});
