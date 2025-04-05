@@ -88,4 +88,18 @@ jest.mock("react-router-dom", () => ({
       });
 
 
+      test("validates empty form submission", async () => {
+        const submitButton = screen.getByText("Submit Request");
+    
+        await act(async () => {
+          fireEvent.click(submitButton);
+        });
+    
+        expect(mockInsertSupportRequest).not.toHaveBeenCalled();
+        expect(toast.error).toHaveBeenCalledWith(
+          "Both issue type and summary are required!"
+        );
+      });
+
+
 });
