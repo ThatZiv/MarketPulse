@@ -247,4 +247,25 @@ describe("CreateForm Component", () => {
   });
 
 
+  test("validates password confirmation and prevents account creation when passwords do not match", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+  
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "" } }); 
+      fireEvent.click(createButton);
+    });
+  
+    expect(screen.getByText("Passwords do not match")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled(); 
+  });
+
+
+
+
+
 });
