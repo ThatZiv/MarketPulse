@@ -3,11 +3,13 @@ import { describe, test, afterEach, beforeEach } from "@jest/globals";
 import {
   render,
   screen,
-
+  fireEvent,
+  act,
   cleanup,
 } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import "@testing-library/jest-dom";
+import { toast } from "sonner";
 
 jest.mock("sonner", () => ({
     toast: {
@@ -70,7 +72,20 @@ jest.mock("react-router-dom", () => ({
       expect(screen.getByText("Submit Request")).toBeInTheDocument();
     });
 
-
+    test("handles issue type and summary input", async () => {
+        const issueTypeSelect = screen.getByLabelText("Issue Type");
+        const summaryTextarea = screen.getByLabelText("Summary");
+    
+        await act(async () => {
+          fireEvent.change(issueTypeSelect, { target: { value: "Bug" } });
+          fireEvent.change(summaryTextarea, {
+            target: { value: "This is a test summary." },
+          });
+        });
+    
+        expect(issueTypeSelect).toHaveValue("Bug");
+        expect(summaryTextarea).toHaveValue("This is a test summary.");
+      });
 
 
 });
