@@ -212,6 +212,23 @@ describe("CreateForm Component", () => {
     expect(mockSignUpNewUser).not.toHaveBeenCalled(); 
   });
 
+  test("validates number requirement and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+  
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password!" } }); 
+      fireEvent.change(confirmPasswordInput, { target: { value: "Password!" } });
+      fireEvent.click(createButton);
+    });
+  
+    expect(screen.getByText("❌ At least 1 number")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled(); 
+  });
+
 
 
 
