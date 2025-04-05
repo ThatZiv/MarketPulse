@@ -17,3 +17,11 @@ jest.mock("sonner", () => ({
       error: jest.fn(),
     },
   }));
+
+
+  jest.mock("lucide-react", () => ({
+    LockIcon: () => <span>Lock Icon</span>,
+    SaveIcon: () => <span>Save Icon</span>,
+    Eye: () => <span>Eye Icon</span>,
+    EyeOff: () => <span>EyeOff Icon</span>,
+  }));
