@@ -64,6 +64,14 @@ jest.mock("react-router-dom", () => ({
       });
 
 
+      test("navigates to Disclaimer page when Disclaimer button is clicked", () => {
+        const disclaimerLink = screen.getByText("Disclaimer");
+        expect(disclaimerLink).toHaveAttribute("href", "/documentation/disclaimer");
+    
+        fireEvent.click(disclaimerLink);
+      });
+
+
 
 
 
