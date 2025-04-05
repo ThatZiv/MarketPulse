@@ -176,4 +176,28 @@ describe("CreateForm Component", () => {
 
     expect(mockTogglePageState).toHaveBeenCalledTimes(1);
   });
+
+
+  test("validates password length and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput = screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Pass1@" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "Pass1@" } });
+      fireEvent.click(createButton);
+    });
+
+    expect(screen.getByText("❌ At least 8 characters")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled(); 
+  });
+
+
+
+
+
+
 });
