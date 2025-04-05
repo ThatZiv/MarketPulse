@@ -264,7 +264,30 @@ describe("CreateForm Component", () => {
     expect(mockSignUpNewUser).not.toHaveBeenCalled(); 
   });
 
-
+  test("toggles password visibility and displays the entered password", async () => {
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const toggleVisibilityButtons = screen.getAllByText("Eye Icon"); 
+    const toggleVisibilityButton = toggleVisibilityButtons[0]; 
+  
+    await act(async () => {
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+    });
+  
+    expect(passwordInput).toHaveAttribute("type", "password");
+  
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+  
+    expect(passwordInput).toHaveAttribute("type", "text");
+    expect(passwordInput).toHaveValue("Password123!");
+  
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+  
+    expect(passwordInput).toHaveAttribute("type", "text");
+  });
 
 
 
