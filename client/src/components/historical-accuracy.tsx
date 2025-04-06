@@ -16,7 +16,6 @@ export default function HistoricalAccuracy({
   if (data && expandDomain(data).length === 3) {
     for (const item of data) {
       for (const [key, value] of Object.entries(item)) {
-        console.log(item);
         if (key.endsWith("_prediction")) {
           predicted.push(value as number);
         } else if (key === "stock_close") {
@@ -27,9 +26,6 @@ export default function HistoricalAccuracy({
   }
   // make sure actual and predicted are the same length
   actual = actual.slice(0, predicted.length);
-
-  console.log("actual", actual);
-  console.log("predicted", predicted);
 
   const calc = new ForecastModelCalculator(actual, predicted);
   const metrics = [
