@@ -28,6 +28,7 @@ describe("Forecast Model Calculator", () => {
     const calc2 = new ForecastModelCalculator(actual2, predicted2);
     expect(calc2.accuracy()).toBe(0.6);
   });
+
   test("should throw error if arrays are not the same length", () => {
     const actual2 = [1, 2, 3];
     const predicted2 = [1, 2, 3, 4];

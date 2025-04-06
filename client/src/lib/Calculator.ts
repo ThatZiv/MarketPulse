@@ -84,19 +84,6 @@ export class ForecastModelCalculator {
   }
 
   /**
-   * @description calculates the standard deviation of the values
-   * @param values - array of numbers
-   * @returns {number} - standard deviation of the values
-   */
-  private standardDeviation(values: number[]): number {
-    const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
-    const variance =
-      values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
-      values.length;
-    return Math.sqrt(variance);
-  }
-
-  /**
    * @description calculates the accuracy of the predictions
    * @returns {number} - the accuracy of the predictions as a percentage
    * @example
