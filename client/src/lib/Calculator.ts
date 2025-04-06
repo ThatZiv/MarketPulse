@@ -1,9 +1,17 @@
 import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 
+/**
+ * class for calculating forecast model metrics
+ */
 export class ForecastModelCalculator {
   private actual: number[];
   private predicted: number[];
 
+  /**
+   * @description class for calculating forecast model metrics
+   * @param actual {number[]} - actual values
+   * @param predicted {number[]} - predicted values
+   */
   constructor(actual: number[], predicted: number[]) {
     if (actual.length !== predicted.length) {
       throw new Error("actual and predicted arrays must have the same length.");
@@ -12,6 +20,10 @@ export class ForecastModelCalculator {
     this.predicted = predicted;
   }
 
+  /**
+   * @description calculates the mean absolute error
+   * @returns {number} - mean absolute error
+   */
   public meanAbsoluteError(): number {
     const totalError = this.actual.reduce((sum, actualValue, index) => {
       return sum + Math.abs(actualValue - this.predicted[index]);
@@ -19,6 +31,10 @@ export class ForecastModelCalculator {
     return totalError / this.actual.length;
   }
 
+  /**
+   * @description calculates the mean squared error
+   * @returns {number} - mean squared error
+   */
   public meanSquaredError(): number {
     const totalError = this.actual.reduce((sum, actualValue, index) => {
       return sum + Math.pow(actualValue - this.predicted[index], 2);
@@ -26,10 +42,18 @@ export class ForecastModelCalculator {
     return totalError / this.actual.length;
   }
 
+  /**
+   * @description calculates the root mean squared error
+   * @returns {number} - root mean squared error
+   */
   public rootMeanSquaredError(): number {
     return Math.sqrt(this.meanSquaredError());
   }
 
+  /**
+   * @description calculates the mean absolute error
+   * @returns {number} - r squared value
+   */
   public rSquared(): number {
     const meanActual =
       this.actual.reduce((sum, value) => sum + value, 0) / this.actual.length;
@@ -46,6 +70,10 @@ export class ForecastModelCalculator {
     return 1 - residualSumOfSquares / totalSumOfSquares;
   }
 
+  /**
+   * @description calculates the mean absolute percentage error
+   * @returns {number} - mean absolute percentage error
+   */
   public meanAbsolutePercentageError(): number {
     const totalError = this.actual.reduce((sum, actualValue, index) => {
       return (
@@ -55,6 +83,11 @@ export class ForecastModelCalculator {
     return (totalError / this.actual.length) * 100;
   }
 
+  /**
+   * @description calculates the standard deviation of the values
+   * @param values - array of numbers
+   * @returns {number} - standard deviation of the values
+   */
   private standardDeviation(values: number[]): number {
     const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
     const variance =
