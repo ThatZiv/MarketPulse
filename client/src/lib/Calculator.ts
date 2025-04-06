@@ -55,16 +55,30 @@ export class ForecastModelCalculator {
     return (totalError / this.actual.length) * 100;
   }
 
+  private standardDeviation(values: number[]): number {
+    const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const variance =
+      values.reduce((sum, value) => sum + Math.pow(value - mean, 2), 0) /
+      values.length;
+    return Math.sqrt(variance);
+  }
+
   /**
    * @description calculates the accuracy of the predictions
-   * @param threshold - the threshold for considering a prediction to be correct (default is 1 dollar)
    * @returns {number} - the accuracy of the predictions as a percentage
    * @example
    * const calculator = new ForecastModelCalculator([100, 200], [101, 199]);
-   * const accuracy = calculator.accuracy(1);
-   * console.log(accuracy); // 100
+   * const accuracy = calculator.accuracy()
+   * console.log(accuracy); // 0.75 ?
    */
-  public accuracy(threshold: number = 1): number {
+  public accuracy(): number {
+    // Calculate the range of actual values (max - min)
+    const minActual = Math.min(...this.actual);
+    const maxActual = Math.max(...this.actual);
+    const range = maxActual - minActual;
+    // TODO: this currently is pretty dishonest. maybe use stdev instead?
+    const threshold = range * 0.25;
+
     let correctPredictions = 0;
     for (let i = 0; i < this.actual.length; i++) {
       if (Math.abs(this.actual[i] - this.predicted[i]) <= threshold) {
@@ -72,17 +86,6 @@ export class ForecastModelCalculator {
       }
     }
     return correctPredictions / this.actual.length;
-  }
-
-  public summary(): void {
-    console.log("Mean Absolute Error (MAE):", this.meanAbsoluteError());
-    console.log("Mean Squared Error (MSE):", this.meanSquaredError());
-    console.log("Root Mean Squared Error (RMSE):", this.rootMeanSquaredError());
-    console.log("R-squared (R²):", this.rSquared());
-    console.log(
-      "Mean Absolute Percentage Error (MAPE):",
-      this.meanAbsolutePercentageError()
-    );
   }
 }
 

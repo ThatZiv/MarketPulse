@@ -514,11 +514,6 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
             </ChartContainer>
             <div className="flex items-center justify-end gap-2 space-y-0 py-2 sm:flex-row">
               <div className="flex items-center space-x-2">
-                {/* model accuracy can only be evaluated based on stock close */}
-                {chartData &&
-                  isAdvanced &&
-                  dataKeyInput === "stock_close" &&
-                  showPredictions && <HistoricalAccuracy data={chartData} />}
                 <InfoTooltip side="left">
                   <span className="text-sm">
                     <strong>
@@ -626,6 +621,13 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   <Label htmlFor="condensed">Condense</Label>
                 </div>
               )}
+            </div>
+            <div className="flex flex-col items-center sm:items-start justify-start">
+              {/* model accuracy can only be evaluated based on stock close */}
+              {chartData &&
+                isAdvanced &&
+                dataKeyInput === "stock_close" &&
+                showPredictions && <HistoricalAccuracy data={chartData} />}
             </div>
           </CardContent>
         </Card>
