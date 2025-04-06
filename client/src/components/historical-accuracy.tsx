@@ -2,7 +2,6 @@ import { ForecastModelCalculator } from "@/lib/Calculator";
 import { expandDomain } from "@/lib/utils";
 import { ChartDatapoint } from "@/types/global_state";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
 import InfoTooltip from "./InfoTooltip";
 
 interface HistoricalAccuracyProps {
