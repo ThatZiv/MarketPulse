@@ -83,6 +83,7 @@ export function DeleteStock({ ticker, stock_id }: DeleteStockProps) {
         toast.error("You must be logged in to delete stocks.");
         return;
       }
+      toast.message("Deleting stock...", { duration: 2000 });
       mutation.mutate({
         stock_id: stock_id ?? 0,
         user_id: user?.id ?? "",
