@@ -66,7 +66,7 @@ export default function HistoricalAccuracy({
     },
     {
       label: "MAPE",
-      value: (calc.meanAbsolutePercentageError() * 100).toFixed(2),
+      value: calc.meanAbsolutePercentageError().toFixed(2),
       unit: "%",
       explanation:
         "Mean Absolute Percentage Error (MAPE) is the average of the absolute percentage errors between predicted and actual values. It gives an idea of how far off the predictions are from the actual values.",
