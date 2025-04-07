@@ -21,8 +21,10 @@ React-based (fully client) web application following a standard model-view-contr
 
 - React v19
 - [Vite](https://vite.dev/) v6.0.5
+- [React Query](https://tanstack.com/query/latest) for caching and handling requests
+- [React Router](https://reactrouter.com/guides/home) for internal routing
 - [Shadcn](https://ui.shadcn.com/docs/installation/vite) User-interface (UI) Library
-- [TailwindCSS](https://tailwindcss.com/)
+- [TailwindCSS](https://tailwindcss.com/) for additional styling
 
 </details>
 <details>
@@ -40,6 +42,39 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 
 </details>
 
+## Environment Variables
+
+### Server
+
+| Environment Variable | More Info                                                                                                                                           | Example                                   |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `SUPABASE_URL`       | The Supabase-provided project URL                                                                                                                   | `https://xyz.supabase.co`                 |
+| `SUPABASE_KEY`       | The Supabase-provided project key                                                                                                                   | `eyJhbEciOiJIUzC1NiIaInB2cCI2LklXVCJ9...` |
+| `SUPABASE_JWT`       | The Supabase-provided JWT secret key that can be found in the [Supabase API settings](https://app.supabase.com/project/_/settings/api)              | `abc123xyz456`                            |
+| `reddit_secret_key`  | The Reddit API secret key. You can create one [here](https://business.reddithelp.com/s/article/Create-a-Reddit-Application)                         | `abc123xyz456`                            |
+| `reddit_public_key`  | The Reddit API public key. You can create one [here](https://business.reddithelp.com/s/article/Create-a-Reddit-Application)                         | `abc123xyz456`                            |
+| `LOGODEV_API_KEY`    | The Logo Dev API key for stock ticker images. You can create one [here](https://docs.logo.dev/introduction)                                         | `pk_d64204492aeb0b297461d9de2`            |
+| `LLM_MODEL_PATH`     | The path to the LLM model. You can find the model [here](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF)              | `DeepSeek-R1-Distill-Qwen-1.5B-GGUF`      |
+| `user`               | The username for the PostgreSQL database                                                                                                            | `postgres`                                |
+| `password`           | The password for the PostgreSQL database                                                                                                            | `abc123xyz456`                            |
+| `host`               | The host for the PostgreSQL database                                                                                                                | `localhost`                               |
+| `port`               | The port for the PostgreSQL database                                                                                                                | `5432`                                    |
+| `dbname`             | The database name for the PostgreSQL database                                                                                                       | `postgres`                                |
+| `LEGACY`             | The legacy flag for the PostgreSQL database. This only runs the webserver and everything that doesn't use tensorflow (no models nor scheduled jobs) | `true` (default is `false`)               |
+
+### Client
+
+| Environment Variable    | More Info                                                                                                                            | Example                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `VITE_API_URL`          | The URL location of the backend python webserver.                                                                                    | `http://localhost:5000`                   |
+| `VITE_SUPABASE_URL`     | The Supabase-provided project URL                                                                                                    | `https://xyz.supabase.co`                 |
+| `VITE_SUPABASE_KEY`     | The Supabase-provided project key. More info found [here](https://supabase.com/docs/guides/api/api-keys).                            | `eyJhbGciOiJIUzB1NiIaInB5cCI2IklXVCJ9...` |
+| `VITE_GOOGLE_CLIENT_ID` | The Google Client ID provided by GCP. More info can be found [here](https://supabase.com/docs/guides/auth/social-login/auth-google). | `abc123xyz456`                            |
+
+# Dependencies
+
+MarketPulse utilizes a wide array of third-party services to source it's data from.
+
 # Requirements
 
 - [Node.js](https://nodejs.org/en) >= v20.14.0 (or any LTS)
@@ -51,6 +86,79 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 
 - [Supabase](https://supabase.com/docs/guides/getting-started) instance (free tier works) - for authentication
   - You can use Supabase's free tier but understand its [limitations](https://supabase.com/pricing). Alternatively you can [self host Supabase](https://supabase.com/docs/guides/self-hosting) entirely.
-- [Reddit API Key](https://developers.reddit.com/docs/api) - _for social media sentiment_
+- [Reddit API Credentials](https://developers.reddit.com/docs/api) - _for social media sentiment_
 - [Logo Dev API Key](https://docs.logo.dev/introduction) - _for stock ticker logo images_
 - [DeepSeek GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF) Large Language Model (LLM) - these can be found on [hugging face](https://huggingface.co/search/full-text?q=deepseek+distil&type=model). Currently, our implementation supports the DeepSeek Architecture so any [distillations](https://huggingface.co/search/full-text?q=deepseek+distil&type=model) will work.
+- [Google Client ID](https://supabase.com/docs/guides/auth/social-login/auth-google) - used for authentication by Google.
+
+# Setup
+
+1. Install/setup all requirements from the [requirements](#requirements) section.
+2. Clone the repo
+
+```sh
+git clone https://github.com/ThatZiv/MarketPulse/
+```
+
+## Client setup
+
+3. Navigate to client directory
+
+```sh
+cd client
+```
+
+4. Install dependencies
+
+```sh
+npm install
+```
+
+1. Copy `.env.example` to `.env.local`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section.
+
+2. Run the server
+
+```sh
+npm run dev # to run DEV server
+```
+
+> [!NOTE]
+> Alternatively, you can run the server in a production environment:
+>
+> ```sh
+> npm run build # build PROD server
+> npx serve dist/ # run basic webserver serving the build folder
+> # OR
+> python -m http.server dist/ # run basic webserver with python
+> ```
+
+## Server setup
+
+7. Navigate to server directory
+
+```sh
+# from the root directory
+cd server
+```
+
+8. Create a virtual environment (venv)
+
+```sh
+python -m venv ./.venv
+
+source .venv/bin/activate # for linux/mac
+.venv\Scripts\activate # for windows
+
+```
+
+9. Install dependencies
+
+```sh
+pip install -r requirements.txt
+
+# you may have to install some additional dependencies manually
+sudo apt-get install libpq-dev postgresql-client # for linux
+
+```
+
+10. Copy `.env.example` to `.env`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section.
