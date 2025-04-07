@@ -1,7 +1,9 @@
 import { type StockDataItem } from "./stocks";
 
 export type PredictionDatapoint = Record<string, string | number>;
-export type ChartDatapoint = { date: Date } & { [key: string]: number };
+export type ChartDatapoint = { date: Date } & {
+  [key: string]: number;
+} & Partial<Record<keyof StockDataItem, number | string | string[]>>;
 export type PurchaseHistoryDatapoint = {
   date: string;
   amount_purchased: number;

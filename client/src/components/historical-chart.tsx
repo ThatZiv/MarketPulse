@@ -51,6 +51,7 @@ import { Label } from "@/components/ui/label";
 import InfoTooltip from "./InfoTooltip";
 import { ChartDatapoint } from "@/types/global_state";
 import { Button } from "./ui/button";
+import HistoricalAccuracy from "./historical-accuracy";
 interface StockChartProps {
   ticker: string;
   stock_id: number;
@@ -401,11 +402,15 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   setCursor(clickedDate);
                 }}
                 data={chartData.map((point) => {
-                  return {
-                    ...point,
-                    ...cursorForecast?.find((f) =>
+                  const pointObj = point as Partial<ChartDatapoint>;
+                  const forecastObj =
+                    cursorForecast?.find((f) =>
                       isSameDay(f.date, new Date(point.date))
-                    ),
+                    ) || {};
+
+                  return {
+                    ...pointObj,
+                    ...forecastObj,
                   };
                 })}
                 dataKey="date"
@@ -438,7 +443,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                     })}
                 </defs>
                 {chartData &&
-                  expandDomain(chartData).map((key, index) => {
+                  expandDomain(chartData ?? []).map((key, index) => {
                     if (key === "date") return null;
                     return (
                       <Area
@@ -511,7 +516,10 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
               <div className="flex items-center space-x-2">
                 <InfoTooltip side="left">
                   <span className="text-sm">
-                    Toggle to enable advanced view. Advanced view allows you to:
+                    <strong>
+                      Toggle to enable advanced view. Advanced view allows you
+                      to:
+                    </strong>
                     <div className="list-disc list-inside">
                       <li>
                         View the historical predictions, as well as for a
@@ -521,6 +529,10 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                       <li>
                         Select a model to view the forecast. By default, the
                         chart shows the average forecast from all models.
+                      </li>
+                      <li>
+                        View the historical accuracy of the model. This is only
+                        available when viewing stock closing prices.
                       </li>
                       <li>
                         Select a different data point to view on the chart. By
@@ -609,6 +621,13 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   <Label htmlFor="condensed">Condense</Label>
                 </div>
               )}
+            </div>
+            <div className="flex flex-col items-center sm:items-start justify-start">
+              {/* model accuracy can only be evaluated based on stock close */}
+              {chartData &&
+                isAdvanced &&
+                dataKeyInput === "stock_close" &&
+                showPredictions && <HistoricalAccuracy data={chartData} />}
             </div>
           </CardContent>
         </Card>

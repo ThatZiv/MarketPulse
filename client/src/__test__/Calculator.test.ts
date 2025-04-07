@@ -1,6 +1,42 @@
-import { PurchaseHistoryCalculator } from "@/lib/Calculator";
+import {
+  ForecastModelCalculator,
+  PurchaseHistoryCalculator,
+} from "@/lib/Calculator";
 import { PurchaseHistoryDatapoint } from "@/types/global_state";
 import "@testing-library/jest-dom";
+
+describe("Forecast Model Calculator", () => {
+  const actual = [1, 2, 3, 4, 5];
+  const predicted = [1, 2, 3, 5, 4];
+  const calc = new ForecastModelCalculator(actual, predicted);
+  test("should calculate mean absolute error", () => {
+    expect(calc.meanAbsoluteError()).toBe(0.4);
+  });
+  test("should calculate mean squared error", () => {
+    expect(calc.meanSquaredError()).toBe(0.4);
+  });
+  test("should calculate root mean squared error", () => {
+    expect(calc.rootMeanSquaredError()).toBe(0.6324555320336759);
+  });
+  test("should calculate r squared", () => {
+    expect(calc.rSquared()).toBe(0.8);
+  });
+  test("should calculate accuracy and more", () => {
+    expect(calc.accuracy()).toBe(1);
+    const actual2 = [1, 2, 3, 4, 5];
+    const predicted2 = [1, 2, 3, 2, 15];
+    const calc2 = new ForecastModelCalculator(actual2, predicted2);
+    expect(calc2.accuracy()).toBe(0.6);
+  });
+
+  test("should throw error if arrays are not the same length", () => {
+    const actual2 = [1, 2, 3];
+    const predicted2 = [1, 2, 3, 4];
+    expect(() => {
+      new ForecastModelCalculator(actual2, predicted2);
+    }).toThrow("actual and predicted arrays must have the same length.");
+  });
+});
 
 describe("Purchase History Calculator", () => {
   const calc = new PurchaseHistoryCalculator([]);
