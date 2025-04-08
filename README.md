@@ -48,6 +48,84 @@ TODO: Add architecture diagram(s)
 
 ## Structure
 
+```
+
+├── server/
+│   ├── data/
+│   ├── database/ -- DB ORM methods
+│   ├── public/
+│   │   └── cache/ -- static files served
+│   ├── routes/
+│   │   ├── auth.py -- protected routes for logos, forecast, etc.
+│   │   └── llm.py -- protected route for LLM output
+│   ├── models/
+│   │   ├── forecast/ -- where all forecast models implementations are/
+│   │   │   ├── azad.py -- SARIMA/ARIMA forecast implementation
+│   │   │   ├── attention_lstm.py -- AttentionLSTM forecast implementation
+│   │   │   ├── cnn_lstm.py -- CNN LSTM forecast implementation
+│   │   │   ├── transformer.py -- Transformer forecast implementation
+│   │   │   ├── xgboost.py -- XGBoost forecase implementation
+│   │   │   ├── model.py -- Base class for forecast models
+│   │   │   └── models.py -- Base class to manage ALL forecast models implementations
+│   │   ├── zav2.py -- transformer base class
+│   │   ├── xgboost_model.py -- XGBoost base class
+│   │   ├── sentiment_hf.py -- sentiment analysis
+│   │   ├── run_models.py -- runs all base model implementations
+│   │   └── lstm_attension.py -- LSTM base class
+│   ├── test_data/
+│   ├── main.py -- entry point (with some additional routes)
+│   ├── engine.py -- database pooler
+│   ├── stockdataload.py -- load stock data from yahoo into db
+│   ├── .env.example
+│   └── .env -- you must copy this from .env.example
+├── client/
+│   ├── cypress/ -- e2e (system) tests
+│   ├── public/
+│   ├── src/
+│   │   ├── __test__/ -- unit and integration tests
+│   │   ├── components/ -- components directory/
+│   │   │   ├── ui/ -- shadcn component library
+│   │   │   ├── llm/
+│   │   │   │   └── stock-llm.tsx -- handle llm output in StockEstimation
+│   │   │   ├── recommendation-chart.tsx -- aside from the name, this calcs recommendation (StockEstimation)
+│   │   │   ├── buy_sell.tsx -- used in recommendation-chart.tsx for buy/sell recommendation
+│   │   │   ├── radial-chart.tsx -- used for impact and hype meter (StockEstimation)
+│   │   │   ├── historical-chart.tsx -- historical prices chart (StockEstimation)
+│   │   │   ├── historical-accuracy.tsx -- Forecast model calculator implementation
+│   │   │   └── <tons of other components>
+│   │   ├── hooks/
+│   │   ├── database/
+│   │   │   ├── supabase.ts -- Supabase wrapper
+│   │   │   └── SupabaseProvider.tsx -- Global user auth provider (supabase client impl.)
+│   │   ├── lib/
+│   │   │   ├── api.ts -- API wrapper for backend
+│   │   │   ├── ApiProvider.tsx -- API wrapper implementation
+│   │   │   ├── Calculator.ts -- Purchase history and Forecast calculators
+│   │   │   ├── constants.ts -- used in caching and reducer actions
+│   │   │   ├── dataHandler.ts -- used for client caching (used in queries)
+│   │   │   ├── GlobalProvider.tsx -- Global app state managed here (including reducer logic)
+│   │   │   └── utils.ts -- reusable and misc functions
+│   │   ├── pages/
+│   │   │   ├── Dashboard.tsx -- aside from the name, main view AFTER authenticated
+│   │   │   ├── Landing.tsx -- home page (index) AFTER authenticated '/'
+│   │   │   ├── Settings.tsx -- settings page '/settings'
+│   │   │   ├── Documentation.tsx -- documentation page '/documentation'
+│   │   │   ├── StockSelection.tsx -- stock selection page '/stocks'
+│   │   │   ├── StockEstimation.tsx -- stock analysis page '/stock/:ticker'
+│   │   │   ├── UserAuth.tsx -- default catch all when not authenticated '/auth'
+│   │   │   └── <more pages and subpages>
+│   │   ├── types/
+│   │   ├── App.tsx --routing goes through here
+│   │   └── main.tsx -- entrypoint
+│   ├── .env.example
+│   ├── .env.local -- you must copy this from .env.example
+│   └── <other files>
+└── supabase/
+    ├── migrations/
+    │   └── <list of database changes to migrate to your own database individually>
+    └── schema.sql -- this is a schema dump that can be solely imported to your data (recommended)
+```
+
 ## Environment Variables
 
 <details>
