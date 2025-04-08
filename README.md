@@ -42,9 +42,28 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 
 </details>
 
+## Architecture
+
+TODO: Add architecture diagram(s)
+
+## Structure
+
 ## Environment Variables
 
-### Server
+<details>
+<summary>Client</summary>
+
+| Environment Variable    | More Info                                                                                                                            | Example                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `VITE_API_URL`          | The URL location of the backend python webserver.                                                                                    | `http://localhost:5000`                   |
+| `VITE_SUPABASE_URL`     | The Supabase-provided project URL                                                                                                    | `https://xyz.supabase.co`                 |
+| `VITE_SUPABASE_KEY`     | The Supabase-provided project key. More info found [here](https://supabase.com/docs/guides/api/api-keys).                            | `eyJhbGciOiJIUzB1NiIaInB5cCI2IklXVCJ9...` |
+| `VITE_GOOGLE_CLIENT_ID` | The Google Client ID provided by GCP. More info can be found [here](https://supabase.com/docs/guides/auth/social-login/auth-google). | `abc123xyz456`                            |
+
+</details>
+
+<details>
+<summary>Server</summary>
 
 | Environment Variable | More Info                                                                                                                                           | Example                                   |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
@@ -62,14 +81,7 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 | `dbname`             | The database name for the PostgreSQL database                                                                                                       | `postgres`                                |
 | `LEGACY`             | The legacy flag for the PostgreSQL database. This only runs the webserver and everything that doesn't use tensorflow (no models nor scheduled jobs) | `true` (default is `false`)               |
 
-### Client
-
-| Environment Variable    | More Info                                                                                                                            | Example                                   |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| `VITE_API_URL`          | The URL location of the backend python webserver.                                                                                    | `http://localhost:5000`                   |
-| `VITE_SUPABASE_URL`     | The Supabase-provided project URL                                                                                                    | `https://xyz.supabase.co`                 |
-| `VITE_SUPABASE_KEY`     | The Supabase-provided project key. More info found [here](https://supabase.com/docs/guides/api/api-keys).                            | `eyJhbGciOiJIUzB1NiIaInB5cCI2IklXVCJ9...` |
-| `VITE_GOOGLE_CLIENT_ID` | The Google Client ID provided by GCP. More info can be found [here](https://supabase.com/docs/guides/auth/social-login/auth-google). | `abc123xyz456`                            |
+</details>
 
 # Dependencies
 
@@ -90,6 +102,7 @@ MarketPulse utilizes a wide array of third-party services to source it's data fr
 - [Logo Dev API Key](https://docs.logo.dev/introduction) - _for stock ticker logo images_
 - [DeepSeek GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF) Large Language Model (LLM) - these can be found on [hugging face](https://huggingface.co/search/full-text?q=deepseek+distil&type=model). Currently, our implementation supports the DeepSeek Architecture so any [distillations](https://huggingface.co/search/full-text?q=deepseek+distil&type=model) will work.
 - [Google Client ID](https://supabase.com/docs/guides/auth/social-login/auth-google) - used for authentication by Google.
+- [RoBERTa](https://huggingface.co/mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis) transformer model for sentiment analysis - this is used to analyze the sentiment of the news articles and social media posts. _No action is needed to install this - the server should install it on-demand._
 
 # Setup
 
@@ -98,6 +111,7 @@ MarketPulse utilizes a wide array of third-party services to source it's data fr
 
 ```sh
 git clone https://github.com/ThatZiv/MarketPulse/
+cd MarketPulse
 ```
 
 ## Client setup
@@ -114,9 +128,9 @@ cd client
 npm install
 ```
 
-1. Copy `.env.example` to `.env.local`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section.
+5. Copy `.env.example` to `.env.local`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section.
 
-2. Run the server
+6. Run the server
 
 ```sh
 npm run dev # to run DEV server
@@ -162,3 +176,39 @@ sudo apt-get install libpq-dev postgresql-client # for linux
 ```
 
 10. Copy `.env.example` to `.env`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section.
+
+11. Run the server
+
+```sh
+python main.py # to run the server
+```
+
+## Supabase setup
+
+Instructions will differ if you opt to self-host Supabase or use the free tier. For the free tier, you can read the [Supabase documentation](https://supabase.com/docs/guides/getting-started) to get situated.
+
+12. Create a new project in Supabase and set up the database. You can use the default settings for the database.
+
+13. Import the `supabase/schema.sql` into your Supabase database. This will create the necessary tables and functions for the application to work. This can be done multiple ways:
+    - Using the [Supabase SQL editor](https://supabase.com/features/sql-editor)
+    - Using the [Supabase CLI](https://supabase.com/docs/guides/cli)
+    - Directly using the [PostgreSQL CLI](https://www.postgresql.org/docs/current/app-psql.html) (if you have it installed locally)
+      - ```sh
+        psql -h <host> -U <user> -d <dbname> < supabase/schema.sql # using the same variables from the [environment variables](#environment-variables) section.
+        ```
+
+## Docker setup
+
+Alternatively, you can run the entire application using Docker. This will build the client and server images and run them in containers.
+
+# Contributing
+
+Contributions are welcomed and encouraged! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to contribute to this project.
+
+# License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+
+# Contact/Support
+
+If you would like to contact us, please reach out to us via [email](mailto:zavaar.shah@wayne.edu).
