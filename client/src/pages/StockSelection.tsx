@@ -596,7 +596,7 @@ export default function StockPage() {
                     />
                   </div>
 
-                  <div className="flex-1 flex flex-col">
+                  <div className="flex-1 flex flex-col min-w-20">
                     {index === 0 && (
                       <label
                         htmlFor={`shares-${index}`}
@@ -676,7 +676,7 @@ export default function StockPage() {
                     {index === 0 && (
                       <label
                         htmlFor={`price-${index}`}
-                        className="text-sm mb-1"
+                        className="text-sm mb-1 min-w-20"
                       >
                         Price ($)
                       </label>
@@ -708,9 +708,9 @@ export default function StockPage() {
                     type="button"
                     onClick={() => removePurchaseEntry(index)}
                     variant="destructive"
-                    className="self-end mb-1"
+                    className="self-end mb-1 px-2"
                   >
-                    <Trash className="h-4 w-4" />
+                    <Trash className="h-4 w-1" />
                   </Button>
                 </div>
               ))}
