@@ -18,7 +18,7 @@ from database.tables import Stock_Info, Stocks
 
 
 def stock_scrap(stock_id, engine):
-
+    '''Adds news data to all rows that news data equals zero.  This is used to fill in missing values in the database.'''
     session = sessionmaker(bind=engine)
     session = session()
     # Search for the stock by using the stock id
@@ -81,6 +81,7 @@ def stock_scrap(stock_id, engine):
     session.close()
 
 def add_news(dates):
+    '''Function called when adding new rows to the stock_info table'''
     answers = []
     for day in dates:
         time.sleep(10)
@@ -88,7 +89,6 @@ def add_news(dates):
             day["time_stamp"] = day["time_stamp"].strftime("%Y-%m-%d")
             results = DDGS().text(f"{day['search']} news", max_results=5,
                     timelimit=f"{day['time_stamp']}..{day['time_stamp']}")
-
             tensors = 0
             tensor = torch.tensor([[0,0,0]])
             for r in results:
@@ -105,7 +105,7 @@ def add_news(dates):
                     tensor = torch.add(tensor, logit)
                 tensors+=1
             if tensors > 0:
-                # average tesor for the day
+                # average tensor for the day
                 answer = torch.div(tensor, tensors)
                 answers.append({"news": (answer[0][0]*-1+answer[0][2]).item(),
                  "time_stamp": day["time_stamp"]})

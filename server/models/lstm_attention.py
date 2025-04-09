@@ -17,7 +17,7 @@ import pywt
 from sklearn.metrics import r2_score, mean_squared_error
 
 class AttentionLstm:
-
+    '''Define model parameters'''
     def __init__(self, input_size = 3, hidden_size = 32, batch_size = 10, learning_rate = 0.01):
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -37,6 +37,7 @@ class AttentionLstm:
         self.model_path = os.path.join(os.path.dirname(__file__), self.model_loc)
         self.loss_function = nn.MSELoss()
 
+    '''Create data and answers to run the model'''
     def create_inout_sequences(self, input_data, shift, answer):
         input_data = input_data.to_numpy()
         answer = answer.to_numpy()
@@ -71,21 +72,12 @@ class AttentionLstm:
         data['Open'] = wavelet(data['Open'])[:len(data['Close'])]
         for i in range(1, len(data['High'])):
             data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
-        #    data.loc[i, 'High'] = 1-(data.loc[i, 'Close']-data.loc[i-1,'Close'])
             valid_answer.loc[i, 'Low'] = valid_answer.loc[i, 'High']-valid_answer.loc[i,'Low']
-        #    valid_answer.loc[i, 'High'] = 1-(valid_answer.loc[i, 'Close']-valid_answer.loc[i-1,'Close'])
-
-        #data.loc[0, 'High'] = 0
-        #data.loc[0, 'Low'] = 0
-
-        #valid_answer.loc[0, 'High'] = 0
-        #valid_answer.loc[0, 'Low'] = 0
 
         data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
         data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min())
         data = data.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
-
 
         valid_answer['Low'] = (valid_answer['Low'] - valid_answer['Low'].min())/ (valid_answer['Low'].max() - valid_answer['Low'].min())
         valid_answer['Open'] = (valid_answer['Open'] - valid_answer['Open'].min())/ (valid_answer['Open'].max() - valid_answer['Open'].min())
@@ -93,12 +85,12 @@ class AttentionLstm:
 
         valid_answer = valid_answer.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
         answer = data
-        #print(data)
 
         data2, answer = self.create_inout_sequences(data, 20, data)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
         return data2, answer, valid_answer, multiple, minimum, sentiment
 
+    # Shaping train, test, and validation data.
     def get_data(self, data, answer, train_answer, split):
         lookback  = 20
         split_index = int(len(data)*(1-split))
@@ -107,9 +99,6 @@ class AttentionLstm:
         x_train = data[:split_index2]
         x_test = data[split_index2:split_index]
         x_valid = data[split_index:]
-
-        #print(x_train.shape)
-        #print(x_test.shape)
 
         # training and testing use smoothed data validation uses raw data
         y_train = train_answer[:split_index2]
@@ -144,8 +133,10 @@ class AttentionLstm:
 
         return train_loader, test_loader, valid_loader
 
+    
     def model_training(self, train_loader, test_loader, epochs):
 
+        # Train the model
         def train(train_loader):
             self.model.train()
             print(f'Epoch: {epoch+1}')
@@ -163,7 +154,7 @@ class AttentionLstm:
                     avg_loss_across_batches = running_loss / 25
                     print(f'Batch {batch_index+1}, Loss {avg_loss_across_batches}')
                     running_loss = 0.0
-
+        # Test the model
         def test():
             self.model.eval()
             running_loss = 0.0
@@ -185,6 +176,7 @@ class AttentionLstm:
             train(train_loader)
             test()
 
+    # Use the validaiton data to generate model accuracy metrics 
     def evaluate(self, data_source):
         self.model.eval()
 
@@ -212,7 +204,7 @@ class AttentionLstm:
         print("RMSE: " + str(math.sqrt(mse)))
         print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
 
-
+    # returns a forcast sequence default length is 7 days.
     def forecast_seq(self, sequences, sentiment, period = 7):
         self.model.eval()
 
@@ -230,7 +222,7 @@ class AttentionLstm:
         print(p)
         return p
 
-
+# Class for the attention layer using 3 linear layers.
 class Attention(nn.Module):
     def __init__(self, d_in, d_out):
         super().__init__()
@@ -252,6 +244,7 @@ class Attention(nn.Module):
         hidden_states = torch.bmm(attention, values)
         return hidden_states
 
+# This is where the model layers are stacked
 class LSTMAttentionModel(nn.Module):
     def __init__(self, input_size, hidden_size, num_stacked_layers):
         super(LSTMAttentionModel, self).__init__()
@@ -272,6 +265,7 @@ class LSTMAttentionModel(nn.Module):
         out = self.fc(out[:,-1,:])
         return out
 
+# Used for data smoothing
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')

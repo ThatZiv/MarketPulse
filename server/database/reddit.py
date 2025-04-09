@@ -19,8 +19,8 @@ from database.tables import Stock_Info
 
 
 def reddit_auth():
+    '''Get reddit authentication token'''
     load_dotenv()
-
     public_key = os.environ.get("reddit_public_key")
     secret_key = os.environ.get("reddit_secret_key")
     user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
@@ -57,6 +57,7 @@ def reddit_auth():
 # this depth all the above subreddits have the same results
 
 def base_request(url, params, auth):
+    '''Function to handle common errors when making get requests to reddit'''
     user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
                     "AppleWebKit/537.36 (KHTML, like Gecko)" 
                     "Chrome/132.0.0.0 Safari/537.36")
@@ -82,6 +83,7 @@ def base_request(url, params, auth):
     return output
 
 def request_search(subreddit, topic, thread_limit, period, auth):
+    '''Function to set up reddit /search request'''
     url = f"https://oauth.reddit.com/r/{subreddit}/search"
     params = {
     "t": period,
@@ -93,6 +95,7 @@ def request_search(subreddit, topic, thread_limit, period, auth):
     return base_request(url, params, auth)
 
 def request_after(subreddit, topic, thread_limit, after, period, auth):
+    '''Function to make /search request with after parameter'''
     url = f"https://oauth.reddit.com/r/{subreddit}/search"
     params = {
                 "t": period,
@@ -103,6 +106,7 @@ def request_after(subreddit, topic, thread_limit, after, period, auth):
     return base_request(url, params, auth)
 
 def request_comment(lists_url, lists_name, comment_limit, auth):
+    '''Function to get reddit comments'''
     url = f"https://oauth.reddit.com/r/{lists_url}/comments/{lists_name}"
     params = {
             "limit": comment_limit,
@@ -119,6 +123,7 @@ def request_comment(lists_url, lists_name, comment_limit, auth):
     return []
 # period can be hour, day, week, month, year, all
 def reddit_request(subreddit, topic, thread_limit, comment_limit, period):
+    '''Function to add combine reddit data from threads and comments'''
     auth = reddit_auth()
     if auth != 0:
         output = request_search(subreddit, topic, thread_limit, period, auth)
@@ -182,8 +187,9 @@ def reddit_request(subreddit, topic, thread_limit, comment_limit, period):
                     # Number of elements currently in the output array
             return inputs
     return 0
-#find dates from the database for the chosen stock and add the data to those table rows
+
 def add_to_database(data, engine, stock_id):
+    '''Function used when filling in database rows'''    
     try:
         session = sessionmaker(bind=engine)
         session = session()
@@ -223,6 +229,7 @@ def add_to_database(data, engine, stock_id):
 # Finds the daily reddit posts for a stock and adds them to the database
 # dates[0]["search"]
 def daily_reddit_request(subreddit, dates):
+    '''Function used when adding reddit data for new database rows'''
     inputs = reddit_request(subreddit, dates[0]["search"], 25, 50, "week")
     out = []
     for k in dates:

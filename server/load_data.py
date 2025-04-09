@@ -17,6 +17,7 @@ from database.tables import Stocks, Stock_Info
 
 # Functions added to simplify test mocks
 def create_session():
+    '''Returns a session to use to access Supabase'''
     try:
         session = sessionmaker(bind=global_engine())
     except exc.OperationalError as e:
@@ -27,11 +28,11 @@ def create_session():
 
 
 def stock_query_all(query, session):
+    '''Executes a query that returns all values. Is pulled out to make testing easier'''
     return session.connection().execute(query).all()
 
 def load_stocks():
-    print("Starting job")
-
+    '''Function to add data to the stock information table.  This calls functions to gather and store the data.'''
     #Find the most recent entry for all stocks joined to the stock infromation
     stock_q=select(func.max(Stock_Info.time_stamp), Stock_Info.stock_id,
                         Stocks.stock_ticker, Stocks.search).select_from(Stock_Info).join(Stocks,

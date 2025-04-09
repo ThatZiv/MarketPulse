@@ -676,7 +676,7 @@ export default function StockPage() {
                     {index === 0 && (
                       <label
                         htmlFor={`price-${index}`}
-                        className="text-sm mb-1 min-w-20"
+                        className="text-sm mb-1 min-w-20 text-nowrap"
                       >
                         Price ($)
                       </label>
