@@ -22,8 +22,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
-import { toast } from "sonner"; 
-
+import { toast } from "sonner";
 
 type googleResponse = {
   clientId: string;
@@ -66,7 +65,7 @@ export function LoginForm({
       await signInWithEmail(values.email, values.password);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(error.message); 
+        toast.error(error.message);
       }
     }
   }
