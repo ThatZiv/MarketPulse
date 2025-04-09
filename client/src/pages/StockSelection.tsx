@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
@@ -575,25 +575,49 @@ export default function StockPage() {
                         Date
                       </label>
                     )}
-                    <input
-                      id={`date-${index}`}
-                      type="datetime-local"
-                      required
-                      value={purchase.date}
-                      min="2000-01-01T00:00"
-                      max={formatToday()}
-                      onChange={(e) => {
-                        handlePurchaseChange(
-                          index,
-                          "date",
-                          moment(e.target.value).format("YYYY-MM-DDTHH:mm")
-                        );
-                      }}
-                      onBlur={() => {
-                        handleSort(index);
-                      }}
-                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+                    {window.innerWidth > 600 ? (
+                      <input
+                        id={`date-${index}`}
+                        type="datetime-local"
+                        required
+                        value={purchase.date}
+                        min="2000-01-01T00:00"
+                        max={formatToday()}
+                        onChange={(e) => {
+                          handlePurchaseChange(
+                            index,
+                            "date",
+                            moment(e.target.value).format("YYYY-MM-DDTHH:mm")
+                          );
+                        }}
+                        onBlur={() => {
+                          handleSort(index);
+                        }}
+                        className="border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    ) : (
+                      <div>
+                        <input
+                          id={`date-${index}`}
+                          type="datetime-local"
+                          required
+                          value={purchase.date}
+                          min="2000-01-01T00:00"
+                          max={formatToday()}
+                          onChange={(e) => {
+                            handlePurchaseChange(
+                              index,
+                              "date",
+                              moment(e.target.value).format("YYYY-MM-DDTHH:mm")
+                            );
+                          }}
+                          onBlur={() => {
+                            handleSort(index);
+                          }}
+                          className="border border-gray-300 bg-white text-white dark:text-black dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary max-w-14"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 flex flex-col min-w-20">
