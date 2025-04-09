@@ -18,7 +18,8 @@ from database.tables import Stock_Info, Stocks
 
 
 def stock_scrap(stock_id, engine):
-    '''Adds news data to all rows that news data equals zero.  This is used to fill in missing values in the database.'''
+    '''Adds news data to all rows that news data equals zero.
+    This is used to fill in missing values in the database.'''
     session = sessionmaker(bind=engine)
     session = session()
     # Search for the stock by using the stock id

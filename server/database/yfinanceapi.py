@@ -17,7 +17,8 @@ def bulk_stock_data(ticker):
     return output
 
 def add_daily_data(ticker, days):
-    '''get the past #days of stock data. Returns an array of stock information that can be stored in the database'''
+    '''get the past #days of stock data.
+    Returns an array of stock information that can be stored in the database'''
     data = yf.Ticker(ticker)
 
     output = data.history(period=f"{days}d")

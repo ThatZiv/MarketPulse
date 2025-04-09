@@ -37,7 +37,7 @@ class AttentionLstm:
         self.model_path = os.path.join(os.path.dirname(__file__), self.model_loc)
         self.loss_function = nn.MSELoss()
 
-    '''Create data and answers to run the model'''
+    #Create data and answers to run the model
     def create_inout_sequences(self, input_data, shift, answer):
         input_data = input_data.to_numpy()
         answer = answer.to_numpy()
@@ -133,7 +133,6 @@ class AttentionLstm:
 
         return train_loader, test_loader, valid_loader
 
-    
     def model_training(self, train_loader, test_loader, epochs):
 
         # Train the model
@@ -176,7 +175,7 @@ class AttentionLstm:
             train(train_loader)
             test()
 
-    # Use the validaiton data to generate model accuracy metrics 
+    # Use the validaiton data to generate model accuracy metrics
     def evaluate(self, data_source):
         self.model.eval()
 
