@@ -202,27 +202,32 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 <details>
 <summary>Server</summary>
 
-| Environment Variable | More Info                                                                                                                                           | Example                                   |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| `SUPABASE_URL`       | The Supabase-provided project URL                                                                                                                   | `https://xyz.supabase.co`                 |
-| `SUPABASE_KEY`       | The Supabase-provided project key                                                                                                                   | `eyJhbEciOiJIUzC1NiIaInB2cCI2LklXVCJ9...` |
-| `SUPABASE_JWT`       | The Supabase-provided JWT secret key that can be found in the [Supabase API settings](https://app.supabase.com/project/_/settings/api)              | `abc123xyz456`                            |
-| `reddit_secret_key`  | The Reddit API secret key. You can create one [here](https://business.reddithelp.com/s/article/Create-a-Reddit-Application)                         | `abc123xyz456`                            |
-| `reddit_public_key`  | The Reddit API public key. You can create one [here](https://business.reddithelp.com/s/article/Create-a-Reddit-Application)                         | `abc123xyz456`                            |
-| `LOGODEV_API_KEY`    | The Logo Dev API key for stock ticker images. You can create one [here](https://docs.logo.dev/introduction)                                         | `pk_d64204492aeb0b297461d9de2`            |
-| `LLM_MODEL_PATH`     | The path to the LLM model. You can find the model [here](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF)              | `DeepSeek-R1-Distill-Qwen-1.5B-GGUF`      |
-| `user`               | The username for the PostgreSQL database                                                                                                            | `postgres`                                |
-| `password`           | The password for the PostgreSQL database                                                                                                            | `abc123xyz456`                            |
-| `host`               | The host for the PostgreSQL database                                                                                                                | `localhost`                               |
-| `port`               | The port for the PostgreSQL database                                                                                                                | `5432`                                    |
-| `dbname`             | The database name for the PostgreSQL database                                                                                                       | `postgres`                                |
-| `LEGACY`             | The legacy flag for the PostgreSQL database. This only runs the webserver and everything that doesn't use tensorflow (no models nor scheduled jobs) | `true` (default is `false`)               |
+| Environment Variable | More Info                                                                                                                                                                                                                                              | Example                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| `SUPABASE_URL`       | The Supabase-provided project URL                                                                                                                                                                                                                      | `https://xyz.supabase.co`                 |
+| `SUPABASE_KEY`       | The Supabase-provided project key                                                                                                                                                                                                                      | `eyJhbEciOiJIUzC1NiIaInB2cCI2LklXVCJ9...` |
+| `SUPABASE_JWT`       | The Supabase-provided JWT secret key that can be found in the [Supabase API settings](https://app.supabase.com/project/_/settings/api)                                                                                                                 | `abc123xyz456`                            |
+| `reddit_secret_key`  | The Reddit API secret key. You can create one [here](https://business.reddithelp.com/s/article/Create-a-Reddit-Application)                                                                                                                            | `abc123xyz456`                            |
+| `reddit_public_key`  | The Reddit API public key. You can create one [here](https://business.reddithelp.com/s/article/Create-a-Reddit-Application)                                                                                                                            | `abc123xyz456`                            |
+| `LOGODEV_API_KEY`    | The Logo Dev API key for stock ticker images. You can create one [here](https://docs.logo.dev/introduction)                                                                                                                                            | `pk_d64204492aeb0b297461d9de2`            |
+| `LLM_MODEL_PATH`     | The path to your DeepSeek LLM model. You can find the model [here](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF) or another [distillation](https://huggingface.co/search/full-text?q=deepseek+distil&type=model) work. | `DeepSeek-R1-Distill-Qwen-1.5B-GGUF.gguf` |
+| `user`               | The username for the PostgreSQL database                                                                                                                                                                                                               | `postgres`                                |
+| `password`           | The password for the PostgreSQL database                                                                                                                                                                                                               | `abc123xyz456`                            |
+| `host`               | The host for the PostgreSQL database                                                                                                                                                                                                                   | `localhost`                               |
+| `port`               | The port for the PostgreSQL database                                                                                                                                                                                                                   | `5432`                                    |
+| `dbname`             | The database name for the PostgreSQL database                                                                                                                                                                                                          | `postgres`                                |
+| `LEGACY`             | The legacy flag for the PostgreSQL database. This only runs the webserver and everything that doesn't use tensorflow (no models nor scheduled jobs)                                                                                                    | `true` (default is `false`)               |
 
 </details>
 
 # Dependencies
 
 MarketPulse utilizes a wide array of third-party services to source it's data from.
+
+- [Yahoo Finance](https://pypi.org/project/yfinance/) - for historical and real-time stock data
+- [Reddit](https://www.reddit.com/dev/api/) - for social media sentiment
+- [DuckDuckGo](https://pypi.org/project/duckduckgo-search/) - for news sentiment
+- [Logo Dev](https://logo.dev/) - for stock ticker logo images
 
 # Requirements
 
