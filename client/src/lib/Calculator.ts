@@ -1,15 +1,111 @@
 import { type PurchaseHistoryDatapoint } from "@/types/global_state";
 
-export class Calculator {
-  static generateHype(...sentiment_data: number[]): number {
-    return (
-      sentiment_data.reduce((acc, curr) => acc + curr, 0) /
-      sentiment_data.length
-    );
+/**
+ * class for calculating forecast model metrics
+ */
+export class ForecastModelCalculator {
+  private actual: number[];
+  private predicted: number[];
+
+  /**
+   * @description class for calculating forecast model metrics
+   * @param actual {number[]} - actual values
+   * @param predicted {number[]} - predicted values
+   */
+  constructor(actual: number[], predicted: number[]) {
+    if (actual.length !== predicted.length) {
+      throw new Error("actual and predicted arrays must have the same length.");
+    }
+    this.actual = actual;
+    this.predicted = predicted;
   }
 
-  static generateImpact(...news_data: number[]): number {
-    return news_data.reduce((acc, curr) => acc + curr, 0) / news_data.length;
+  /**
+   * @description calculates the mean absolute error
+   * @returns {number} - mean absolute error
+   */
+  public meanAbsoluteError(): number {
+    const totalError = this.actual.reduce((sum, actualValue, index) => {
+      return sum + Math.abs(actualValue - this.predicted[index]);
+    }, 0);
+    return totalError / this.actual.length;
+  }
+
+  /**
+   * @description calculates the mean squared error
+   * @returns {number} - mean squared error
+   */
+  public meanSquaredError(): number {
+    const totalError = this.actual.reduce((sum, actualValue, index) => {
+      return sum + Math.pow(actualValue - this.predicted[index], 2);
+    }, 0);
+    return totalError / this.actual.length;
+  }
+
+  /**
+   * @description calculates the root mean squared error
+   * @returns {number} - root mean squared error
+   */
+  public rootMeanSquaredError(): number {
+    return Math.sqrt(this.meanSquaredError());
+  }
+
+  /**
+   * @description calculates the mean absolute error
+   * @returns {number} - r squared value
+   */
+  public rSquared(): number {
+    const meanActual =
+      this.actual.reduce((sum, value) => sum + value, 0) / this.actual.length;
+    const totalSumOfSquares = this.actual.reduce(
+      (sum, value) => sum + Math.pow(value - meanActual, 2),
+      0
+    );
+    const residualSumOfSquares = this.actual.reduce(
+      (sum, actualValue, index) => {
+        return sum + Math.pow(actualValue - this.predicted[index], 2);
+      },
+      0
+    );
+    return 1 - residualSumOfSquares / totalSumOfSquares;
+  }
+
+  /**
+   * @description calculates the mean absolute percentage error
+   * @returns {number} - mean absolute percentage error
+   */
+  public meanAbsolutePercentageError(): number {
+    const totalError = this.actual.reduce((sum, actualValue, index) => {
+      return (
+        sum + Math.abs((actualValue - this.predicted[index]) / actualValue)
+      );
+    }, 0);
+    return (totalError / this.actual.length) * 100;
+  }
+
+  /**
+   * @description calculates the accuracy of the predictions
+   * @returns {number} - the accuracy of the predictions as a percentage
+   * @example
+   * const calculator = new ForecastModelCalculator([100, 200], [101, 199]);
+   * const accuracy = calculator.accuracy()
+   * console.log(accuracy); // 0.75 ?
+   */
+  public accuracy(): number {
+    // Calculate the range of actual values (max - min)
+    const minActual = Math.min(...this.actual);
+    const maxActual = Math.max(...this.actual);
+    const range = maxActual - minActual;
+    // TODO: this currently is pretty dishonest. maybe use stdev instead?
+    const threshold = range * 0.25;
+
+    let correctPredictions = 0;
+    for (let i = 0; i < this.actual.length; i++) {
+      if (Math.abs(this.actual[i] - this.predicted[i]) <= threshold) {
+        correctPredictions++;
+      }
+    }
+    return correctPredictions / this.actual.length;
   }
 }
 
