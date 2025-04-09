@@ -332,12 +332,13 @@ Instructions will differ if you opt to self-host Supabase or use the free tier. 
 12. Create a new project in Supabase and set up the database. You can use the default settings for the database.
 
 13. Import the `supabase/schema.sql` into your Supabase database. This will create the necessary tables and functions for the application to work. This can be done multiple ways:
+
     - Using the [Supabase SQL editor](https://supabase.com/features/sql-editor)
     - Using the [Supabase CLI](https://supabase.com/docs/guides/cli)
     - Directly using the [PostgreSQL CLI](https://www.postgresql.org/docs/current/app-psql.html) (if you have it installed locally)
-      - ```sh
-        psql -h <host> -U <user> -d <dbname> < supabase/schema.sql # using the same variables from the [environment variables](#environment-variables) section.
-        ```
+
+      - `psql -h <host> -U <user> -d <dbname> < supabase/schema.sql`
+      - assuming the same variables from the [environment variables](#environment-variables) section.
 
 ## Docker setup
 
