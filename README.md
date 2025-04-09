@@ -95,7 +95,9 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 
 <details>
 <summary>View</summary>
+
 ![sequence-diagram](https://i.imgur.com/dnpxYyQ.png)
+
 </details>
 
 ## Structure
@@ -178,7 +180,7 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 └── supabase/
     ├── migrations/
     │   └── <list of database changes to migrate to your own database individually>
-    └── schema.sql -- this is a schema dump that can be solely imported to your data (recommended)
+    └── schema.sql -- this is a schema dump that can be solely imported to your database (recommended)
 ```
 
 </details>
