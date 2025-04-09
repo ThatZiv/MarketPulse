@@ -340,6 +340,14 @@ Alternatively, you can run the entire application using Docker. This will build 
 
 Contributions are welcomed and encouraged! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to contribute to this project.
 
+Current contributors:
+
+- @ThatZiv
+- @IanCro12
+- @mhazadegan
+- @paarth-desai
+- @rishithab48
+
 # License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
