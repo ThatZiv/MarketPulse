@@ -44,9 +44,64 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 
 ## Architecture
 
-TODO: Add architecture diagram(s)
+The architecture of MarketPulse is designed to be modular and scalable. The client and server are separated into two distinct directories, each with its own set of dependencies and configurations. The client is a React-based web application that communicates with the server via RESTful APIs. The server is a Flask-based API gateway that handles authentication, data processing, and machine learning model forecasts.
+
+### Data flow
+
+<details>
+<summary>View</summary>
+
+![dfd-diagram](https://i.imgur.com/Qu5t4WY.png)
+
+</details>
+
+### Use Case
+
+<details>
+<summary>View</summary>
+
+![use-case-diagram](https://i.imgur.com/mSqHViN.png)
+
+</details>
+
+### Security
+
+<details>
+<summary>View</summary>
+
+![sec-diagram](https://i.imgur.com/tvhs9Rn.png)
+
+</details>
+
+### Software
+
+<details>
+<summary>View</summary>
+
+![software-diagram](https://i.imgur.com/yDmfciQ.png)
+
+</details>
+
+### Communication
+
+<details>
+<summary>View</summary>
+
+![comm-diagram](https://i.imgur.com/1w57u8w.png)
+
+</details>
+
+### Sequence (User Authentication)
+
+<details>
+<summary>View</summary>
+![sequence-diagram](https://i.imgur.com/dnpxYyQ.png)
+</details>
 
 ## Structure
+
+<details>
+<summary>Open file hierarchy</summary>
 
 ```
 
@@ -125,6 +180,8 @@ TODO: Add architecture diagram(s)
     │   └── <list of database changes to migrate to your own database individually>
     └── schema.sql -- this is a schema dump that can be solely imported to your data (recommended)
 ```
+
+</details>
 
 ## Environment Variables
 
