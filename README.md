@@ -1,10 +1,6 @@
 # MarketPulse
 
-<center>
-
 <img src="https://i.imgur.com/fYOR4Uz.png" height=200 weight=200>
-
-</center>
 
 # Introduction
 
@@ -36,6 +32,7 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 - [Flask](https://flask.palletsprojects.com/en/stable/) v3.1.0
 - [SQLAlchemy](https://www.sqlalchemy.org/) v2.0.37 - Object-relational mapping (ORM) to interface with Database
 - [PyTorch](https://pytorch.org/) v2.6.0 - for timeseries forecasting
+- [Tensorflow](https://www.tensorflow.org/) v2.18.0 - for timeseries forecasting
 - [LangChain](https://python.langchain.com/docs/introduction/) v0.3.19 - for LLM integration and prompting
 - PostgreSQL (Supabase-provided) - Database of choice
 - _Additional third-party services mentioned in [requirements](#requirements)_
@@ -100,7 +97,7 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 
 </details>
 
-## Structure
+## Project Structure
 
 <details>
 <summary>Open file hierarchy</summary>
@@ -130,7 +127,7 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 │   │   ├── run_models.py -- runs all base model implementations
 │   │   └── lstm_attension.py -- LSTM base class
 │   ├── test_data/
-│   ├── main.py -- entry point (with some additional routes)
+│   ├── main.py -- entry point (with some additional routes & job scheduler)
 │   ├── engine.py -- database pooler
 │   ├── stockdataload.py -- load stock data from yahoo into db
 │   ├── .env.example
@@ -216,7 +213,7 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 | `host`               | The host for the PostgreSQL database                                                                                                                                                                                                                   | `localhost`                               |
 | `port`               | The port for the PostgreSQL database                                                                                                                                                                                                                   | `5432`                                    |
 | `dbname`             | The database name for the PostgreSQL database                                                                                                                                                                                                          | `postgres`                                |
-| `LEGACY`             | The legacy flag for the PostgreSQL database. This only runs the webserver and everything that doesn't use tensorflow (no models nor scheduled jobs)                                                                                                    | `true` (default is `false`)               |
+| `LEGACY`             | The legacy flag for the webserver. This only runs the webserver and everything that doesn't use tensorflow (no models nor scheduled jobs)                                                                                                              | `true` (default is `false`)               |
 
 </details>
 
@@ -317,6 +314,9 @@ sudo apt-get install libpq-dev postgresql-client # for linux
 
 ```
 
+> [!WARNING]
+> You may have issues installing LlamaCpp on Windows. You may have install [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170). Alternatively, you can use WSL to run the server on Windows.
+
 10. Copy `.env.example` to `.env`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section.
 
 11. Run the server
@@ -342,7 +342,59 @@ Instructions will differ if you opt to self-host Supabase or use the free tier. 
 
 ## Docker setup
 
-Alternatively, you can run the entire application using Docker. This will build the client and server images and run them in containers.
+1. Install Docker and Docker Compose
+
+| Platform                       | Link                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| Windows                        | [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/)   |
+| Windows (WSL2) - _recommended_ | [Docker Engine](https://docs.docker.com/engine/install/)                     |
+| Linux                          | [Docker Engine](https://docs.docker.com/engine/install/)                     |
+| Mac                            | [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) |
+
+And for [Docker Compose](https://www.digitalocean.com/community/tutorial-collections/how-to-install-docker-compose).
+
+2. Clone the repo
+
+```sh
+git clone https://github.com/ThatZiv/MarketPulse/
+cd MarketPulse
+
+```
+
+3. In both `./client/` and `./server/`, copy `.env.example` to `.env`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section. (This is a repeat of previous steps: **#5** and **#10**).
+
+Your structure should look something like this:
+
+```sh
+├── supabase/
+├── client/
+│   ├── .env.example
+│   ├── .env
+│   └── <other files>
+└── server/
+    ├── .env
+    ├── .env.example
+    └── <other files>
+```
+
+1. Development mode allows you to edit the code directly from your machine's filesystem. This is useful for development and testing. To run the application in development mode, run:
+
+```sh
+docker-compose -f docker-compose-dev.yml up
+# OR (depending on which docker compose version you have)
+docker compose -f docker-compose-dev.yml up
+```
+
+> [!WARNING]
+> On first run, the build process may take a while as it will build the images for the client and server. This is normal. Subsequent runs will be faster.
+
+5. For running in production mode, you can run:
+
+```sh
+docker-compose up
+# OR
+docker compose up -d # to run in detached mode (background)
+```
 
 # Contributing
 
