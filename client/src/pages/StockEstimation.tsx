@@ -132,11 +132,11 @@ export default function Stocks() {
     };
     const hype_meter = getLastStockHistory(
       state.stocks[ticker ?? ""].history,
-      "sentiment_data"
+      "hype_meter"
     );
     const impact_meter = getLastStockHistory(
       state.stocks[ticker ?? ""].history,
-      "news_data"
+      "impact_factor"
     );
     return {
       hype: hype_meter,

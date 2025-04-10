@@ -92,8 +92,8 @@ def chart():
                                         'stock_volume' : i.stock_volume,
                                         'stock_open' : i.stock_open,
                                         'stock_high' : i.stock_high, 'stock_low' : i.stock_low,
-                                        'sentiment_data'  : i.sentiment_data,
-                                        'news_data': i.news_data,
+                                        'hype_meter'  : i.sentiment_data,
+                                        'impact_factor': i.news_data,
                                         'time_stamp' : dump_datetime(i.time_stamp) })
                 json_output.reverse()
                 session.close()
