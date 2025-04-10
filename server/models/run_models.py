@@ -24,6 +24,7 @@ from database.tables import Stock_Info, Stock_Predictions, Stocks
 from engine import get_engine, global_engine
 
 def run_models():
+    '''Code to run the five models and store them in the database'''
     try:
         session = sessionmaker(bind=global_engine())
     except exc.OperationalError:

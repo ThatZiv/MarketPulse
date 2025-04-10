@@ -176,4 +176,226 @@ describe("CreateForm Component", () => {
 
     expect(mockTogglePageState).toHaveBeenCalledTimes(1);
   });
+
+  test("validates password length and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Pass1@" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "Pass1@" } });
+      fireEvent.click(createButton);
+    });
+
+    expect(screen.getByText("❌ At least 8 characters")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled();
+  });
+
+  test("validates uppercase letter requirement and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "password123!" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "password123!" },
+      });
+      fireEvent.click(createButton);
+    });
+
+    expect(
+      screen.getByText("❌ At least 1 uppercase letter")
+    ).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled();
+  });
+
+  test("validates number requirement and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password!" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "Password!" },
+      });
+      fireEvent.click(createButton);
+    });
+
+    expect(screen.getByText("❌ At least 1 number")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled();
+  });
+
+  test("validates special character requirement and prevents account creation", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "Password123" },
+      });
+      fireEvent.click(createButton);
+    });
+
+    expect(
+      screen.getByText("❌ At least 1 special character")
+    ).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled();
+  });
+
+  test("validates password confirmation and prevents account creation when passwords do not match", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, { target: { value: "" } });
+      fireEvent.click(createButton);
+    });
+
+    expect(screen.getByText("Passwords do not match")).toBeInTheDocument();
+    expect(mockSignUpNewUser).not.toHaveBeenCalled();
+  });
+
+  test("toggles password visibility and displays the entered password", async () => {
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const toggleVisibilityButtons = screen.getAllByText("Eye Icon");
+    const toggleVisibilityButton = toggleVisibilityButtons[0];
+
+    await act(async () => {
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+    });
+
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+
+    expect(passwordInput).toHaveAttribute("type", "text");
+    expect(passwordInput).toHaveValue("Password123!");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+
+    expect(passwordInput).toHaveAttribute("type", "text");
+  });
+
+  test("toggles confirm password visibility and displays the entered password", async () => {
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const toggleVisibilityButtons = screen.getAllByText("Eye Icon");
+    const toggleVisibilityButton = toggleVisibilityButtons[1];
+
+    await act(async () => {
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "Password123!" },
+      });
+    });
+
+    expect(confirmPasswordInput).toHaveAttribute("type", "password");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+
+    expect(confirmPasswordInput).toHaveAttribute("type", "text");
+    expect(confirmPasswordInput).toHaveValue("Password123!");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+
+    expect(confirmPasswordInput).toHaveAttribute("type", "text");
+  });
+
+  test("completes registration flow and allows login after email verification", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const confirmPasswordInput =
+      screen.getByPlaceholderText("Confirm Password");
+    const createButton = screen.getByText("Create");
+
+    mockSignUpNewUser.mockResolvedValueOnce({
+      user: { id: "123", email: "test2025@test.com" },
+      session: null,
+      error: null,
+    });
+
+    const mockSendVerificationEmail = jest.fn().mockResolvedValueOnce(true);
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+      fireEvent.change(confirmPasswordInput, {
+        target: { value: "Password123!" },
+      });
+      fireEvent.click(createButton);
+    });
+
+    expect(screen.getByText("✅ At least 8 characters")).toBeInTheDocument();
+    expect(
+      screen.getByText("✅ At least 1 uppercase letter")
+    ).toBeInTheDocument();
+    expect(screen.getByText("✅ At least 1 number")).toBeInTheDocument();
+    expect(
+      screen.getByText("✅ At least 1 special character")
+    ).toBeInTheDocument();
+
+    expect(mockSignUpNewUser).toHaveBeenCalledTimes(1);
+    expect(mockSignUpNewUser).toHaveBeenCalledWith(
+      "test2025@test.com",
+      "Password123!"
+    );
+
+    await act(async () => {
+      mockSendVerificationEmail();
+    });
+
+    expect(mockSendVerificationEmail).toHaveBeenCalledTimes(1);
+
+    const mockVerifyEmail = jest.fn().mockResolvedValueOnce(true);
+    await act(async () => {
+      mockVerifyEmail();
+    });
+
+    expect(mockVerifyEmail).toHaveBeenCalledTimes(1);
+
+    const mockSignIn = jest.fn().mockResolvedValueOnce({
+      user: { id: "123", email: "test2025@test.com" },
+      session: { access_token: "mock_token" },
+      error: null,
+    });
+
+    await act(async () => {
+      mockSignIn("test2025@test.com", "Password123!");
+    });
+
+    expect(mockSignIn).toHaveBeenCalledTimes(1);
+    expect(mockSignIn).toHaveBeenCalledWith(
+      "test2025@test.com",
+      "Password123!"
+    );
+  });
 });
