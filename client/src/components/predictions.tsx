@@ -230,6 +230,7 @@ export default function Predictions({
                     left: 12,
                     right: 12,
                   }}
+                  className="min-w-48 min-h-48"
                 >
                   <CartesianGrid vertical={false} />
                   <XAxis
@@ -269,6 +270,7 @@ export default function Predictions({
                     }
                   />
                   <ChartLegend content={<ChartLegendContent />} />
+
                   {Object.keys(
                     shownChartData[shownChartData.length - 1] ?? []
                   ).map((key, index) => {

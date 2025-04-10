@@ -17,6 +17,7 @@ run_args = {
 
 
 def global_engine():
+    '''Return the global engine variable or assign and return a new engine variable'''
     global ENGINE
     if ENGINE is None:
         with current_app.config["MUTEX"]:
@@ -32,6 +33,7 @@ def global_engine():
 
 # allows us to reset engine
 def get_engine():
+    '''Assign the global Engine variable to use when making connections to Supabase'''
     global ENGINE
     retrys = 5
     for _ in range(retrys):
