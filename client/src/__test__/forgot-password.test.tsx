@@ -1,4 +1,7 @@
 import { ResetPassword } from "@/components/forgot-password";
+
+import UserAuth from "@/pages/UserAuth";
+import { BrowserRouter } from "react-router-dom";
 import { describe } from "node:test";
 import {
   act,
@@ -25,6 +28,14 @@ const mockUser = jest.fn();
 const mockName = jest.fn();
 const mockAccount = jest.fn();
 const mockSession = jest.fn();
+
+jest.mock("lucide-react", () => ({
+  Moon: () => "MoonIcon",
+  Sun: () => "SunIcon",
+  Eye: () => "EyeIcon",
+  EyeOff: () => "EyeOffIcon",
+}));
+
 jest.mock("@/database/SupabaseProvider", () => ({
   useSupabase: () => {
     return {
@@ -123,5 +134,34 @@ describe("Forgot Password", () => {
     await act(async () => {
       await fireEvent.click(reset);
     });
+  });
+
+  test("Access and return exit Forgot Password page", async () => {
+    render(
+      <BrowserRouter>
+        <UserAuth />
+      </BrowserRouter>
+    );
+
+    const button = await screen.findByText("Forgot Password?");
+    expect(button).toBeInTheDocument();
+
+    await act(async () => {
+      await fireEvent.click(button);
+    });
+
+    const back = await screen.findByText("Back");
+    const title = await screen.findByText("Recover Password");
+
+    expect(back).toBeInTheDocument();
+    expect(title).toBeInTheDocument();
+
+    await act(async () => {
+      await fireEvent.click(back);
+    });
+
+    const log_in = await screen.findByText("Log in");
+
+    expect(log_in).toBeInTheDocument();
   });
 });
