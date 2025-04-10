@@ -8,10 +8,17 @@ import {
   cleanup,
 } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { toast } from "sonner";
 
 jest.mock("lucide-react", () => ({
   Eye: () => <span>Eye Icon</span>,
   EyeOff: () => <span>EyeOff Icon</span>,
+}));
+
+jest.mock("sonner", () => ({
+  toast: {
+    error: jest.fn(),
+  },
 }));
 
 const mockSignInWithEmail = jest.fn();
@@ -127,6 +134,84 @@ describe("LoginForm Component", () => {
     await act(async () => {
       fireEvent.click(toggleVisibilityButton);
     });
+    expect(passwordInput).toHaveAttribute("type", "text");
+  });
+
+  test("displays error toast when login credentials are invalid", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const loginButton = screen.getByText("Login");
+
+    mockSignInWithEmail.mockRejectedValueOnce(
+      new Error("Error logging in: Invalid login credentials.")
+    );
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "johndoe@yahoo.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Password!123" } });
+      fireEvent.click(loginButton);
+    });
+
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith(
+      "Error logging in: Invalid login credentials."
+    );
+
+    expect(mockSignInWithEmail).toHaveBeenCalledTimes(1);
+    expect(mockSignInWithEmail).toHaveBeenCalledWith(
+      "johndoe@yahoo.com",
+      "Password!123"
+    );
+  });
+
+  test("displays error toast when login credentials are invalid", async () => {
+    const emailInput = screen.getByPlaceholderText("Email Address");
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const loginButton = screen.getByText("Login");
+
+    mockSignInWithEmail.mockRejectedValueOnce(
+      new Error("Error logging in: Invalid login credentials.")
+    );
+
+    await act(async () => {
+      fireEvent.change(emailInput, { target: { value: "test2025@test.com" } });
+      fireEvent.change(passwordInput, { target: { value: "Passwo123!" } });
+      fireEvent.click(loginButton);
+    });
+
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith(
+      "Error logging in: Invalid login credentials."
+    );
+
+    expect(mockSignInWithEmail).toHaveBeenCalledTimes(1);
+    expect(mockSignInWithEmail).toHaveBeenCalledWith(
+      "test2025@test.com",
+      "Passwo123!"
+    );
+  });
+
+  test("toggles password visibility and displays the entered password", async () => {
+    const passwordInput = screen.getByPlaceholderText("Password");
+    const toggleVisibilityButton = screen.getByText("Eye Icon");
+
+    await act(async () => {
+      fireEvent.change(passwordInput, { target: { value: "Password123!" } });
+    });
+
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+
+    expect(passwordInput).toHaveAttribute("type", "text");
+    expect(passwordInput).toHaveValue("Password123!");
+
+    await act(async () => {
+      fireEvent.click(toggleVisibilityButton);
+    });
+
     expect(passwordInput).toHaveAttribute("type", "text");
   });
 });
