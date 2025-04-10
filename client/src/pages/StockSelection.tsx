@@ -575,7 +575,28 @@ export default function StockPage() {
                         Date
                       </label>
                     )}
-                    {window.innerWidth > 600 ? (
+
+                      <div>
+                        <input
+                          id={`date-${index}`}
+                          type="datetime-local"
+                          required
+                          value={purchase.date}
+                          min="2000-01-01T00:00"
+                          max={formatToday()}
+                          onChange={(e) => {
+                            handlePurchaseChange(
+                              index,
+                              "date",
+                              moment(e.target.value).format("YYYY-MM-DDTHH:mm")
+                            );
+                          }}
+                          onBlur={() => {
+                            handleSort(index);
+                          }}
+                          className={`border border-gray-300 bg-white text-white dark:text-black dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${window.innerWidth > 600 ? "max-w-14" : ""}`}
+                        />
+                      </div>
                       <input
                         id={`date-${index}`}
                         type="datetime-local"
