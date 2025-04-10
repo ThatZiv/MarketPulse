@@ -80,11 +80,6 @@ def create_session():
     return session()
 
 
-@app.route('/test', methods=['GET', 'POST'])
-@jwt_required()
-def route():
-    return jsonify('hello')
-
 @app.route('/stockrealtime', methods = ['GET'] )
 @jwt_required()
 def realtime():
