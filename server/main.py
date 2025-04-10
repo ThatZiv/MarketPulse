@@ -79,21 +79,14 @@ def create_session():
             session = sessionmaker(bind=get_engine())
     return session()
 
-
-@app.route('/test', methods=['GET', 'POST'])
-@jwt_required()
-def route():
-    return jsonify('hello')
-
 @app.route('/stockrealtime', methods = ['GET'] )
 @jwt_required()
 def realtime():
+    '''Handles a request from the page to make access get realtume stock data for a particular stock'''
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
-
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-
         try:
             output_id = stock_query_single(s_id, session)
         except exc.OperationalError:

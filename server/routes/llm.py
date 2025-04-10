@@ -1,6 +1,8 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
+# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-branches
 
 import os
 import flask_jwt_extended as jw
@@ -57,15 +59,14 @@ prompt = PromptTemplate(template=TEMPLATE, \
 @llm_bp.route('/stock', methods=['GET'])
 @jw.jwt_required()
 def llm__stock_route():
-    #""" Route for stock advice """
-    #if LLM_MODEL_PATH is None:
-    #    print("LLM_MODEL_PATH is not set")
-    #    return Response(status=500)
+    if LLM_MODEL_PATH is None:
+        print("LLM_MODEL_PATH is not set")
+        return Response(status=500)
 
-    #if not os.path.exists(LLM_MODEL_PATH):
-    #    print("LLM_MODEL_PATH file does not exist. \
-    #        Please download a gguf model from https://huggingface.co/models")
-    #    return Response(status=500)
+    if not os.path.exists(LLM_MODEL_PATH):
+        print("LLM_MODEL_PATH file does not exist. \
+            Please download a gguf model from https://huggingface.co/models")
+        return Response(status=500)
 
     ticker = request.args.get('ticker')
     current_user = jw.get_jwt_identity()
@@ -99,7 +100,7 @@ def llm__stock_route():
             user_info = select(User_Stock_Purchases).where(User_Stock_Purchases.stock_id == stock.stock_id).where(User_Stock_Purchases.user_id == current_user)
             user_output = session.connection().execute(user_info).all()
 
-            if not stock or not user_output:
+            if not stock:
                 return Response(status=500)
             output = {"output": stock, "user_info":user_output}
             cache.set(f"LLM_{ticker}{current_user}", output, timeout = 1800)
