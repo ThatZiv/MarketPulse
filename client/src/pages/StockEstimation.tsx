@@ -182,7 +182,7 @@ export default function Stocks() {
       setHypeMeter(hype_temp);
     }
     if (meters.impact.value || meters.impact.value == 0) {
-      const impact_temp = ((meters.impact.value + 6) / 12) * 100;
+      const impact_temp = ((meters.impact.value + 7.5) / 15.9) * 100;
       setImpactMeter(impact_temp);
     }
   }, [meters.hype.value, meters.impact.value]);
