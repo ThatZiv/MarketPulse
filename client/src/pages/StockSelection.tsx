@@ -594,7 +594,7 @@ export default function StockPage() {
                         onBlur={() => {
                           handleSort(index);
                         }}
-                        className={`border border-gray-300 bg-white text-white dark:text-black dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${window.innerWidth < 600 ? "max-w-14" : ""}`}
+                        className={`border border-gray-300 bg-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${window.innerWidth < 600 ? "max-w-14 text-white dark:text-black" : "text-black dark:text-white"}`}
                       />
                     </div>
                   </div>
