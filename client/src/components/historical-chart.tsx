@@ -291,7 +291,7 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
       ) : (
         <Card
           className="w-full p-4 border border-black dark:border-white"
-        // onMouseLeave={() => setCursor(null)}
+          // onMouseLeave={() => setCursor(null)}
         >
           <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
             <div className="grid flex-1 gap-1 text-center sm:text-left">
