@@ -361,23 +361,38 @@ cd MarketPulse
 
 ```
 
-3. In both `./client/` and `./server/`, copy `.env.example` to `.env`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section. (This is a repeat of previous steps: **#5** and **#10**).
+3. In both `./client/` and `./server/`, copy `.env.example` to `.env`. Please fill out all the corresponding values as mentioned in the [environment variables](#environment-variables) section. (This is a repeat of previous steps: **#5** and **#10**). Additionally, you need to copy the `.env.example` from the root directory to `.env`. This is needed for the docker-compose file to work properly.
+
+The file contents of this root `.env` should have your `LLM_HOST_PATH` defined to a **directory** where the model is located. The `server/.env` should have the `LLM_MODEL_PATH` set to `/app/llm/<your_model.gguf>` (only when using docker) where you replace `<your model>` with the filename of the model you downloaded.
 
 Your structure should look something like this:
 
 ```sh
+.
+├── .gitignore
+├── .env.example
+├── .env -- you must copy this from .env.example
+├── docker-compose.yml
+├── docker-compose-dev.yml
+├── .env
 ├── supabase/
 ├── client/
 │   ├── .env.example
 │   ├── .env
 │   └── <other files>
 └── server/
-    ├── .env
     ├── .env.example
+    ├── .env
     └── <other files>
 ```
 
-1. Development mode allows you to edit the code directly from your machine's filesystem. This is useful for development and testing. To run the application in development mode, run:
+and the contents of the `.env` file should look like:
+
+```sh
+LLM_HOST_PATH=/path/to/your/model # no filename, just path
+```
+
+4. Development mode allows you to edit the code directly from your machine's filesystem. This is useful for development and testing. To run the application in development mode, run:
 
 ```sh
 docker-compose -f docker-compose-dev.yml up

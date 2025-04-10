@@ -11,7 +11,8 @@ services:
       - ./client:/app
       - /app/node_modules
     env_file:
-      - ./client/.env.local
+      - path: ./client/.env.local
+        required: true
     ports:
       - "5173:80"
     depends_on:
@@ -26,10 +27,10 @@ services:
       - "./server:/app"
       - /app/.venv
       - /app/__pycache__
-      # please replace with your model dir!
-      - /mnt/ext3/Documents/Models/lm-studio/models/lmstudio-community/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/:/app/llm/:ro
+      - ${LLM_HOST_PATH}:/app/llm/:ro
     env_file:
-      - ./server/.env
+      - path: ./server/.env
+        required: true
     ports:
       - "5000:5000"
     command: ["python", "main.py"]
