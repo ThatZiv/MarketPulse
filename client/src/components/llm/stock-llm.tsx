@@ -91,6 +91,15 @@ export function GenerateStockLLM({ ticker }: IGenerateStockLLM) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setStreamData("");
+      setStatus("idle");
+      setIsThinking(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticker]);
   return (
     <Drawer open={open} onOpenChange={(isOpen) => setOpen(isOpen)}>
       <DrawerTrigger asChild>

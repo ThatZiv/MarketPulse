@@ -1,0 +1,35 @@
+---
+services:
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    restart: always
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    env_file:
+      - ./client/.env.local
+
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./server
+    working_dir: /app
+    restart: always
+    volumes:
+      - "./server:/app"
+      - /app/.venv
+      - /app/__pycache__
+      # please replace with your model dir!
+      - ${LLM_HOST_PATH}:/app/llm/:ro
+    env_file:
+      - path: ./server/.env
+        required: true
+    ports:
+      - "5000:5000"
+    command: ["python", "main.py"]
