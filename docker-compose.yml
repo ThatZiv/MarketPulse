@@ -1,0 +1,36 @@
+---
+services:
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+      target: prod
+    working_dir: /app
+
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    env_file:
+      - path: ./client/.env.local
+        required: true
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./server
+    working_dir: /app
+    restart: always
+    volumes:
+      - "./server:/app"
+      - /app/.venv
+      - /app/__pycache__
+      - ${LLM_HOST_PATH}:/app/llm/:ro
+    env_file:
+      - path: ./server/.env
+        required: true
+    ports:
+      - "5000:5000"
+    command: ["python", "main.py"]
