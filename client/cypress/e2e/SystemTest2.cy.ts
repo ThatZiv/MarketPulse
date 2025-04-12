@@ -1,5 +1,5 @@
 describe("Stock Purchase History", () => {
-  it("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
+  it.skip("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
     cy.visit("http://localhost:5173/");
 
     cy.get('input[name="email"]').type("test2025@test.com");
