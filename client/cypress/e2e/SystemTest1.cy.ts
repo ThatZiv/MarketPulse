@@ -1,4 +1,3 @@
-
 describe("Stock Purchase History", () => {
   it("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
     cy.visit("http://localhost:5173/");
@@ -24,6 +23,5 @@ describe("Stock Purchase History", () => {
     cy.get("div").contains("average price per share.");
     cy.get("div").contains("has been bought in total.");
     cy.get("div").contains("shares currently owned.");
- 
   });
 });
