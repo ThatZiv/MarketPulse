@@ -255,8 +255,8 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
     stock_high: "High Price ($)",
     stock_low: "Low Price ($)",
     stock_volume: "Volume (# shares)",
-    sentiment_data: "Social Score - higher is better",
-    news_data: "News Score - higher is better",
+    hype_meter: "Social Score - higher is better",
+    impact_factor: "News Score - higher is better",
   };
 
   return (
@@ -373,8 +373,8 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                     "stock_high",
                     "stock_low",
                     "stock_volume",
-                    "sentiment_data",
-                    "news_data",
+                    "hype_meter",
+                    "impact_factor",
                   ].map((item) => (
                     <SelectItem
                       key={"select-" + item}

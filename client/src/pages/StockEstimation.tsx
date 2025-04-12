@@ -132,11 +132,11 @@ export default function Stocks() {
     };
     const hype_meter = getLastStockHistory(
       state.stocks[ticker ?? ""].history,
-      "sentiment_data"
+      "hype_meter"
     );
     const impact_meter = getLastStockHistory(
       state.stocks[ticker ?? ""].history,
-      "news_data"
+      "impact_factor"
     );
     return {
       hype: hype_meter,
@@ -182,7 +182,7 @@ export default function Stocks() {
       setHypeMeter(hype_temp);
     }
     if (meters.impact.value || meters.impact.value == 0) {
-      const impact_temp = ((meters.impact.value + 6) / 12) * 100;
+      const impact_temp = ((meters.impact.value + 7.5) / 15.9) * 100;
       setImpactMeter(impact_temp);
     }
   }, [meters.hype.value, meters.impact.value]);
