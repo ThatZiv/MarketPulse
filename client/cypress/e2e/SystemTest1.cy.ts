@@ -1,3 +1,5 @@
+// Needs the data currently in database to run correctly
+// Currently set to be skipped by githun actions 
 describe("Stock Purchase History", () => {
   it.skip("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
     cy.visit("http://localhost:5173/");
