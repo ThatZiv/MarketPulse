@@ -7,9 +7,9 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # calls the model distilroberta-finetuned-financial-news-sentiment-analysis for one text input
 def sentiment_model(text):
-    ADD = "mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis"
-    tokenizer = AutoTokenizer.from_pretrained(ADD)
-    model = AutoModelForSequenceClassification.from_pretrained(ADD)
+    to_add = "mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis"
+    tokenizer = AutoTokenizer.from_pretrained(to_add)
+    model = AutoModelForSequenceClassification.from_pretrained(to_add)
 
     inputs = tokenizer(text, return_tensors="pt")
     with torch.no_grad():
