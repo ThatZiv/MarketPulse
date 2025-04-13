@@ -411,6 +411,9 @@ docker-compose up
 docker compose up -d # to run in detached mode (background)
 ```
 
+> [!NOTE]
+> Please note that when running in docker production mode, the frontend will only be served on the default port `5173` and the backend will be served on the **same** port but under the sub-route `/api` because of of nginx reverse proxy setup. So, you will need to set the `VITE_API_URL` in the `.env` file to `http://localhost:5173/api` instead of `http://localhost:5000`.
+
 # Contributing
 
 Contributions are welcomed and encouraged! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to contribute to this project.
