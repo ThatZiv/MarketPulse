@@ -18,11 +18,11 @@ from sklearn.metrics import r2_score, mean_squared_error
 
 class AttentionLstm:
     '''Define model parameters'''
-    def __init__(self, input_size = 3, hidden_size = 32, batch_size = 10, learning_rate = 0.01):
+    def __init__(self, input_size = 4, hidden_size = 32, batch_size = 10, learning_rate = 0.01):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.num_layers = 2
-        self.output_size = 1
+        self.output_size = 4
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.model = LSTMAttentionModel(self.input_size, self.hidden_size, self.num_layers)
@@ -69,25 +69,23 @@ class AttentionLstm:
         data['Close'] = wavelet(data['Close'])[:len(data['Close'])]
         data['Low'] = wavelet(data['Low'])[:len(data['Close'])]
         data['High'] = wavelet(data['High'])[:len(data['Close'])]
-        data['Open'] = wavelet(data['Open'])[:len(data['Close'])]
-        for i in range(1, len(data['High'])):
-            data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
-            valid_answer.loc[i, 'Low'] = valid_answer.loc[i, 'High']-valid_answer.loc[i,'Low']
 
         data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
-        data['Open'] = (data['Open'] - data['Open'].min())/ (data['Open'].max() - data['Open'].min())
-        data = data.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
+        data['News_Data'] = (data['News_Data'] - data['News_Data'].min())/ (data['News_Data'].max() - data['News_Data'].min())
+        data = data.drop(columns=['Open', 'Volume', 'Sentiment_Data'])
 
         valid_answer['Low'] = (valid_answer['Low'] - valid_answer['Low'].min())/ (valid_answer['Low'].max() - valid_answer['Low'].min())
-        valid_answer['Open'] = (valid_answer['Open'] - valid_answer['Open'].min())/ (valid_answer['Open'].max() - valid_answer['Open'].min())
+        valid_answer['News_Data'] = (valid_answer['News_Data'] - valid_answer['News_Data'].min())/ (valid_answer['News_Data'].max() - valid_answer['News_Data'].min())
         sentiment = (valid_answer['Sentiment_Data'] - valid_answer['Sentiment_Data'].min())/ (valid_answer['Sentiment_Data'].max() - valid_answer['Sentiment_Data'].min())
 
-        valid_answer = valid_answer.drop(columns=['Open', 'Volume', 'Sentiment_Data', 'News_Data'])
+        valid_answer = valid_answer.drop(columns=['Open', 'Volume', 'Sentiment_Data'])
         answer = data
 
         data2, answer = self.create_inout_sequences(data, 20, data)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
+
+        # Model is trained against smoothed data and validated against the original data.
         return data2, answer, valid_answer, multiple, minimum, sentiment
 
     # Shaping train, test, and validation data.
@@ -105,14 +103,14 @@ class AttentionLstm:
         y_test = train_answer[split_index2:split_index]
         y_valid = answer[split_index:]
 
-        x_train = x_train.reshape(-1, lookback, 3)
+        x_train = x_train.reshape(-1, lookback, 4)
 
-        x_test = x_test.reshape(-1, lookback, 3)
-        x_valid = x_valid.reshape(-1, lookback, 3)
+        x_test = x_test.reshape(-1, lookback, 4)
+        x_valid = x_valid.reshape(-1, lookback, 4)
 
-        y_train = y_train.reshape(-1, 3)
-        y_test = y_test.reshape(-1, 3)
-        y_valid = y_valid.reshape(-1, 3)
+        y_train = y_train.reshape(-1, 4)
+        y_test = y_test.reshape(-1, 4)
+        y_valid = y_valid.reshape(-1, 4)
 
         x_train = torch.tensor(x_train).float()
         x_test = torch.tensor(x_test).float()
@@ -191,7 +189,6 @@ class AttentionLstm:
                 running_loss += loss.item()
                 val.append(output[0][0].item())
                 anws.append(y_batch[0][0].item())
-
         r2 = r2_score(anws, val)
         mse = mean_squared_error(anws, val)
 
@@ -202,6 +199,7 @@ class AttentionLstm:
         print("MSE: " + str(mse))
         print("RMSE: " + str(math.sqrt(mse)))
         print("MAPE: " + str(np.mean(np.abs((np_v - np_val) / np_v)) * 100))
+        return r2
 
     # returns a forcast sequence default length is 7 days.
     def forecast_seq(self, sequences, sentiment, period = 7):
@@ -211,6 +209,8 @@ class AttentionLstm:
         adjustment =1-( .05 * (sentiment[len(sentiment)-1]-average))
         p = []
         count=0
+
+        print(adjustment)
         for _ in range(period):
             count+=1
             output = self.model(sequences)
@@ -251,7 +251,7 @@ class LSTMAttentionModel(nn.Module):
         self.num_stacked_layers = num_stacked_layers
         self.lstm = nn.LSTM(input_size, hidden_size, num_stacked_layers, batch_first=True)
         self.att = Attention(hidden_size, hidden_size)
-        self.fc = nn.Linear(hidden_size, 3, )
+        self.fc = nn.Linear(hidden_size, 4, )
         self.device =  "cpu"
 
     def forward(self, x):
@@ -268,12 +268,13 @@ class LSTMAttentionModel(nn.Module):
 def wavelet(data):
     wavelet_graph = 'db4'
     coes = pywt.wavedec(data, wavelet_graph, mode = 'reflect')
-    threshold = .001
+    threshold = .0075
     coe_threshold = [pywt.threshold(c, threshold, mode='soft') for c in coes]
     smoothed = pywt.waverec(coe_threshold, wavelet_graph)
 
     return smoothed
 
+# Makes DataSet an objext
 class TimeSeriesData(Dataset):
     def __init__(self, x, y):
         self.x = x
