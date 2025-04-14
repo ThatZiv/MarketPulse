@@ -69,10 +69,6 @@ class AttentionLstm:
         data['Close'] = wavelet(data['Close'])[:len(data['Close'])]
         data['Low'] = wavelet(data['Low'])[:len(data['Close'])]
         data['High'] = wavelet(data['High'])[:len(data['Close'])]
-        data['Open'] = wavelet(data['Open'])[:len(data['Close'])]
-        #for i in range(1, len(data['High'])):
-        #    data.loc[i, 'Low'] = data.loc[i, 'High']-data.loc[i,'Low']
-        #    valid_answer.loc[i, 'Low'] = valid_answer.loc[i, 'High']-valid_answer.loc[i,'Low']
 
         data['High'] = (data['High'] - data['High'].min())/ (data['High'].max() - data['High'].min())
         data['Low'] = (data['Low'] - data['Low'].min())/ (data['Low'].max() - data['Low'].min())
@@ -88,6 +84,8 @@ class AttentionLstm:
 
         data2, answer = self.create_inout_sequences(data, 20, data)
         _, valid_answer = self.create_inout_sequences(data, 20, valid_answer)
+
+        # Model is trained against smoothed data and validated against the original data.
         return data2, answer, valid_answer, multiple, minimum, sentiment
 
     # Shaping train, test, and validation data.
@@ -138,7 +136,7 @@ class AttentionLstm:
         # Train the model
         def train(train_loader):
             self.model.train()
-            #print(f'Epoch: {epoch+1}')
+            print(f'Epoch: {epoch+1}')
             running_loss = 0.0
             for batch_index, batch in enumerate(train_loader):
                 x_batch, y_batch = batch[0].to(self.device), batch[1].to(self.device)
@@ -151,7 +149,7 @@ class AttentionLstm:
 
                 if batch_index % 25 == 24:
                     avg_loss_across_batches = running_loss / 25
-                    #print(f'Batch {batch_index+1}, Loss {avg_loss_across_batches}')
+                    print(f'Batch {batch_index+1}, Loss {avg_loss_across_batches}')
                     running_loss = 0.0
         # Test the model
         def test():
@@ -168,8 +166,8 @@ class AttentionLstm:
             avg_loss_across_batches = running_loss / len(test_loader)
 
 
-            #print(f'AVG Loss: {avg_loss_across_batches}')
-            #print()
+            print(f'AVG Loss: {avg_loss_across_batches}')
+            print()
         self.model.to(self.device)
         for epoch in range(epochs):
             train(train_loader)
@@ -276,6 +274,7 @@ def wavelet(data):
 
     return smoothed
 
+# Makes DataSet an objext
 class TimeSeriesData(Dataset):
     def __init__(self, x, y):
         self.x = x

@@ -11,16 +11,10 @@ LSTM for price forecasting
 
 
 import copy
-import os
-from dotenv import load_dotenv
-import pandas as pd
 import numpy as np
-from sqlalchemy import create_engine, select, exc
-from sqlalchemy.orm import sessionmaker
 from models.forecast.forecast_types import DataForecastType, DatasetType
 from models.forecast.model import ForecastModel
 from models.lstm_attention import AttentionLstm
-from database.tables import Stock_Info
 
 
 '''Attention LSTM implementation'''

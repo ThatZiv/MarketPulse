@@ -45,39 +45,38 @@ def run_models():
         s_volume = []
         s_sentiment_data = []
         s_news_data = []
-        #print(output)
 
-        for row in output:
-            #print(row)
-            s_open.append(row.stock_open)
-            s_close.append(row.stock_close)
-            s_high.append(row.stock_high)
-            s_low.append(row.stock_low)
-            s_volume.append(row.stock_volume)
-            s_sentiment_data.append(row.sentiment_data)
-            s_news_data.append(row.news_data)
+        if output[len(output)-1].time_stamp == date.today():
+            for row in output:
+                s_open.append(row.stock_open)
+                s_close.append(row.stock_close)
+                s_high.append(row.stock_high)
+                s_low.append(row.stock_low)
+                s_volume.append(row.stock_volume)
+                s_sentiment_data.append(row.sentiment_data)
+                s_news_data.append(row.news_data)
 
-        data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume, 'Sentiment_Data':s_sentiment_data, 'News_Data':s_news_data}
-        data = pd.DataFrame(data)
-        one_day = []
-        one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", stock.stock_ticker))
-        one_day.append(CNNLSTMTransformer("cnn-lstm", stock.stock_ticker))
-        one_day.append(ZavTransformer(Transformer(), "transformer", stock.stock_ticker))
-        one_day.append(XGBoost("XGBoost-model", stock.stock_ticker))
-        one_day.append(AzSarima("az-sarima", stock.stock_ticker))
-        # one_day.append(AzArima("az-arima", stock.stock_ticker))
+            data = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume, 'Sentiment_Data':s_sentiment_data, 'News_Data':s_news_data}
+            data = pd.DataFrame(data)
+            one_day = []
+            one_day.append(AttentionLSTM(AttentionLstm(), "attention_lstm", stock.stock_ticker))
+            one_day.append(CNNLSTMTransformer("cnn-lstm", stock.stock_ticker))
+            one_day.append(ZavTransformer(Transformer(), "transformer", stock.stock_ticker))
+            one_day.append(XGBoost("XGBoost-model", stock.stock_ticker))
+            one_day.append(AzSarima("az-sarima", stock.stock_ticker))
+            # one_day.append(AzArima("az-arima", stock.stock_ticker))
 
-        prediction = ForecastModels(one_day)
-        prediction.train_all(copy.deepcopy(data))
-        pred = prediction.run_all(copy.deepcopy(data), 7)
-        model_1 = pred[0]
-        model_2 = pred[1]
-        model_3 = pred[2]
-        model_4 = pred[3]
-        model_5 = pred[4]
+            prediction = ForecastModels(one_day)
+            prediction.train_all(copy.deepcopy(data))
+            pred = prediction.run_all(copy.deepcopy(data), 7)
+            model_1 = pred[0]
+            model_2 = pred[1]
+            model_3 = pred[2]
+            model_4 = pred[3]
+            model_5 = pred[4]
 
-        new_row = Stock_Predictions(stock_id=stock.stock_id, model_1=json.dumps(model_1), model_2=json.dumps(model_2), model_3=json.dumps(model_3), model_4=json.dumps(model_4), model_5=json.dumps(model_5), created_at = date.today())
-        session.add(new_row)
+            new_row = Stock_Predictions(stock_id=stock.stock_id, model_1=json.dumps(model_1), model_2=json.dumps(model_2), model_3=json.dumps(model_3), model_4=json.dumps(model_4), model_5=json.dumps(model_5), created_at = date.today())
+            session.add(new_row)
     try:
         session.commit()
     except  exc.SQLAlchemyError as e:
