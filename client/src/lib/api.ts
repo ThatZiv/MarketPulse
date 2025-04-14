@@ -156,7 +156,7 @@ export default class Api implements IApi {
    * get stock data for a given ticker
    * @param ticker stock ticker
    * @param limit number of days to get
-   * @returns stock data {sentiment_data, stock_close, stock_high, stock_low, stock_open, time_stamp, stock_volume}
+   * @returns stock data {stock_id, hype_meter, impact_factor, stock_volume, stock_close, stock_high, stock_low, stock_open, time_stamp}
    */
   public async getStockData(
     ticker: string,
