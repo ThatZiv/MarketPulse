@@ -64,15 +64,12 @@ jest.mock("@/lib/dataHandler", () => {
   });
 });
 
-import { ReactNode } from "react";
+import { ReactNode, createContext, useContext } from "react";
 
 jest.mock("@/components/InfoTooltip", () => ({
   __esModule: true,
   default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
-
-
-import React, { ReactNode, createContext, useContext } from "react";
 
 type SelectContextType = {
   onChange: (value: string) => void;
@@ -117,18 +114,13 @@ jest.mock("@/components/ui/select", () => {
     }) => {
       const { onChange } = useContext(SelectContext);
       return (
-        <div
-          role="option"
-          data-value={value}
-          onClick={() => onChange(value)}
-        >
+        <div role="option" data-value={value} onClick={() => onChange(value)}>
           {children}
         </div>
       );
     },
   };
 });
-
 
 jest.mock("@/lib/Calculator", () => {
   const instanceMethods = {
