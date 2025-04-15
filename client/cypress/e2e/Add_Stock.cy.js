@@ -46,5 +46,6 @@ describe("Add Stock Test", () => {
     cy.get("button")
       .contains("I understand the consequences of removing this stock.")
       .click();
+    cy.wait(1000);
   });
 });

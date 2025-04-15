@@ -35,7 +35,8 @@ describe("Edit Stock Test", () => {
     cy.get("button").contains("Edit").click();
 
     cy.get(":nth-child(3) > :nth-child(2) > .inline-flex").click();
-    cy.wait(1000);
+    cy.wait(100);
     cy.get("button").contains("Submit").click();
+    cy.wait(1000);
   });
 });
