@@ -22,7 +22,7 @@ describe("Stock Purchase History", () => {
     cy.get("text").contains("Shares");
 
     // Other elememnts
-    cy.get("div").contains("was lost from your last sale.");
+    cy.get("div").contains("was made from your last sale.");
     cy.get("div").contains("average price per share.");
     cy.get("div").contains("has been bought in total.");
     cy.get("div").contains("shares currently owned.");
