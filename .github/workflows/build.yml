@@ -28,6 +28,9 @@ jobs:
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       VITE_SUPABASE_KEY: ${{ secrets.VITE_SUPABASE_KEY }}
       VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+      TEST_LOGIN_EMAIL: ${{ secrets.TEST_LOGIN_EMAIL}}
+      TEST_LOGIN_PASSWORD: ${{ secrets.TEST_LOGIN_PASSWORD}}
+      
     runs-on: ubuntu-latest
     steps:
       - name: Restore node_modules from cache
