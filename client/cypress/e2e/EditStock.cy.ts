@@ -1,4 +1,8 @@
 describe("Edit Stock Test", () => {
+  beforeEach(() => {
+    // increase screen res so toast does not block buttons
+    cy.viewport(1920, 1080);
+  });
   it("Edit Stock", () => {
     cy.visit("http://localhost:5173/");
 

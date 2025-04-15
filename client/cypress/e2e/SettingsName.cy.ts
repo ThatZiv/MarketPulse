@@ -5,6 +5,10 @@
 // would be possible for a typical user.
 
 describe("Change first and last name", () => {
+  beforeEach(() => {
+    // increase screen res so toast does not block buttons
+    cy.viewport(1920, 1080);
+  });
   it("Name Change 1", () => {
     cy.visit("http://localhost:5173/");
 
@@ -21,9 +25,9 @@ describe("Change first and last name", () => {
 
     cy.get("span").contains("Settings").click();
     cy.wait(200);
-    cy.get('input[name="first_name"]').type("{selectAll}John");
+    cy.get('input[name="first_name"]').type("{selectAll}").type("John");
     cy.wait(200);
-    cy.get('input[name="last_name"]').type("{selectAll}Doe");
+    cy.get('input[name="last_name"]').type("{selectAll}").type("Doe");
 
     cy.wait(50);
     cy.get("button").contains("Save Changes").click();
@@ -49,9 +53,9 @@ describe("Change first and last name", () => {
 
     cy.get("span").contains("Settings").click();
     cy.wait(200);
-    cy.get('input[name="first_name"]').type("{selectAll}Bill");
+    cy.get('input[name="first_name"]').type("{selectAll}").type("Bill");
     cy.wait(200);
-    cy.get('input[name="last_name"]').type("{selectAll}Smith");
+    cy.get('input[name="last_name"]').type("{selectAll}").type("Smith");
 
     cy.wait(50);
     cy.get("button").contains("Save Changes").click();
