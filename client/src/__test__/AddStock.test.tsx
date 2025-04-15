@@ -313,9 +313,5 @@ describe("StockPage Sanity Test", () => {
     const submitButtons = screen.getAllByRole("button", { name: /submit/i });
     await userEvent.click(submitButtons[0]);
 
-    // Uncomment if success toast assertion is needed
-    // await waitFor(() => {
-    //   expect(screen.getByText(/stock data saved successfully/i)).toBeInTheDocument();
-    // });
   });
 });
