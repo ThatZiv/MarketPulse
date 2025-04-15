@@ -64,10 +64,13 @@ jest.mock("@/lib/dataHandler", () => {
   });
 });
 
+import { ReactNode } from "react";
+
 jest.mock("@/components/InfoTooltip", () => ({
   __esModule: true,
-  default: ({ children }: any) => <div>{children}</div>,
+  default: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
+
 
 import React, { ReactNode, createContext, useContext } from "react";
 
