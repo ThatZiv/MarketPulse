@@ -14,6 +14,7 @@ import { useNavigate, useLocation } from "react-router";
 import { toast } from "sonner";
 import { useGlobal } from "@/lib/GlobalProvider";
 import { actions } from "@/lib/constants";
+import { useQueryClient } from "@tanstack/react-query";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_KEY;
@@ -78,7 +79,7 @@ interface SupabaseProviderProps {
 
 export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
   const supabase = React.useMemo(() => supabaseClient, []);
-
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
   const { state, dispatch } = useGlobal();
@@ -109,6 +110,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     getData();
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        // this actually does nothing
         setUser(session?.user ?? null);
         setSession(session ?? null);
       }
@@ -117,6 +119,7 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
   const displayName = React.useMemo(() => {
@@ -285,9 +288,10 @@ export const SupabaseProvider = ({ children }: SupabaseProviderProps) => {
     const res = await supabase.auth.signOut();
     setUser(null);
     setSession(null);
-    navigate("/auth");
+    queryClient.removeQueries(); // clear all cache on logout
+    await navigate("/auth");
     return res;
-  }, [navigate, supabase.auth]);
+  }, [navigate, supabase.auth, queryClient]);
 
   return (
     <SupabaseContext.Provider
