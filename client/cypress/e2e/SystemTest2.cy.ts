@@ -5,11 +5,12 @@ describe("Stock Purchase History", () => {
   it.skip("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
     cy.visit("http://localhost:5173/");
     //Login
-    cy.get('input[name="email"]').type("test2025@test.com");
-    cy.get('input[name="password"]').type("Password123!");
+    const password = Cypress.env("password");
+    const email = Cypress.env("email");
 
-    cy.get("button").contains("Login").click();
+    cy.get('input[name="email"]').type(email);
 
+    cy.get('input[name="password"]').type(password);
     //Agree to disclaimer
     cy.get("button").contains("I Agree").click();
 
