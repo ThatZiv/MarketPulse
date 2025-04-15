@@ -1,12 +1,6 @@
 import StockPage from "@/pages/StockSelection";
 import { describe, test, afterEach, beforeAll } from "@jest/globals";
-import {
-  render,
-  waitFor,
-  screen,
-  cleanup,
-  act,
-} from "@testing-library/react";
+import { render, waitFor, screen, cleanup, act } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@testing-library/jest-dom";
@@ -89,17 +83,37 @@ const SelectContext = createContext<SelectContextType>({
 
 jest.mock("@/components/ui/select", () => {
   return {
-    Select: ({ children, onValueChange }: { children: ReactNode; onValueChange: (value: string) => void }) => (
+    Select: ({
+      children,
+      onValueChange,
+    }: {
+      children: ReactNode;
+      onValueChange: (value: string) => void;
+    }) => (
       <SelectContext.Provider value={{ onChange: onValueChange }}>
         <div>{children}</div>
       </SelectContext.Provider>
     ),
-    SelectTrigger: ({ children }: { children: ReactNode }) => <button aria-label="Select Stock">{children}</button>,
+    SelectTrigger: ({ children }: { children: ReactNode }) => (
+      <button aria-label="Select Stock">{children}</button>
+    ),
     SelectValue: () => <span>Select Value</span>,
-    SelectContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-    SelectGroup: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-    SelectLabel: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-    SelectItem: ({ children, value }: { children: ReactNode; value: string }) => {
+    SelectContent: ({ children }: { children: ReactNode }) => (
+      <div>{children}</div>
+    ),
+    SelectGroup: ({ children }: { children: ReactNode }) => (
+      <div>{children}</div>
+    ),
+    SelectLabel: ({ children }: { children: ReactNode }) => (
+      <div>{children}</div>
+    ),
+    SelectItem: ({
+      children,
+      value,
+    }: {
+      children: ReactNode;
+      value: string;
+    }) => {
       const { onChange } = useContext(SelectContext);
       return (
         <div role="option" data-value={value} onClick={() => onChange(value)}>
@@ -162,10 +176,14 @@ describe("StockPage Sanity Test", () => {
     const teslaOption = await screen.findByRole("option", { name: /tesla/i });
     await userEvent.click(teslaOption);
 
-    const switchToggle = await screen.findByRole("switch", { name: /do you own this stock/i });
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
     await userEvent.click(switchToggle);
 
-    const addTransactionBtn = await screen.findByRole("button", { name: /add transaction/i });
+    const addTransactionBtn = await screen.findByRole("button", {
+      name: /add transaction/i,
+    });
     await userEvent.click(addTransactionBtn);
 
     const sharesInput = screen.getByLabelText(/shares/i);
@@ -177,13 +195,19 @@ describe("StockPage Sanity Test", () => {
   });
 
   test("UTC22 - Invalid price input shows error", async () => {
-    const teslaOptions = await screen.findAllByRole("option", { name: /tesla/i });
+    const teslaOptions = await screen.findAllByRole("option", {
+      name: /tesla/i,
+    });
     await userEvent.click(teslaOptions[0]);
 
-    const switchToggle = await screen.findByRole("switch", { name: /do you own this stock/i });
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
     await userEvent.click(switchToggle);
 
-    const addTransactionBtn = await screen.findByRole("button", { name: /add transaction/i });
+    const addTransactionBtn = await screen.findByRole("button", {
+      name: /add transaction/i,
+    });
     await userEvent.click(addTransactionBtn);
 
     const priceInput = screen.getByLabelText(/price/i);
@@ -199,19 +223,28 @@ describe("StockPage Sanity Test", () => {
   });
 
   test("UTC23 - Remove button deletes entry (no confirmation dialog)", async () => {
-    const teslaOptions = await screen.findAllByRole("option", { name: /tesla/i });
+    const teslaOptions = await screen.findAllByRole("option", {
+      name: /tesla/i,
+    });
     await userEvent.click(teslaOptions[0]);
 
-    const switchToggle = await screen.findByRole("switch", { name: /do you own this stock/i });
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
     await userEvent.click(switchToggle);
 
-    const addTransactionBtn = await screen.findByRole("button", { name: /add transaction/i });
+    const addTransactionBtn = await screen.findByRole("button", {
+      name: /add transaction/i,
+    });
     await userEvent.click(addTransactionBtn);
 
     expect(screen.getByLabelText(/shares/i)).toBeInTheDocument();
 
     const removeButtons = screen.getAllByRole("button");
-    const removeBtn = removeButtons.find((btn) => btn.innerHTML.toLowerCase().includes("trash")) ?? removeButtons[removeButtons.length - 1];
+    const removeBtn =
+      removeButtons.find((btn) =>
+        btn.innerHTML.toLowerCase().includes("trash")
+      ) ?? removeButtons[removeButtons.length - 1];
     await userEvent.click(removeBtn);
 
     await waitFor(() => {
@@ -220,10 +253,14 @@ describe("StockPage Sanity Test", () => {
   });
 
   test("UTC24 - Submitting with no purchase entry shows error", async () => {
-    const teslaOptions = await screen.findAllByRole("option", { name: /tesla/i });
+    const teslaOptions = await screen.findAllByRole("option", {
+      name: /tesla/i,
+    });
     await userEvent.click(teslaOptions[0]);
 
-    const switchToggle = await screen.findByRole("switch", { name: /do you own this stock/i });
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
     await userEvent.click(switchToggle);
 
     const investmentInput = screen.getByLabelText(/Desired Investment/i);
@@ -233,21 +270,29 @@ describe("StockPage Sanity Test", () => {
     const submitButtons = screen.getAllByRole("button", { name: /submit/i });
     await userEvent.click(submitButtons[0]);
 
-    expect(await screen.findByText(/at least one purchase entry is required/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/at least one purchase entry is required/i)
+    ).toBeInTheDocument();
   });
 
   test("UTC25 - Valid data triggers save toast", async () => {
-    const teslaOptions = await screen.findAllByRole("option", { name: /tesla/i });
+    const teslaOptions = await screen.findAllByRole("option", {
+      name: /tesla/i,
+    });
     await userEvent.click(teslaOptions[0]);
 
-    const switchToggle = await screen.findByRole("switch", { name: /do you own this stock/i });
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
     await userEvent.click(switchToggle);
 
     const investmentInput = screen.getByLabelText(/Desired Investment/i);
     await userEvent.clear(investmentInput);
     await userEvent.type(investmentInput, "200");
 
-    const addTransactionBtn = await screen.findByRole("button", { name: /add transaction/i });
+    const addTransactionBtn = await screen.findByRole("button", {
+      name: /add transaction/i,
+    });
     await userEvent.click(addTransactionBtn);
 
     const today = new Date();
@@ -267,5 +312,6 @@ describe("StockPage Sanity Test", () => {
 
     const submitButtons = screen.getAllByRole("button", { name: /submit/i });
     await userEvent.click(submitButtons[0]);
+
   });
 });
