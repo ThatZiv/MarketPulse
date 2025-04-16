@@ -211,7 +211,6 @@ describe("Add Stock Form Component Testcase", () => {
     expect(investmentInput).toHaveValue(500);
     const submitBtn = screen.getByRole("button", { name: /submit/i });
     await userEvent.click(submitBtn);
-    screen.debug();
     const errorMsg = await screen.findByText(/please select a stock/i);
     expect(errorMsg).toBeInTheDocument();
     expect(errorMsg).toHaveClass('text-red-500');
@@ -320,8 +319,6 @@ describe("Add Stock Form Component Testcase", () => {
     });
     expect(dateInput.validity.rangeOverflow).toBe(true);
     expect(dateInput.checkValidity()).toBe(false);
-    screen.debug(undefined, Infinity);
-
   });
   test("UTC21 - Invalid shares input shows error", async () => {
     const teslaOption = await screen.findByRole("option", { name: /tesla/i });
