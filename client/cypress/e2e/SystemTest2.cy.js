@@ -2,7 +2,7 @@ describe("Stock Purchase History", () => {
   //Set to be skiped when run so it will not be run by git actions
   //Needs the python server running
   //Need to change client .env varriable VITE_API_URL from localhost to 0.0.0.0 so that it will connect to the python server
-  //Change the bellow it.skip(...) to it(...) 
+  //Change the bellow it.skip(...) to it(...)
   it.skip("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
     cy.visit("http://localhost:5173/");
     //Login
