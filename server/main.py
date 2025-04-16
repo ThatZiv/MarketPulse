@@ -124,4 +124,4 @@ def realtime():
 
 if __name__ == '__main__':
 
-    app.run(debug=not LEGACY, host='0.0.0.0')
+    app.run(debug=LEGACY, host='0.0.0.0')
