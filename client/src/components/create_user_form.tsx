@@ -233,16 +233,18 @@ export function CreateForm({
               data-callback="handleSignInWithGoogle"
               data-auto_prompt="false"
             ></div>
+            <div className="flex justify-center">
+              <div
+                className="g_id_signin"
+                data-type="standard"
+                data-shape="rectangular"
+                data-theme="outline"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left"
+              ></div>
+            </div>
 
-            <div
-              className="g_id_signin"
-              data-type="standard"
-              data-shape="rectangular"
-              data-theme="outline"
-              data-text="signin_with"
-              data-size="large"
-              data-logo_alignment="left"
-            ></div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <span className="link ">
