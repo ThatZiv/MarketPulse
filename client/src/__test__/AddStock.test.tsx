@@ -1,6 +1,13 @@
 import StockPage from "@/pages/StockSelection";
 import { describe, test, afterEach, beforeAll } from "@jest/globals";
-import { render, waitFor, screen, cleanup, act, fireEvent } from "@testing-library/react";
+import {
+  render,
+  waitFor,
+  screen,
+  cleanup,
+  act,
+  fireEvent,
+} from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@testing-library/jest-dom";
@@ -9,9 +16,9 @@ import { ReactNode, createContext, useContext } from "react";
 
 beforeAll(() => {
   global.ResizeObserver = class {
-    observe() { }
-    unobserve() { }
-    disconnect() { }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
   };
 });
 
@@ -79,7 +86,7 @@ type SelectContextType = {
 };
 
 const SelectContext = createContext<SelectContextType>({
-  onChange: () => { },
+  onChange: () => {},
 });
 
 jest.mock("@/components/ui/select", () => {
@@ -177,11 +184,11 @@ describe("Add Stock Form Component Testcase", () => {
     const question1 = screen.getByText(/What is the ticker\?/i);
     const question2 = screen.getByText(/Do you own this stock?/i);
     const question3 = screen.getByText(/Desired Investment/i);
-    const heading = screen.getByRole('heading', { name: /Add New Stock/i });
+    const heading = screen.getByRole("heading", { name: /Add New Stock/i });
     const submitBtn = screen.getByRole("button", { name: /Submit/i });
     const backBtn = screen.getByRole("button", { name: /Back/i });
-    const input = document.getElementById('cashToInvest');
-    const switchButton = screen.getByRole('switch');
+    const input = document.getElementById("cashToInvest");
+    const switchButton = screen.getByRole("switch");
     expect(heading).toBeInTheDocument();
     expect(question1).toBeInTheDocument();
     expect(question2).toBeInTheDocument();
@@ -190,8 +197,8 @@ describe("Add Stock Form Component Testcase", () => {
     expect(backBtn).toBeInTheDocument();
     expect(input).toBeInTheDocument();
     expect(switchButton).toBeInTheDocument();
-    expect(switchButton).toHaveAttribute('id', 'hasStocks');
-    expect(switchButton).toHaveAttribute('aria-checked', 'false');
+    expect(switchButton).toHaveAttribute("id", "hasStocks");
+    expect(switchButton).toHaveAttribute("aria-checked", "false");
     expect(switchButton).toBeDisabled();
   });
   test("UTC16 - Investment amount should not be empty", async () => {
@@ -200,21 +207,21 @@ describe("Add Stock Form Component Testcase", () => {
     await userEvent.click(teslaOption);
     const submitBtn = screen.getByRole("button", { name: /submit/i });
     await userEvent.click(submitBtn);
-    const input = document.getElementById('cashToInvest');
+    const input = document.getElementById("cashToInvest");
     expect(input).toBeInTheDocument();
     expect(input).toBeRequired();
     expect(handleSubmit).not.toHaveBeenCalled();
   });
   test("UTC17 - Stock ticker is not selected", async () => {
-    const investmentInput = document.getElementById('cashToInvest')!;
-    await userEvent.type(investmentInput, '500');
+    const investmentInput = document.getElementById("cashToInvest")!;
+    await userEvent.type(investmentInput, "500");
     expect(investmentInput).toHaveValue(500);
     const submitBtn = screen.getByRole("button", { name: /submit/i });
     await userEvent.click(submitBtn);
     const errorMsg = await screen.findByText(/please select a stock/i);
     expect(errorMsg).toBeInTheDocument();
-    expect(errorMsg).toHaveClass('text-red-500');
-    const allDivs = screen.getAllByRole('generic');
+    expect(errorMsg).toHaveClass("text-red-500");
+    const allDivs = screen.getAllByRole("generic");
     expect(allDivs[0]).toContainElement(errorMsg);
   });
   test("UTC18 - Clicking Yes for the Stock Transaction History question.", async () => {
@@ -238,7 +245,7 @@ describe("Add Stock Form Component Testcase", () => {
       "Total Purchased",
       "Total Sold",
       "Current Shares",
-    ]
+    ];
     expect(label).toBeInTheDocument();
     expect(addTransactionBtn).toBeInTheDocument();
     for (const rule of transactionRules) {
@@ -262,23 +269,22 @@ describe("Add Stock Form Component Testcase", () => {
     const dateLabel = screen.getByLabelText(/date/i);
     const sharesLabel = screen.getByLabelText(/shares/i);
     const priceLabel = screen.getByLabelText(/price \(\$\)/i);
-    const buyOption = screen.getByRole('option', { name: /buy/i });
-    const sellOption = screen.getByRole('option', { name: /sell/i });
-    const dateInput = document.getElementById('date-0');
-    const sharesInput = document.getElementById('shares-0');
-    const priceInput = document.getElementById('price-0');
+    const buyOption = screen.getByRole("option", { name: /buy/i });
+    const sellOption = screen.getByRole("option", { name: /sell/i });
+    const dateInput = document.getElementById("date-0");
+    const sharesInput = document.getElementById("shares-0");
+    const priceInput = document.getElementById("price-0");
     expect(dateLabel).toBeInTheDocument();
     expect(sharesLabel).toBeInTheDocument();
     expect(priceLabel).toBeInTheDocument();
     expect(buyOption).toBeInTheDocument();
     expect(sellOption).toBeInTheDocument();
     expect(dateInput).toBeInTheDocument();
-    expect(dateInput).toHaveAttribute('type', 'datetime-local');
+    expect(dateInput).toHaveAttribute("type", "datetime-local");
     expect(sharesInput).toBeInTheDocument();
-    expect(sharesInput).toHaveAttribute('type', 'number');
+    expect(sharesInput).toHaveAttribute("type", "number");
     expect(priceInput).toBeInTheDocument();
-    expect(priceInput).toHaveAttribute('type', 'number');
-
+    expect(priceInput).toHaveAttribute("type", "number");
   });
   test("UTC20 - Investment history dates shouldn’t be less than 2000", async () => {
     const teslaOption = await screen.findByRole("option", { name: /tesla/i });
@@ -291,9 +297,9 @@ describe("Add Stock Form Component Testcase", () => {
       name: /add transaction/i,
     });
     await userEvent.click(addTransactionBtn);
-    const dateInput = document.getElementById('date-0') as HTMLInputElement;
+    const dateInput = document.getElementById("date-0") as HTMLInputElement;
     fireEvent.change(dateInput, {
-      target: { value: '1999-12-30T14:23' }
+      target: { value: "1999-12-30T14:23" },
     });
     expect(dateInput.validity.rangeUnderflow).toBe(true);
     expect(dateInput.checkValidity()).toBe(false);
@@ -309,7 +315,7 @@ describe("Add Stock Form Component Testcase", () => {
       name: /add transaction/i,
     });
     await userEvent.click(addTransactionBtn);
-    const dateInput = document.getElementById('date-0') as HTMLInputElement;
+    const dateInput = document.getElementById("date-0") as HTMLInputElement;
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(now.getDate() + 1);
