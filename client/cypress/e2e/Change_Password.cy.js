@@ -50,6 +50,6 @@ describe("Change Password test", () => {
     cy.wait(10);
     cy.get("button").contains("Confirm").click();
     // neeed to wait so that request gets through
-    cy.wait(500)
+    cy.wait(500);
   });
 });
