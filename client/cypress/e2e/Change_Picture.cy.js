@@ -1,4 +1,8 @@
 describe("Change Profile Picture test", () => {
+  beforeEach(() => {
+    // increase screen res so toast does not block buttons
+    cy.viewport(1920, 1080);
+  });
   it("Update the users profile picture", () => {
     cy.visit("http://localhost:5173/");
     const password = Cypress.env("password");

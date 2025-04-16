@@ -26,7 +26,7 @@ describe("Change Password test", () => {
     cy.get('input[name="password"]').type(password + "new");
     cy.get('input[name="confirm_password"]').type(password + "new");
 
-    cy.get("button").contains("Save password").click();
+    cy.get("button").contains("Save Password").click();
     cy.wait(10);
     cy.get("button").contains("Confirm").click();
     cy.wait(50);
@@ -46,7 +46,7 @@ describe("Change Password test", () => {
     cy.get('input[name="password"]').type(password);
     cy.get('input[name="confirm_password"]').type(password);
 
-    cy.get("button").contains("Save password").click();
+    cy.get("button").contains("Save Password").click();
     cy.wait(10);
     cy.get("button").contains("Confirm").click();
   });
