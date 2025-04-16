@@ -45,7 +45,7 @@ export function LoginForm({
   const { signInWithEmail, signInWithGoogle } = useSupabase();
   const [isFlipped, setIsFlipped] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   const formSchema = z.object({
     email: z.string().max(50).email(),
     password: z.string().min(8).max(50),

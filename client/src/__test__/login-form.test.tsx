@@ -22,9 +22,8 @@ jest.mock("sonner", () => ({
 }));
 
 jest.mock("@/types/google_vars", () => ({
-  googleClientId: " "
-}))
-
+  googleClientId: " ",
+}));
 
 const mockSignInWithEmail = jest.fn();
 const mockSignInWithGoogle = jest.fn();

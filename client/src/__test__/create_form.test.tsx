@@ -26,9 +26,8 @@ jest.mock("@/database/SupabaseProvider", () => ({
 }));
 
 jest.mock("@/types/google_vars", () => ({
-  googleClientId: " "
-}))
-
+  googleClientId: " ",
+}));
 
 afterEach(() => {
   cleanup();

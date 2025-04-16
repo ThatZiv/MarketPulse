@@ -37,9 +37,8 @@ jest.mock("lucide-react", () => ({
 }));
 
 jest.mock("@/types/google_vars", () => ({
-  googleClientId: " "
-}))
-
+  googleClientId: " ",
+}));
 
 jest.mock("@/database/SupabaseProvider", () => ({
   useSupabase: () => {
