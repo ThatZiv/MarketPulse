@@ -1,7 +1,7 @@
 # pylint: disable=all
-from sqlalchemy import create_engine, Table, Column, MetaData,  ForeignKey, String, PrimaryKeyConstraint, Float, Date, inspect
+from sqlalchemy import Column, ForeignKey, String, PrimaryKeyConstraint, Float, Date
 from sqlalchemy.dialects.postgresql import JSONB, INTEGER
-from sqlalchemy.orm import mapped_column, relationship, declarative_base
+from sqlalchemy.orm import relationship, declarative_base
 
 
 Base = declarative_base()
@@ -12,17 +12,21 @@ def dump_datetime(value):
         return None
     return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
+
+# Definitions of tables used to access database
 class Account(Base):
     __tablename__ = "Account"
 
     user_id = Column("user_id", INTEGER, primary_key=True)
     first_name = Column("first_name", String)
     last_name = Column("last_name", String)
+    profile_picture = Column("profile_picture", String)
 
-    def __init__(self, user_id, first_name, last_name):
+    def __init__(self, user_id, first_name, last_name, profile_picture):
         self.user_id = user_id
         self.first_name = first_name
         self.last_name = last_name
+        self.profile_picture = profile_picture
 
 
 class Stocks(Base):
@@ -47,16 +51,19 @@ class User_Stocks(Base):
 
     user_id = Column("user_id", ForeignKey("Account.user_id"))
     stock_id = Column("stock_id", ForeignKey("Stocks.stock_id"))
-    amount_owned = Column("amount_owned", INTEGER)
+    shares_owned = Column("shares_owned", Float)
+    created_at = Column("created_at", Date)
+    desired_investiture = Column("desired_investiture", Float)
+
 
     __table_args__ = (PrimaryKeyConstraint('user_id', 'stock_id'),)
 
-    def __init__(self, user_id, stock_id, amount_owned):
+    def __init__(self, user_id, stock_id, shares_owned, created_at, desired_investiture):
         self.user_id = user_id
-        self.first_name = first_name
-        self.last_name = last_name
-
-    
+        self.stock_id = stock_id
+        self.shares_owned = shares_owned
+        self.created_at = created_at
+        self.desired_investiture = desired_investiture
 
 
 class Stock_Info(Base):

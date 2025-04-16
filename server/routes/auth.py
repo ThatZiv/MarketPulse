@@ -59,7 +59,7 @@ def ticker_logo():
                 f.write(fallback.content)
     return send_file(f'{cache_dir}/{ticker}.png', mimetype='image/png')
 
-#What do we want this path to return?
+
 @auth_bp.route('stockchart', methods=['GET'])
 @jw.jwt_required()
 def chart():
