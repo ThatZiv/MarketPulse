@@ -23,7 +23,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { toast } from "sonner";
-
+import { googleClientId } from "@/types/google_vars";
 type googleResponse = {
   clientId: string;
   client_id: string;
@@ -168,7 +168,7 @@ export function LoginForm({
 
             <div
               id="g_id_onload"
-              data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"
+              data-client_id={googleClientId}
               data-context="signin"
               data-ux_mode="popup"
               data-callback="handleSignInWithGoogle"
