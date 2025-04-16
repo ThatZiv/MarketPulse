@@ -185,7 +185,7 @@ describe("dataHandler", () => {
           payload: {
             stock_ticker: "TICKER",
             data: 105,
-            timestamp: new Date("2023-01-01 12:05:00 UTC").getTime(),
+            timestamp: new Date("2023-01-01 12:05:00").getTime(),
           },
         });
         expect(result).toEqual(mockData);
