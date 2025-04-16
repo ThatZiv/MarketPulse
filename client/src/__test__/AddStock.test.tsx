@@ -45,6 +45,7 @@ jest.mock("@/database/SupabaseProvider", () => ({
         delete: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         then: jest.fn().mockImplementation((cb) => cb({ error: null })),
+        insert: jest.fn().mockReturnThis(),
       }),
     },
   }),
