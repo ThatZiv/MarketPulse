@@ -6,7 +6,7 @@
 import os
 import threading
 import flask_jwt_extended as jw
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from dotenv import load_dotenv
 from flask_cors import CORS
 from sqlalchemy import select, exc
@@ -124,4 +124,4 @@ def realtime():
 
 if __name__ == '__main__':
 
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=LEGACY, host='0.0.0.0')

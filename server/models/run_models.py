@@ -34,7 +34,6 @@ def run_models():
     stock_list = select(Stocks)
 
     stock_out = session.connection().execute(stock_list).all()
-
     for stock in stock_out:
         stock_q= select(Stock_Info).where(Stock_Info.stock_id == stock.stock_id)
         output = session.connection().execute(stock_q).all()

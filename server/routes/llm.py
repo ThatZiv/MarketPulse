@@ -5,6 +5,7 @@
 # pylint: disable=too-many-branches
 
 import os
+from dotenv import load_dotenv
 import flask_jwt_extended as jw
 from flask import Blueprint, Response, request
 # pylint: disable=no-name-in-module
@@ -20,8 +21,8 @@ from routes.access import get_forcasts, create_session
 from cache import cache
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
-
-LLM_MODEL_PATH = os.getenv("LLM_MODEL_PATH")
+load_dotenv()
+LLM_MODEL_PATH = os.environ.get("LLM_MODEL_PATH")
 
 # DOWNLOAD FROM: https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF
 # OR https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q8_0-GGUF/tree/main
