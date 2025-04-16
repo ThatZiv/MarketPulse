@@ -23,7 +23,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { toast } from "sonner";
-
+import { googleClientId } from "@/types/google_vars";
 type googleResponse = {
   clientId: string;
   client_id: string;
@@ -45,8 +45,7 @@ export function LoginForm({
   const { signInWithEmail, signInWithGoogle } = useSupabase();
   const [isFlipped, setIsFlipped] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
+  
   const formSchema = z.object({
     email: z.string().max(50).email(),
     password: z.string().min(8).max(50),

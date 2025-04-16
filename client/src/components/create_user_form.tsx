@@ -21,6 +21,7 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { googleClientId } from "@/types/google_vars";
 
 type googleResponse = {
   clientId: string;
@@ -43,8 +44,6 @@ export function CreateForm({
   const [, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   const formSchema = z
     .object({

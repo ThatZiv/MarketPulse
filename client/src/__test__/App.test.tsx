@@ -15,6 +15,11 @@ jest.mock("lucide-react", () => ({
   EyeOff: () => "EyeOffIcon",
 }));
 
+jest.mock("@/types/google_vars", () => ({
+  googleClientId: " "
+}))
+
+
 // Needed to wrap in Router since it gets router App.tsx
 test("Renders the login page", async () => {
   render(
