@@ -1,6 +1,6 @@
 import StockPage from "@/pages/StockSelection";
 import { describe, test, afterEach, beforeAll } from "@jest/globals";
-import { render, waitFor, screen, cleanup, act } from "@testing-library/react";
+import { render, waitFor, screen, cleanup, act, fireEvent } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "@testing-library/jest-dom";
@@ -260,7 +260,6 @@ describe("Add Stock Form Component Testcase", () => {
       name: /add transaction/i,
     });
     await userEvent.click(addTransactionBtn);
-    screen.debug(undefined, Infinity);
     const dateLabel = screen.getByLabelText(/date/i);
     const sharesLabel = screen.getByLabelText(/shares/i);
     const priceLabel = screen.getByLabelText(/price \(\$\)/i);
@@ -282,8 +281,47 @@ describe("Add Stock Form Component Testcase", () => {
     expect(priceInput).toHaveAttribute('type', 'number');
 
   });
-  test("UTC20 - Investment history dates shouldn’t be greater than present date and less than 1999", async () => {
-    //Still need to work on this test case
+  test("UTC20 - Investment history dates shouldn’t be less than 2000", async () => {
+    const teslaOption = await screen.findByRole("option", { name: /tesla/i });
+    await userEvent.click(teslaOption);
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
+    await userEvent.click(switchToggle);
+    const addTransactionBtn = await screen.findByRole("button", {
+      name: /add transaction/i,
+    });
+    await userEvent.click(addTransactionBtn);
+    const dateInput = document.getElementById('date-0') as HTMLInputElement;
+    fireEvent.change(dateInput, {
+      target: { value: '1999-12-30T14:23' }
+    });
+    expect(dateInput.validity.rangeUnderflow).toBe(true);
+    expect(dateInput.checkValidity()).toBe(false);
+  });
+  test("UTC20 - Investment history dates shouldn’t be greater than present date", async () => {
+    const teslaOption = await screen.findByRole("option", { name: /tesla/i });
+    await userEvent.click(teslaOption);
+    const switchToggle = await screen.findByRole("switch", {
+      name: /do you own this stock/i,
+    });
+    await userEvent.click(switchToggle);
+    const addTransactionBtn = await screen.findByRole("button", {
+      name: /add transaction/i,
+    });
+    await userEvent.click(addTransactionBtn);
+    const dateInput = document.getElementById('date-0') as HTMLInputElement;
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    const future_date = tomorrow.toISOString().slice(0, 16);
+    fireEvent.change(dateInput, {
+      target: { value: future_date },
+    });
+    expect(dateInput.validity.rangeOverflow).toBe(true);
+    expect(dateInput.checkValidity()).toBe(false);
+    screen.debug(undefined, Infinity);
+
   });
   test("UTC21 - Invalid shares input shows error", async () => {
     const teslaOption = await screen.findByRole("option", { name: /tesla/i });
