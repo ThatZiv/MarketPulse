@@ -129,7 +129,7 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 │   ├── test_data/
 │   ├── main.py -- entry point (with some additional routes & job scheduler)
 │   ├── engine.py -- database pooler
-│   ├── stockdataload.py -- load stock data from yahoo into db
+│   ├── run_models_manually.py -- Add stock data and run the models manually 
 │   ├── .env.example
 │   └── .env -- you must copy this from .env.example
 ├── client/
@@ -221,9 +221,9 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 
 MarketPulse utilizes a wide array of third-party services to source it's data from.
 
-- [Yahoo Finance](https://pypi.org/project/yfinance/) - for historical and real-time stock data
+- [Yahoo Finance](https://pypi.org/project/yfinance/) - for historical and real-time stock data.  The most recent version needs to be installed to avoid errors.
 - [Reddit](https://www.reddit.com/dev/api/) - for social media sentiment
-- [DuckDuckGo](https://pypi.org/project/duckduckgo-search/) - for news sentiment
+- [DuckDuckGo](https://pypi.org/project/duckduckgo-search/) - for news sentiment.  The most recent version needs to be installed to avoid errors
 - [Logo Dev](https://logo.dev/) - for stock ticker logo images
 
 # Requirements
