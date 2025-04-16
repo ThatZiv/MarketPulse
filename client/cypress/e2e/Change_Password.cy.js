@@ -49,5 +49,7 @@ describe("Change Password test", () => {
     cy.get("button").contains("Save Password").click();
     cy.wait(10);
     cy.get("button").contains("Confirm").click();
+    // neeed to wait so that request gets through
+    cy.wait(500)
   });
 });
