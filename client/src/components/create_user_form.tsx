@@ -44,6 +44,8 @@ export function CreateForm({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
   const formSchema = z
     .object({
       email: z.string().min(2).max(50),
@@ -227,7 +229,7 @@ export function CreateForm({
             <div
               className="mt-3"
               id="g_id_onload"
-              data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"
+              data-client_id={googleClientId}
               data-context="signin"
               data-ux_mode="popup"
               data-callback="handleSignInWithGoogle"
