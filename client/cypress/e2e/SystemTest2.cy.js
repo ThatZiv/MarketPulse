@@ -1,7 +1,8 @@
 describe("Stock Purchase History", () => {
   //Set to be skiped when run so it will not be run by git actions
-  //Needs the python server running to work
-  //Need to change .env VITE_API_URL from localhost to 0.0.0.0 so that it will connect to the python server
+  //Needs the python server running
+  //Need to change client .env varriable VITE_API_URL from localhost to 0.0.0.0 so that it will connect to the python server
+  //Change the bellow it.skip(...) to it(...) 
   it.skip("Make Sure the purchase calculator is accurate based on users stock transaction history", () => {
     cy.visit("http://localhost:5173/");
     //Login
@@ -11,6 +12,8 @@ describe("Stock Purchase History", () => {
     cy.get('input[name="email"]').type(email);
 
     cy.get('input[name="password"]').type(password);
+
+    cy.get("button").contains("Login").click();
     //Agree to disclaimer
     cy.get("button").contains("I Agree").click();
 
