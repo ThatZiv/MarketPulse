@@ -56,9 +56,10 @@ export default function Landing() {
     enabled: !!user,
   });
 
-  // global coroutine to cache in state
+  // global coroutine to cache in state (entrypoint)
   useQueries({
     queries: [
+      // user's stock transactions
       {
         queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
         // refetchInterval: () => (import.meta.env.PROD ? 1000 * 60 * 5 : 0),
@@ -89,6 +90,7 @@ export default function Landing() {
           return null;
         },
       },
+      // realtime stock prices for each stock the user has
       ...(stocks
         ?.map((stock) => [
           {
@@ -166,6 +168,7 @@ export default function Landing() {
     }
   }
 
+  // get stock images for each stock
   const stockImages = useQueries({
     queries:
       sortedStocks?.map((stock) => ({
@@ -175,6 +178,7 @@ export default function Landing() {
       })) || [],
   }).map((query) => query.data);
 
+  // cache stock image colors (this isn't necessary to cache as its client side)
   const stockColors = useQueries({
     queries:
       stockImages?.map((img) => ({
@@ -297,6 +301,7 @@ export default function Landing() {
   );
 }
 
+// component for stock cards on landing page
 function StockCard({
   stock,
   img,
