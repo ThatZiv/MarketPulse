@@ -36,7 +36,13 @@ createRoot(document.getElementById("root")!).render(
               <TooltipProvider delayDuration={100}>
                 <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
                   <App />
-                  <Toaster />
+                  <Toaster
+                    toastOptions={{
+                      classNames: {
+                        error: "text-red-600",
+                      },
+                    }}
+                  />
                 </ThemeProvider>
               </TooltipProvider>
             </ApiProvider>
