@@ -772,7 +772,7 @@ export default function StockPage() {
                         }`}
                       >
                         {calc.getProfit() !== calc.getProfit()
-                          ? "--"
+                          ? "$--"
                           : PurchaseHistoryCalculator.toDollar(
                               calc.getProfit()
                             )}
