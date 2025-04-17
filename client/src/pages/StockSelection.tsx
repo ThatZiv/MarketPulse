@@ -238,6 +238,7 @@ export default function StockPage() {
       );
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
+  // Function to fetch purchase history for a specific stock
 
   const fetchPurchaseHistory = async (ticker_id: string) => {
     try {
@@ -274,6 +275,7 @@ export default function StockPage() {
       console.error("Error fetching purchase history:", error);
     }
   };
+  // Function to handle form submission
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
