@@ -21,6 +21,7 @@ import {
 import { useSupabase } from "@/database/SupabaseProvider";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import { googleClientId } from "@/types/google_vars";
 
 type googleResponse = {
   clientId: string;
@@ -227,22 +228,24 @@ export function CreateForm({
             <div
               className="mt-3"
               id="g_id_onload"
-              data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"
+              data-client_id={googleClientId}
               data-context="signin"
               data-ux_mode="popup"
               data-callback="handleSignInWithGoogle"
               data-auto_prompt="false"
             ></div>
+            <div className="flex justify-center">
+              <div
+                className="g_id_signin"
+                data-type="standard"
+                data-shape="rectangular"
+                data-theme="outline"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left"
+              ></div>
+            </div>
 
-            <div
-              className="g_id_signin"
-              data-type="standard"
-              data-shape="rectangular"
-              data-theme="outline"
-              data-text="signin_with"
-              data-size="large"
-              data-logo_alignment="left"
-            ></div>
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
               <span className="link ">

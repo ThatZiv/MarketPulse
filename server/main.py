@@ -6,7 +6,7 @@
 import os
 import threading
 import flask_jwt_extended as jw
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, Response
 from dotenv import load_dotenv
 from flask_cors import CORS
 from sqlalchemy import select, exc
@@ -79,21 +79,14 @@ def create_session():
             session = sessionmaker(bind=get_engine())
     return session()
 
-
-@app.route('/test', methods=['GET', 'POST'])
-@jwt_required()
-def route():
-    return jsonify('hello')
-
 @app.route('/stockrealtime', methods = ['GET'] )
 @jwt_required()
 def realtime():
+    '''Handles a request from the page to make access get realtume stock data for a particular stock'''
     if request.method == 'GET':
         session = create_session()
         ticker = request.args['ticker']
-
         s_id = select(Stocks).where(Stocks.stock_ticker == ticker)
-
         try:
             output_id = stock_query_single(s_id, session)
         except exc.OperationalError:
@@ -131,4 +124,4 @@ def realtime():
 
 if __name__ == '__main__':
 
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=LEGACY, host='0.0.0.0')

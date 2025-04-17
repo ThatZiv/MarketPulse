@@ -23,7 +23,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/database/SupabaseProvider";
 import { toast } from "sonner";
-
+import { googleClientId } from "@/types/google_vars";
 type googleResponse = {
   clientId: string;
   client_id: string;
@@ -168,23 +168,23 @@ export function LoginForm({
 
             <div
               id="g_id_onload"
-              data-client_id="554299705421-su031i3j82o10cjpnss6b7qnualeparh.apps.googleusercontent.com"
+              data-client_id={googleClientId}
               data-context="signin"
               data-ux_mode="popup"
               data-callback="handleSignInWithGoogle"
               data-auto_prompt="false"
             ></div>
-
-            <div
-              className="g_id_signin"
-              data-type="standard"
-              data-shape="rectangular"
-              data-theme="outline"
-              data-text="signin_with"
-              data-size="large"
-              data-logo_alignment="left"
-            ></div>
-
+            <div className="flex justify-center">
+              <div
+                className="g_id_signin"
+                data-type="standard"
+                data-shape="rectangular"
+                data-theme="outline"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left"
+              ></div>
+            </div>
             <div className="mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <span className="text-blue-600 hover:text-blue-900 underline-offset-4">

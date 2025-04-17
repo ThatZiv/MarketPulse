@@ -1,8 +1,11 @@
 # pylint: disable=missing-module-docstring
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
+# pylint: disable=too-many-return-statements
+# pylint: disable=too-many-branches
 
 import os
+from dotenv import load_dotenv
 import flask_jwt_extended as jw
 from flask import Blueprint, Response, request
 # pylint: disable=no-name-in-module
@@ -18,8 +21,8 @@ from routes.access import get_forcasts, create_session
 from cache import cache
 
 llm_bp = Blueprint('llm', __name__, url_prefix='/llm')
-
-LLM_MODEL_PATH = os.getenv("LLM_MODEL_PATH")
+load_dotenv()
+LLM_MODEL_PATH = os.environ.get("LLM_MODEL_PATH")
 
 # DOWNLOAD FROM: https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-1.5B-GGUF
 # OR https://huggingface.co/hugging-quants/Llama-3.2-1B-Instruct-Q8_0-GGUF/tree/main
@@ -57,15 +60,14 @@ prompt = PromptTemplate(template=TEMPLATE, \
 @llm_bp.route('/stock', methods=['GET'])
 @jw.jwt_required()
 def llm__stock_route():
-    #""" Route for stock advice """
-    #if LLM_MODEL_PATH is None:
-    #    print("LLM_MODEL_PATH is not set")
-    #    return Response(status=500)
+    if LLM_MODEL_PATH is None:
+        print("LLM_MODEL_PATH is not set")
+        return Response(status=500)
 
-    #if not os.path.exists(LLM_MODEL_PATH):
-    #    print("LLM_MODEL_PATH file does not exist. \
-    #        Please download a gguf model from https://huggingface.co/models")
-    #    return Response(status=500)
+    if not os.path.exists(LLM_MODEL_PATH):
+        print("LLM_MODEL_PATH file does not exist. \
+            Please download a gguf model from https://huggingface.co/models")
+        return Response(status=500)
 
     ticker = request.args.get('ticker')
     current_user = jw.get_jwt_identity()
@@ -99,7 +101,7 @@ def llm__stock_route():
             user_info = select(User_Stock_Purchases).where(User_Stock_Purchases.stock_id == stock.stock_id).where(User_Stock_Purchases.user_id == current_user)
             user_output = session.connection().execute(user_info).all()
 
-            if not stock or not user_output:
+            if not stock:
                 return Response(status=500)
             output = {"output": stock, "user_info":user_output}
             cache.set(f"LLM_{ticker}{current_user}", output, timeout = 1800)

@@ -19,25 +19,23 @@ LOGODEV_API_KEY = os.getenv('LOGODEV_API_KEY')
 auth_bp.register_blueprint(llm_bp)
 
 def dump_datetime(value):
+    '''Change the data format into something that can be stored in db'''
     if value is None:
         return None
     return [value.strftime("%x"), value.strftime("%H:%M:%S")]
 
 def stock_query_single(query, session):
+    '''Function to make a query that returns the first row.  Takes the query and connection as args'''
     return session.connection().execute(query).first()
 
 def stock_query_all(query, session):
+    '''Function to make a query that returns all rows.  Takes the query and connection as args'''
     return session.connection().execute(query).all()
-
-@auth_bp.route('/private', methods=['GET', 'POST'])
-@jw.jwt_required()
-def private():
-    #current_user = jw.get_jwt_identity()
-    return 'Private route'
 
 @auth_bp.route('/logo', methods=['GET'])
 @jw.jwt_required()
 def ticker_logo():
+    '''Route to return stock images used on dashboard'''
     ticker = request.args.get('ticker')
     cache_dir = f"{os.getcwd()}/public/cache"
     if not ticker:
@@ -65,6 +63,7 @@ def ticker_logo():
 @auth_bp.route('stockchart', methods=['GET'])
 @jw.jwt_required()
 def chart():
+    '''Return stock_info table to be used for creating the stock chart. Takes stock ticker string as an arg'''
     ticker = request.args['ticker']
     limit = request.args.get('limit', 7)
     if not ticker or not limit:
@@ -92,8 +91,8 @@ def chart():
                                         'stock_volume' : i.stock_volume,
                                         'stock_open' : i.stock_open,
                                         'stock_high' : i.stock_high, 'stock_low' : i.stock_low,
-                                        'sentiment_data'  : i.sentiment_data,
-                                        'news_data': i.news_data,
+                                        'hype_meter'  : i.sentiment_data,
+                                        'impact_factor': i.news_data,
                                         'time_stamp' : dump_datetime(i.time_stamp) })
                 json_output.reverse()
                 session.close()
@@ -115,6 +114,7 @@ def chart():
 @auth_bp.route('forecast', methods=['GET'])
 @jw.jwt_required()
 def forecast_route():
+    '''Route to return model forecast data. Takes ticker string and lookback number as args'''
     ticker = request.args.get('ticker')
     lookback = request.args['lookback']
 

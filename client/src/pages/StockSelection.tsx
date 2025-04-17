@@ -575,28 +575,31 @@ export default function StockPage() {
                         Date
                       </label>
                     )}
-                    <input
-                      id={`date-${index}`}
-                      type="datetime-local"
-                      required
-                      value={purchase.date}
-                      min="2000-01-01T00:00"
-                      max={formatToday()}
-                      onChange={(e) => {
-                        handlePurchaseChange(
-                          index,
-                          "date",
-                          moment(e.target.value).format("YYYY-MM-DDTHH:mm")
-                        );
-                      }}
-                      onBlur={() => {
-                        handleSort(index);
-                      }}
-                      className="w-full border border-gray-300 bg-white text-black dark:text-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                    />
+
+                    <div>
+                      <input
+                        id={`date-${index}`}
+                        type="datetime-local"
+                        required
+                        value={purchase.date}
+                        min="2000-01-01T00:00"
+                        max={formatToday()}
+                        onChange={(e) => {
+                          handlePurchaseChange(
+                            index,
+                            "date",
+                            moment(e.target.value).format("YYYY-MM-DDTHH:mm")
+                          );
+                        }}
+                        onBlur={() => {
+                          handleSort(index);
+                        }}
+                        className={`border border-gray-300 bg-white dark:bg-black rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary ${window.innerWidth < 600 ? "max-w-14 text-white dark:text-black" : "text-black dark:text-white"}`}
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex-1 flex flex-col">
+                  <div className="flex-1 flex flex-col min-w-20">
                     {index === 0 && (
                       <label
                         htmlFor={`shares-${index}`}
@@ -676,7 +679,7 @@ export default function StockPage() {
                     {index === 0 && (
                       <label
                         htmlFor={`price-${index}`}
-                        className="text-sm mb-1"
+                        className="text-sm mb-1 min-w-20 text-nowrap"
                       >
                         Price ($)
                       </label>
@@ -708,9 +711,9 @@ export default function StockPage() {
                     type="button"
                     onClick={() => removePurchaseEntry(index)}
                     variant="destructive"
-                    className="self-end mb-1"
+                    className="self-end mb-1 px-2"
                   >
-                    <Trash className="h-4 w-4" />
+                    <Trash className="h-4 w-1" />
                   </Button>
                 </div>
               ))}

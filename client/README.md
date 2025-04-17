@@ -4,21 +4,7 @@ This is a web application that provides a user interface for the MarketPulse web
 
 # Installation
 
-1. Install Node.js
-
-2. Install dependencies
-
-```bash
-cd client
-
-npm install
-```
-
-3. Run the development server
-
-```bash
-npm run dev
-```
+Please see [README.md](../README.md) in the root directory for client setup & instructions.
 
 # React + TypeScript + Vite
 

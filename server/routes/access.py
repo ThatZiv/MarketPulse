@@ -13,12 +13,15 @@ from engine import get_engine, global_engine
 from cache import cache
 
 def stock_query_single(query, session):
+    '''Function to make a query that returns only the first row.  Takes the query and connection as args'''
     return session.connection().execute(query).first()
 
 def stock_query_all(query, session):
+    '''Function to make a query that returns all rows.  Takes the query and connection as args'''
     return session.connection().execute(query).all()
 
 def create_session():
+    '''Function to get the current session used when a new route thread is created.'''
     try:
         session = sessionmaker(bind=global_engine())
     except exc.OperationalError:
@@ -27,6 +30,7 @@ def create_session():
     return session()
 
 def get_forcasts(ticker, lookback):
+    '''Get forcasts from database. Used by llm and a server route'''
     session = create_session()
 
     s_id = select(Stocks).where(Stocks.stock_ticker == ticker)

@@ -523,7 +523,7 @@ export default function SettingsPage() {
                         className="mt-4 w-full flex justify-center"
                       >
                         <LockIcon />
-                        Save password
+                        Save Password
                       </Button>
                     </CardFooter>
                   </form>
