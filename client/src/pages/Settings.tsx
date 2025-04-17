@@ -63,12 +63,14 @@ export default function SettingsPage() {
   const [fontSize, setFontSize] = useState(
     localStorage.getItem("fontSize") || "medium"
   );
+  // Validation schema for the account form
 
   const accountFormSchema = z.object({
     first_name: z.string().min(2).max(50),
     last_name: z.string().min(2).max(50),
     image: z.instanceof(FileList).optional(),
   });
+  // Validation schema for the password form
 
   const passwordFormSchema = z
     .object({
@@ -92,6 +94,7 @@ export default function SettingsPage() {
       message: "Passwords don't match",
       path: ["confirm_password"],
     });
+  // React Hook Form setup for account and password forms
 
   const accountForm = useForm<z.infer<typeof accountFormSchema>>({
     resolver: zodResolver(accountFormSchema),
@@ -102,6 +105,7 @@ export default function SettingsPage() {
     resolver: zodResolver(passwordFormSchema),
     defaultValues: { old_password: "", password: "", confirm_password: "" },
   });
+  // Fetch the user's account details when the component loads
 
   React.useEffect(() => {
     const getAccount = async () => {
@@ -132,6 +136,7 @@ export default function SettingsPage() {
 
   type AccountFormValues = z.infer<typeof accountFormSchema>;
   type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+  // Function to handle password form submission
 
   const onPasswordSubmit = async (values: PasswordFormValues) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -145,7 +150,7 @@ export default function SettingsPage() {
       });
       return;
     }
-
+    // Confirm password change
     toast("Are you sure you want to change your password?", {
       action: {
         label: "Confirm",
@@ -166,10 +171,10 @@ export default function SettingsPage() {
       },
     });
   };
+  // Function to handle account form submission
 
   const fileRef = accountForm.register("image");
   const onAccountSubmit = async (values: AccountFormValues) => {
-    console.log(values.image);
     const { data } = await supabase
       .from("Account")
       .select("profile_picture")
@@ -256,13 +261,13 @@ export default function SettingsPage() {
       }
     }
   };
-  console.log(globalState);
   const passwordValidations = [
     { text: "At least 8 characters", isValid: password.length >= 8 },
     { text: "At least 1 uppercase letter", isValid: /[A-Z]/.test(password) },
     { text: "At least 1 number", isValid: /[0-9]/.test(password) },
     { text: "At least 1 special character", isValid: /[\W_]/.test(password) },
   ];
+  // Function to handle font size changes
 
   const handleFontSizeChange = (value: string) => {
     setFontSize(value);

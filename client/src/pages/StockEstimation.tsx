@@ -45,6 +45,7 @@ const sentimentFooter = (score: number, meter: string): string => {
   } else if (meter == "impact") {
     trend = "news";
   }
+  // Converts sentiment score into a readable sentence based on the meter type
 
   if (score >= 0 && score <= 15) {
     return `Strongly Negative sentiment in ${trend} around the stock`;
@@ -97,6 +98,7 @@ export default function Stocks() {
       .getUserStocks(user?.id ?? ""),
     enabled: !!user?.id,
   });
+  // Extract the latest sentiment values from the stock history
 
   const meters = useMemo(() => {
     // gets the last data point in stock data for a given ticker
@@ -144,6 +146,8 @@ export default function Stocks() {
     };
   }, [state.stocks, ticker]);
   useEffect(() => {
+    // Redirect to homepage if the ticker isn't valid
+
     if (!ticker_name) {
       // Redirect
       navigate("/");
@@ -154,12 +158,16 @@ export default function Stocks() {
     }
   });
   useEffect(() => {
+    // Show error if available stock fetch failed
+
     if (availableStocksError) {
       toast.error(
         `Error: ${availableStocksError.message || "An unknown error occurred"}`
       );
     }
   }, [availableStocksError]);
+  // Check if user owns this stock; redirect if not
+
   useEffect(() => {
     if (!stocks || stocks.length === 0) {
       return;
@@ -177,6 +185,8 @@ export default function Stocks() {
     }
   }, [stocks]);
   useEffect(() => {
+    // Convert sentiment meter raw values into percentages
+
     if (meters.hype.value) {
       const hype_temp = ((meters.hype.value + 6) / 12) * 100;
       setHypeMeter(hype_temp);
@@ -186,6 +196,7 @@ export default function Stocks() {
       setImpactMeter(impact_temp);
     }
   }, [meters.hype.value, meters.impact.value]);
+  // Create a purchase history calculator for this ticker
 
   const calc = useMemo(
     () =>
@@ -194,6 +205,7 @@ export default function Stocks() {
       ),
     [state.history, ticker]
   );
+  // Show an error message if the user stocks couldn't be loaded
 
   if (stocksError) {
     return (
