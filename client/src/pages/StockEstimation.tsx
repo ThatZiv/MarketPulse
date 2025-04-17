@@ -45,7 +45,7 @@ const sentimentFooter = (score: number, meter: string): string => {
   } else if (meter == "impact") {
     trend = "news";
   }
-// Converts sentiment score into a readable sentence based on the meter type
+  // Converts sentiment score into a readable sentence based on the meter type
 
   if (score >= 0 && score <= 15) {
     return `Strongly Negative sentiment in ${trend} around the stock`;

@@ -11,7 +11,7 @@ const Support: React.FC = () => {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-    // Validate that both fields are filled out
+  // Validate that both fields are filled out
 
   const submitSupportRequest = async () => {
     if (!issueType.trim() || !summary.trim()) {
@@ -52,8 +52,8 @@ const Support: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
-       {/* Card component to display the support form */}
-     
+      {/* Card component to display the support form */}
+
       <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
