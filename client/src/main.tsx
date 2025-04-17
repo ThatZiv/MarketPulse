@@ -38,8 +38,10 @@ createRoot(document.getElementById("root")!).render(
                   <App />
                   <Toaster
                     toastOptions={{
+                      unstyled: false,
                       classNames: {
-                        error: "text-red-600",
+                        toast: "bg-background text-foreground border-border shadow-lg",
+                        error: "!text-red-600",
                       },
                     }}
                   />
