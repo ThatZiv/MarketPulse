@@ -89,7 +89,7 @@ export default function HistoricalAccuracy({
         with actual outcomes.
       </p>
       <Separator className="my-2" />
-      <div className="flex h-5 items-center space-x-4 mt-2 text-sm flex-wrap">
+      <div className="flex h-5 items-center space-x-4 mt-2 text-sm flex-wrap justify-center">
         {metrics.map(({ label, value, unit, explanation }, index) => (
           <>
             <div key={index} className="flex items-center">
