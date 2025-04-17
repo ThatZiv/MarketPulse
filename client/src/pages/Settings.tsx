@@ -169,7 +169,6 @@ export default function SettingsPage() {
 
   const fileRef = accountForm.register("image");
   const onAccountSubmit = async (values: AccountFormValues) => {
-    console.log(values.image);
     const { data } = await supabase
       .from("Account")
       .select("profile_picture")
