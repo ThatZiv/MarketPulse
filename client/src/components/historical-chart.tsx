@@ -513,50 +513,6 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
               </ComposedChart>
             </ChartContainer>
             <div className="flex items-center justify-end gap-2 space-y-0 py-2 sm:flex-row">
-              <div className="flex items-center space-x-2">
-                <InfoTooltip side="left">
-                  <span className="text-sm">
-                    <strong>
-                      Toggle to enable advanced view. Advanced view allows you
-                      to:
-                    </strong>
-                    <div className="list-disc list-inside">
-                      <li>
-                        View the historical predictions, as well as for a
-                        specific date. Click on the chart to view the forecast
-                        for that date.
-                      </li>
-                      <li>
-                        Select a model to view the forecast. By default, the
-                        chart shows the average forecast from all models.
-                      </li>
-                      <li>
-                        View the historical accuracy of the model. This is only
-                        available when viewing stock closing prices.
-                      </li>
-                      <li>
-                        Select a different data point to view on the chart. By
-                        default, the chart shows the stock closing price, but
-                        you can view others like high/low price, volume,
-                        sentiment data, and more.
-                      </li>
-                    </div>
-                  </span>
-                </InfoTooltip>
-                <Switch
-                  checked={isAdvanced}
-                  onCheckedChange={(checked) => {
-                    resetCursor();
-                    setAdvanced(checked);
-                    if (checked) setCondensed(checked);
-                    setShowPredictions(checked);
-                  }}
-                  disabled={arePredictionsLoading || isLoading}
-                  className="data-[state=checked]:bg-[#4db8d8]"
-                  id="advanced"
-                />
-                <Label htmlFor="advanced">Advanced View</Label>
-              </div>
               {isAdvanced &&
                 predictionHistory &&
                 state.predictions[ticker][0] && (
@@ -621,6 +577,50 @@ export default function HistoricalChart({ ticker, stock_id }: StockChartProps) {
                   <Label htmlFor="condensed">Condense</Label>
                 </div>
               )}
+              <div className="flex items-center space-x-2">
+                <InfoTooltip side="top">
+                  <span className="text-sm">
+                    <strong>
+                      Toggle to enable advanced view. Advanced view allows you
+                      to:
+                    </strong>
+                    <div className="list-disc list-inside">
+                      <li>
+                        View the historical predictions, as well as for a
+                        specific date. Click on the chart to view the forecast
+                        for that date.
+                      </li>
+                      <li>
+                        Select a model to view the forecast. By default, the
+                        chart shows the average forecast from all models.
+                      </li>
+                      <li>
+                        View the historical accuracy of the model. This is only
+                        available when viewing stock closing prices.
+                      </li>
+                      <li>
+                        Select a different data point to view on the chart. By
+                        default, the chart shows the stock closing price, but
+                        you can view others like high/low price, volume,
+                        sentiment data, and more.
+                      </li>
+                    </div>
+                  </span>
+                </InfoTooltip>
+                <Switch
+                  checked={isAdvanced}
+                  onCheckedChange={(checked) => {
+                    resetCursor();
+                    setAdvanced(checked);
+                    if (checked) setCondensed(checked);
+                    setShowPredictions(checked);
+                  }}
+                  disabled={arePredictionsLoading || isLoading}
+                  className="data-[state=checked]:bg-[#4db8d8]"
+                  id="advanced"
+                />
+                <Label htmlFor="advanced">Advanced View</Label>
+              </div>
             </div>
             <div className="flex flex-col items-center sm:items-start justify-start">
               {/* model accuracy can only be evaluated based on stock close */}
