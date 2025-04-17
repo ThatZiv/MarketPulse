@@ -40,7 +40,8 @@ createRoot(document.getElementById("root")!).render(
                     toastOptions={{
                       unstyled: false,
                       classNames: {
-                        toast: "bg-background text-foreground border-border shadow-lg",
+                        toast:
+                          "bg-background text-foreground border-border shadow-lg",
                         error: "!text-red-600",
                       },
                     }}
