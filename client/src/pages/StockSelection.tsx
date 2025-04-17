@@ -69,6 +69,7 @@ export default function StockPage() {
     () => searchParams.has("ticker"),
     [searchParams]
   );
+  // Fetch the user's stocks using React Query
 
   const { data: userStocks } = useQuery<UserStock[]>({
     queryKey: [cache_keys.USER_STOCKS],
@@ -77,16 +78,20 @@ export default function StockPage() {
       .getUserStocks(user?.id ?? ""),
     enabled: !!user,
   });
+  // State to manage form data for stock selection
+
   const [formData, setFormData] = useState<StockFormData>({
     ticker: "",
     hasStocks: "",
     purchases: [],
     cashToInvest: null,
   });
+  // State to store previous purchase entries for reverting changes
 
   const [previousPurchases, setPreviousPurchases] = useState<
     StockFormData["purchases"]
   >([]);
+  // Fetch all available stocks using React Query
 
   const [error, setError] = useState<string>();
   const {
@@ -98,6 +103,7 @@ export default function StockPage() {
     queryFn: dataHandler().forSupabase(supabase).getAllStocks(),
     enabled: !!user,
   });
+  // Effect to populate form data when editing a stock
 
   useEffect(() => {
     if (searchParams.has("ticker") && stocks) {
@@ -126,6 +132,7 @@ export default function StockPage() {
       }
     }
   }, [searchParams, stocks, userStocks]);
+  // Validation schema for the form using Zod
 
   const formSchema = z
     .object({
@@ -238,6 +245,7 @@ export default function StockPage() {
       );
     setFormData((prev) => ({ ...prev, purchases: newPurchases }));
   };
+  // Function to fetch purchase history for a specific stock
 
   const fetchPurchaseHistory = async (ticker_id: string) => {
     try {
@@ -274,6 +282,7 @@ export default function StockPage() {
       console.error("Error fetching purchase history:", error);
     }
   };
+  // Function to handle form submission
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -69,6 +69,8 @@ class CNNLSTMTransformer(ForecastModel):
 
         scaled_data = self.scaler.transform(input_data[['Close', 'Sentiment_Data', 'News_Data']])
         X_test, _ = self._create_sequences(scaled_data, self.seq_length)
+        # Generates predictions for the specified number of forecast days.
+        # Adjusts predictions based on sentiment and news data.
 
         predictions = []
         last_sequence = scaled_data[-self.seq_length:]
@@ -116,11 +118,13 @@ if __name__ == "__main__":
         print(e)
     except exc.TimeoutError as e:
         print(e)
+    # Query stock data from the database
 
     stock_q = select(Stock_Info).where(Stock_Info.stock_id == 1)
     Session = sessionmaker(bind=engine)
     session = Session()
     data2 = session.connection().execute(stock_q).all()
+    # Extract stock data into separate lists
 
     s_open = []
     s_close = []
@@ -137,6 +141,7 @@ if __name__ == "__main__":
         s_volume.append(row[2])
         s_sentiment.append(row[6]) 
         s_news.append(row[8])  
+    # Create a DataFrame from the extracted data
 
     data2 = {
         'Close': s_close,
@@ -149,6 +154,7 @@ if __name__ == "__main__":
     }
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
+    # Initialize and train the CNN-LSTM model
 
     model = CNNLSTMTransformer("cnn-lstm", "TSLA")
     model.train(data2)
