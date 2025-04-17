@@ -204,7 +204,8 @@ class AttentionLstm:
     # returns a forcast sequence default length is 7 days.
     def forecast_seq(self, sequences, sentiment, period = 7):
         self.model.eval()
-
+        
+        # sentiment adjustment  on predictions
         average = sum(sentiment) / len(sentiment)
         adjustment =1-( .05 * (sentiment[len(sentiment)-1]-average))
         p = []

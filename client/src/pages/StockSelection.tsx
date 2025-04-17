@@ -771,7 +771,11 @@ export default function StockPage() {
                             : "text-red-600"
                         }`}
                       >
-                        {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+                        {calc.getProfit() !== calc.getProfit()
+                          ? "--"
+                          : PurchaseHistoryCalculator.toDollar(
+                              calc.getProfit()
+                            )}
                       </span>
                     </TableCell>
                     <TableCell>
