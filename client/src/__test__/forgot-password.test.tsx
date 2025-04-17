@@ -36,6 +36,10 @@ jest.mock("lucide-react", () => ({
   EyeOff: () => "EyeOffIcon",
 }));
 
+jest.mock("@/types/google_vars", () => ({
+  googleClientId: " ",
+}));
+
 jest.mock("@/database/SupabaseProvider", () => ({
   useSupabase: () => {
     return {

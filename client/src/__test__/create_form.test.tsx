@@ -25,6 +25,10 @@ jest.mock("@/database/SupabaseProvider", () => ({
   }),
 }));
 
+jest.mock("@/types/google_vars", () => ({
+  googleClientId: " ",
+}));
+
 afterEach(() => {
   cleanup();
   jest.clearAllMocks();
@@ -397,5 +401,37 @@ describe("CreateForm Component", () => {
       "test2025@test.com",
       "Password123!"
     );
+  });
+
+  test("calls signInWithGoogle on Google sign-in button click", async () => {
+    const mockGoogleResponse = {
+      clientId: "mock-client-id",
+      client_id: "mock-client-id",
+      credential: "mock-credential",
+      select_by: "mock-select-by",
+    };
+
+    window.handleSignInWithGoogle = jest.fn(async (response) => {
+      await mockSignInWithGoogle(response);
+    });
+
+    const googleSignInButton = document.querySelector(
+      ".g_id_signin"
+    ) as HTMLElement;
+
+    await act(async () => {
+      fireEvent.click(googleSignInButton);
+    });
+
+    await act(async () => {
+      window.handleSignInWithGoogle(mockGoogleResponse);
+    });
+
+    expect(window.handleSignInWithGoogle).toHaveBeenCalledTimes(1);
+    expect(window.handleSignInWithGoogle).toHaveBeenCalledWith(
+      mockGoogleResponse
+    );
+    expect(mockSignInWithGoogle).toHaveBeenCalledTimes(1);
+    expect(mockSignInWithGoogle).toHaveBeenCalledWith(mockGoogleResponse);
   });
 });
