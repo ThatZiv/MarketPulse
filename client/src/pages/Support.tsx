@@ -11,6 +11,7 @@ const Support: React.FC = () => {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+    // Validate that both fields are filled out
 
   const submitSupportRequest = async () => {
     if (!issueType.trim() || !summary.trim()) {
@@ -21,17 +22,22 @@ const Support: React.FC = () => {
     setLoading(true);
 
     try {
+      // Insert the support request into the "Support" table in the database
+
       const { error } = await supabase
         .from("Support")
         .insert([{ issue_type: issueType, summary }]);
 
       if (error) throw error;
+      // Show a success message and reset the form fields
 
       toast.success("Your support request has been submitted!");
       setIssueType("");
       setSummary("");
       navigate("/");
     } catch (error: unknown) {
+      // Handle any errors that occur during the submission
+
       if (error instanceof Error) {
         toast.error(error.message || "An unexpected error occurred");
         console.error("Support submission error:", error.message);
@@ -46,6 +52,8 @@ const Support: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-transparent text-gray-900 dark:text-white px-6 py-10">
+       {/* Card component to display the support form */}
+     
       <Card className="max-w-4xl w-full shadow-lg bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-2xl p-6">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -58,6 +66,7 @@ const Support: React.FC = () => {
             a brief summary. Our support team will get back to you as soon as
             possible.
           </p>
+          {/* Dropdown to select the issue type */}
 
           <div className="w-full">
             <label htmlFor="issueType" className="block mb-2 font-medium">
@@ -89,6 +98,7 @@ const Support: React.FC = () => {
               <option value="Other">Other</option>
             </select>
           </div>
+          {/* Textarea to enter a summary of the issue */}
 
           <div className="w-full">
             <label htmlFor="summary" className="block mb-2 font-medium">
@@ -103,6 +113,7 @@ const Support: React.FC = () => {
               disabled={loading}
             />
           </div>
+          {/* Submit button */}
 
           <div className="w-full flex justify-end mt-4">
             <Button
