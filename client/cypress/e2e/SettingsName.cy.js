@@ -31,7 +31,6 @@ describe("Change first and last name", () => {
 
     cy.wait(50);
     cy.get("button").contains("Save Changes").click();
-    cy.get("button").contains("Confirm").click();
 
     cy.get("b").contains("John Doe");
     cy.get("span").contains("John Doe");
@@ -59,7 +58,7 @@ describe("Change first and last name", () => {
 
     cy.wait(50);
     cy.get("button").contains("Save Changes").click();
-    cy.get("button").contains("Confirm").click();
+
     cy.get("b").contains("Bill Smith");
     cy.get("span").contains("Bill Smith");
   });
