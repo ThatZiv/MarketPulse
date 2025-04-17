@@ -3,6 +3,7 @@ import { expandDomain } from "@/lib/utils";
 import { ChartDatapoint } from "@/types/global_state";
 import { Separator } from "@/components/ui/separator";
 import InfoTooltip from "./InfoTooltip";
+import React from "react";
 
 interface HistoricalAccuracyProps {
   data: ChartDatapoint[];
@@ -91,8 +92,8 @@ export default function HistoricalAccuracy({
       <Separator className="my-2" />
       <div className="flex h-5 items-center space-x-4 mt-2 text-sm flex-wrap justify-center">
         {metrics.map(({ label, value, unit, explanation }, index) => (
-          <>
-            <div key={index} className="flex items-center">
+          <React.Fragment key={index}>
+            <div className="flex items-center">
               <InfoTooltip size="md" className="mr-1">
                 {explanation}
               </InfoTooltip>
@@ -100,10 +101,8 @@ export default function HistoricalAccuracy({
                 {label}: {value} {unit}
               </span>
             </div>
-            {index < metrics.length - 1 && (
-              <Separator key={index + "vert"} orientation="vertical" />
-            )}
-          </>
+            {index < metrics.length - 1 && <Separator orientation="vertical" />}
+          </React.Fragment>
         ))}
       </div>
     </div>
