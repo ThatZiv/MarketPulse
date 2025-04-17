@@ -207,7 +207,7 @@ class AttentionLstm:
 
         # sentiment adjustment  on predictions
         average = sum(sentiment) / len(sentiment)
-        adjustment =1-( .05 * (sentiment[len(sentiment)-1]-average))
+        adjustment =1-( .05 * (average-sentiment[len(sentiment)-1]))
         p = []
         count=0
 
