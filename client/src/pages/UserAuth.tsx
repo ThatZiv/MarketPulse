@@ -17,12 +17,12 @@ export default function UserAuth() {
       <div className="flex items-center text-2xl sm:text-5xl font-bold text-transparent p-2">
         <div className="ml-5 pt-2 mb-5">
           <div className="flex sm:justify-center justify-left items-center gap-2">
-            <span className="text-white">MarketPulse</span>
             <img
               src="/images/MarketPulse_Logo.png"
               alt="MarketPulse Logo"
               className="sm:h-24 sm:w-24 w-12 h-12"
             />
+            <span className="text-white">MarketPulse</span>
           </div>
         </div>
         <div className="absolute right-0 top-0 p-2">
