@@ -256,7 +256,6 @@ export default function SettingsPage() {
       }
     }
   };
-  console.log(globalState);
   const passwordValidations = [
     { text: "At least 8 characters", isValid: password.length >= 8 },
     { text: "At least 1 uppercase letter", isValid: /[A-Z]/.test(password) },
