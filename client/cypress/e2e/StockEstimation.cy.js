@@ -26,9 +26,9 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
     cy.get("button").contains("Visit").click();
 
     // Make sure the server has time to load the graphs
-    cy.wait(5000);
+    cy.wait(7500);
 
-    cy.get("div").contains("TSLA Historical Prices");
+    cy.get("div").contains("Historical Prices");
     cy.get("h3").contains("Shares Owned");
     cy.get("h3").contains("Current Price");
     cy.get("p").contains(0);

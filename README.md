@@ -39,6 +39,52 @@ Server is a standard API-Gateway interface. Authentication is still managed by S
 
 </details>
 
+<details>
+<summary>CI/CD</summary>
+
+We have a robust CI/CD pipeline set up with GitHub Actions. The pipeline is triggered on every pr to `master` branch. We recommend having mandatory checks as a pre-requisite for merging any pull requests for both the client and server CI jobs.
+
+Here are the current repository secrets we have set up that you should also follow in your repository:
+
+<!--
+DB_HOST
+2 months ago
+DB_NAME
+2 months ago
+DB_PASSWORD
+2 months ago
+DB_USER
+2 months ago
+SUPABASE_JWT_SECRET
+2 months ago
+TEST_LOGIN_EMAIL
+2 weeks ago
+TEST_LOGIN_PASSWORD
+2 weeks ago
+VITE_API_URL
+7 minutes ago
+VITE_GOOGLE_CLIENT_ID
+3 months ago
+VITE_SUPABASE_KEY
+3 months ago
+VITE_SUPABASE_URL -->
+
+| Secret Name           | Description                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| DB_HOST               | The host for the PostgreSQL database                                                                                                 |
+| DB_NAME               | The database name for the PostgreSQL database                                                                                        |
+| DB_PASSWORD           | The password for the PostgreSQL database                                                                                             |
+| DB_USER               | The username for the PostgreSQL database                                                                                             |
+| SUPABASE_JWT_SECRET   | The Supabase-provided JWT secret key that can be found in the Supabase API settings                                                  |
+| TEST_LOGIN_EMAIL      | The email address for the test user                                                                                                  |
+| TEST_LOGIN_PASSWORD   | The password for the test user                                                                                                       |
+| VITE_API_URL          | The URL location of the backend python webserver (must be public facing and is used by some e2e tests).                              |
+| VITE_GOOGLE_CLIENT_ID | The Google Client ID provided by GCP. More info can be found [here](https://supabase.com/docs/guides/auth/social-login/auth-google). |
+| VITE_SUPABASE_KEY     | The Supabase-provided project key. More info can be found [here](https://supabase.com/docs/guides/api/api-keys).                     |
+| VITE_SUPABASE_URL     | The Supabase-provided project URL                                                                                                    |
+
+</details>
+
 ## Architecture
 
 The architecture of MarketPulse is designed to be modular and scalable. The client and server are separated into two distinct directories, each with its own set of dependencies and configurations. The client is a React-based web application that communicates with the server via RESTful APIs. The server is a Flask-based API gateway that handles authentication, data processing, and machine learning model forecasts.
@@ -129,7 +175,7 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 │   ├── test_data/
 │   ├── main.py -- entry point (with some additional routes & job scheduler)
 │   ├── engine.py -- database pooler
-│   ├── run_models_manually.py -- Add stock data and run the models manually 
+│   ├── run_models_manually.py -- Add stock data and run the models manually
 │   ├── .env.example
 │   └── .env -- you must copy this from .env.example
 ├── client/
@@ -221,9 +267,9 @@ The architecture of MarketPulse is designed to be modular and scalable. The clie
 
 MarketPulse utilizes a wide array of third-party services to source it's data from.
 
-- [Yahoo Finance](https://pypi.org/project/yfinance/) - for historical and real-time stock data.  The most recent version needs to be installed to avoid errors.
+- [Yahoo Finance](https://pypi.org/project/yfinance/) - for historical and real-time stock data. The most recent version needs to be installed to avoid errors.
 - [Reddit](https://www.reddit.com/dev/api/) - for social media sentiment
-- [DuckDuckGo](https://pypi.org/project/duckduckgo-search/) - for news sentiment.  The most recent version needs to be installed to avoid errors
+- [DuckDuckGo](https://pypi.org/project/duckduckgo-search/) - for news sentiment. The most recent version needs to be installed to avoid errors
 - [Logo Dev](https://logo.dev/) - for stock ticker logo images
 
 # Requirements
