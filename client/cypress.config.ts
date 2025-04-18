@@ -5,6 +5,11 @@ require("dotenv").config();
 /* eslint-disable @typescript-eslint/no-unused-vars */
 module.exports = defineConfig({
   e2e: {
+    experimentalStudio: true,
+    retries: {
+      runMode: 1,
+      openMode: 0,
+    },
     setupNodeEvents(on, config) {
       // implement node event listeners here
     },
