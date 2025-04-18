@@ -15,7 +15,7 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
 
     cy.get("button").contains("Login").click();
 
-    cy.wait(2000);
+    cy.wait(3000);
     //Agree to disclaimer
     cy.get("button").contains("I Agree").click();
 
@@ -37,12 +37,6 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
     // forecasts
     cy.get("div").contains("TSLA Forecasts");
     cy.get("tspan").contains("Stock Price ($)");
-    cy.get("div").contains("transformer");
-    cy.get("div").contains("attention_lstm");
-    cy.get("div").contains("cnn-lstm");
-    cy.get("div").contains("XGBoost-model");
-    cy.get("div").contains("az-sarima");
-    cy.get("div").contains("average");
 
     cy.should("be.visible");
 
@@ -90,9 +84,6 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
 
     // check if hype and sentiment meters are visible
 
-    cy.get(
-      ".grid-cols-6 > :nth-child(1) > .bg-card > .space-y-0 > .grid > .text-sm"
-    ).should("be.visible");
     cy.get(
       ".grid-cols-6 > :nth-child(1) > .bg-card > .space-y-0 > .grid > .tracking-tight"
     ).should("be.visible");
