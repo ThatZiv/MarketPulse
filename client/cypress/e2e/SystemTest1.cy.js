@@ -16,7 +16,7 @@ describe("Stock Purchase History", () => {
 
     cy.get("button").contains("Visit").click();
 
-    cy.get("div").contains("Your TSLA Purchase History");
+    cy.get("div").contains("Your TSLA Transaction History");
 
     // Chart elements
     cy.get("text").contains("Shares");

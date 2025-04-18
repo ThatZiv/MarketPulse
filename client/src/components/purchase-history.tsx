@@ -116,7 +116,7 @@ export default function PurchaseHistory({
   return (
     <Card className="border border-black dark:border-white rounded-md md:p-4 mt-4">
       <CardHeader>
-        <CardTitle>Your {ticker} Purchase History</CardTitle>
+        <CardTitle>Your {ticker} Transaction History</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading && (
@@ -202,13 +202,13 @@ export default function PurchaseHistory({
             </Table>
           </>
         ) : (
-          <h1>No purchase history available</h1>
+          <h1>No transaction history available</h1>
         )}
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         {isError ? (
           <div className="leading-none text-muted-foreground">
-            <div>Error loading purchase history</div>
+            <div>Error loading transaction history</div>
           </div>
         ) : (
           purchases &&

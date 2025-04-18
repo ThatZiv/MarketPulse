@@ -44,7 +44,7 @@ function ColoredRow(row: { row: (number | string)[]; value: number }) {
 
   const valueStr = PurchaseHistoryCalculator.toDollar(row.value);
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center items-center">
       <p
         className={`${
           greatest ? "text-green-700" : least ? "text-red-700" : ""

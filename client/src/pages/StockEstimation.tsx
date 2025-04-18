@@ -29,42 +29,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PurchaseHistoryCalculator } from "@/lib/Calculator";
 import { DeleteStock } from "@/components/delete-stock";
 import dataHandler from "@/lib/dataHandler";
+import { sentimentFooter } from "@/components/sentimentFooter";
 
-const staticStockData = [
-  { stock_ticker: "TSLA", stock_name: "Tesla", stock_id: 1 },
-  { stock_ticker: "F", stock_name: "Ford", stock_id: 2 },
-  { stock_ticker: "GM", stock_name: "General Motors", stock_id: 3 },
-  { stock_ticker: "TM", stock_name: "Toyota Motor Corporation", stock_id: 4 },
-  { stock_ticker: "STLA", stock_name: "Stellantis N.V.", stock_id: 5 },
-];
-
-const sentimentFooter = (score: number, meter: string): string => {
-  let trend = "";
-  if (meter == "hype") {
-    trend = "social media";
-  } else if (meter == "impact") {
-    trend = "news";
-  }
-  // Converts sentiment score into a readable sentence based on the meter type
-
-  if (score >= 0 && score <= 15) {
-    return `Strongly Negative sentiment in ${trend} around the stock`;
-  } else if (score > 15 && score <= 30) {
-    return `Negative sentiment in ${trend} around the stock`;
-  } else if (score > 30 && score <= 45) {
-    return `Slightly Negative sentiment in ${trend} around the stock`;
-  } else if (score > 45 && score <= 55) {
-    return `Neutral sentiment in ${trend} around the stock`;
-  } else if (score > 55 && score <= 70) {
-    return `Slightly Positive sentiment in ${trend} around the stock`;
-  } else if (score > 70 && score <= 85) {
-    return `Positive sentiment in ${trend} around the stock`;
-  } else if (score > 85 && score <= 100) {
-    return `Strongly Positive sentiment in ${trend} around the stock`;
-  } else {
-    return "N/A";
-  }
-};
 export default function Stocks() {
   const { supabase, user } = useSupabase();
   const { ticker }: { ticker?: string } = useParams();
@@ -81,16 +47,17 @@ export default function Stocks() {
   const availableStocks =
     stocksFetch?.map((stock) => ({
       [stock.stock_ticker]: stock.stock_name,
-    })) ||
-    staticStockData.map((stock) => ({
-      [stock.stock_ticker]: stock.stock_name,
-    }));
+    })) ?? [];
 
   const ticker_name = availableStocks.find(
     (stock) => stock[ticker as keyof typeof stock]
   );
 
-  const { data: stocks, error: stocksError } = useQuery({
+  const {
+    data: stocks,
+    error: stocksError,
+    isLoading: stocksLoading,
+  } = useQuery({
     queryKey: [cache_keys.USER_STOCKS],
     staleTime: Infinity,
     queryFn: dataHandler()
@@ -98,6 +65,7 @@ export default function Stocks() {
       .getUserStocks(user?.id ?? ""),
     enabled: !!user?.id,
   });
+
   // Extract the latest sentiment values from the stock history
 
   const meters = useMemo(() => {
@@ -145,18 +113,7 @@ export default function Stocks() {
       impact: impact_meter,
     };
   }, [state.stocks, ticker]);
-  useEffect(() => {
-    // Redirect to homepage if the ticker isn't valid
 
-    if (!ticker_name) {
-      // Redirect
-      navigate("/");
-      toast.error(
-        "Invalid ticker: The entered ticker is not found in our database."
-      );
-      return;
-    }
-  });
   useEffect(() => {
     // Show error if available stock fetch failed
 
@@ -169,21 +126,24 @@ export default function Stocks() {
   // Check if user owns this stock; redirect if not
 
   useEffect(() => {
-    if (!stocks || stocks.length === 0) {
+    // side effect to check if the user owns the stock
+
+    if (!stocks || stocks.length === 0 || !ticker_name) {
       return;
     }
     const tickerToCheck = ticker_name?.[ticker as keyof typeof ticker_name];
     const stockExists = stocks?.some(
       (stock) => stock?.Stocks?.stock_name === tickerToCheck
     );
-    if (!stockExists) {
+    if (!stockExists && !stocksLoading) {
       navigate("/");
       toast.warning(
-        "Restricted access: To view this page, please add this ticker to your account."
+        "To view this page, please add this ticker to your account."
       );
       return;
     }
-  }, [stocks]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stocks, stocksFetch, ticker_name, stocksLoading]);
   useEffect(() => {
     // Convert sentiment meter raw values into percentages
 

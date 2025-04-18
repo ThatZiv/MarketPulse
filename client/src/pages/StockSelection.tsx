@@ -58,6 +58,13 @@ export interface StockFormData {
   cashToInvest: number | null;
 }
 
+const defaultFormData: StockFormData = {
+  ticker: "",
+  hasStocks: "",
+  purchases: [],
+  cashToInvest: null,
+};
+
 export default function StockPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -106,8 +113,14 @@ export default function StockPage() {
   // Effect to populate form data when editing a stock
 
   useEffect(() => {
-    if (searchParams.has("ticker") && stocks) {
-      const ticker = (searchParams.get("ticker") as string).toUpperCase();
+    const ticker = (searchParams.get("ticker") ?? "").toUpperCase();
+    setFormData((prev) => ({
+      ...prev,
+      ...defaultFormData,
+      ticker: ticker,
+    }));
+    if (IsEditPage && stocks) {
+      setPreviousPurchases([]);
       const stock = stocks.find((stock) => stock.stock_ticker === ticker);
       if (stock) {
         setFormData((prev) => {
@@ -131,7 +144,7 @@ export default function StockPage() {
         }
       }
     }
-  }, [searchParams, stocks, userStocks]);
+  }, [searchParams, stocks, userStocks, user, IsEditPage]);
   // Validation schema for the form using Zod
 
   const formSchema = z

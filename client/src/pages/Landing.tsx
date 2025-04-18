@@ -56,9 +56,10 @@ export default function Landing() {
     enabled: !!user,
   });
 
-  // global coroutine to cache in state
+  // global coroutine to cache in state (entrypoint)
   useQueries({
     queries: [
+      // user's stock transactions
       {
         queryKey: [cache_keys.USER_STOCK_TRANSACTION, "global"],
         // refetchInterval: () => (import.meta.env.PROD ? 1000 * 60 * 5 : 0),
@@ -89,6 +90,7 @@ export default function Landing() {
           return null;
         },
       },
+      // realtime stock prices for each stock the user has
       ...(stocks
         ?.map((stock) => [
           {
@@ -166,6 +168,7 @@ export default function Landing() {
     }
   }
 
+  // get stock images for each stock
   const stockImages = useQueries({
     queries:
       sortedStocks?.map((stock) => ({
@@ -175,6 +178,7 @@ export default function Landing() {
       })) || [],
   }).map((query) => query.data);
 
+  // cache stock image colors (this isn't necessary to cache as its client side)
   const stockColors = useQueries({
     queries:
       stockImages?.map((img) => ({
@@ -189,7 +193,8 @@ export default function Landing() {
       (img) => img?.sort((a, b) => b.area - a.area).map((color) => color.hex)
     );
 
-  const handleClickOut = (e: React.MouseEvent) => {
+  // used to unset card on mouse out to parent dom element
+  const handleMouseOut = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       setActiveCard(-1);
     }
@@ -209,7 +214,7 @@ export default function Landing() {
     );
   }
   return (
-    <div onClick={handleClickOut} className="min-h-screen w-full">
+    <div onMouseOver={handleMouseOut} className="min-h-screen w-full">
       <h1 className="text-4xl text-center flex-1 tracking-tight">
         Welcome <b>{displayName || "User"}</b>
       </h1>
@@ -266,7 +271,8 @@ export default function Landing() {
                 </div>
 
                 <div
-                  onClick={handleClickOut}
+                  onClick={handleMouseOut}
+                  onMouseLeave={() => setActiveCard(-1)}
                   className="flex flex-row flex-wrap items-center justify-center gap-6"
                 >
                   {sortedStocks?.map((stock, index) => (
@@ -295,6 +301,7 @@ export default function Landing() {
   );
 }
 
+// component for stock cards on landing page
 function StockCard({
   stock,
   img,
@@ -319,7 +326,7 @@ function StockCard({
   return (
     <span
       className={`${isShown && "w-[350px] "} `}
-      onClick={() => setActiveCard(stock.Stocks.stock_id)}
+      onMouseEnter={() => setActiveCard(stock.Stocks.stock_id)}
     >
       <div
         className={`bg-white cursor-pointer hover:bg-slate-200 ${

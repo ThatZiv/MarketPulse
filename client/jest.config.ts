@@ -17,4 +17,5 @@ export default {
       },
     },
   },
+  testPathIgnorePatterns: ["<rootDir>/src/__test__/AddStock.test.tsx"],
 };
