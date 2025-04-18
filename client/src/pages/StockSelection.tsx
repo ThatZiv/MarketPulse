@@ -780,7 +780,11 @@ export default function StockPage() {
                             : "text-red-600"
                         }`}
                       >
-                        {PurchaseHistoryCalculator.toDollar(calc.getProfit())}
+                        {isNaN(calc.getProfit())
+                          ? "$--"
+                          : PurchaseHistoryCalculator.toDollar(
+                              calc.getProfit()
+                            )}
                       </span>
                     </TableCell>
                     <TableCell>

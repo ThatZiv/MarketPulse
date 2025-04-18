@@ -23,8 +23,7 @@ describe("Change Profile Picture test", () => {
     );
 
     cy.get("button").contains("Save Changes").click();
-    cy.wait(10);
-    cy.get("button").contains("Confirm").click();
+
     cy.wait(50);
   });
 });

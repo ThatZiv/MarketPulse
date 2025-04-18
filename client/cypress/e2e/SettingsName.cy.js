@@ -24,14 +24,17 @@ describe("Change first and last name", () => {
     cy.get("button").contains("I Agree").click();
 
     cy.get("span").contains("Settings").click();
-    cy.wait(200);
+    cy.wait(100);
+    cy.get('input[name="first_name"]').clear();
+    cy.wait(100);
     cy.get('input[name="first_name"]').type("{selectAll}").type("John");
-    cy.wait(200);
+    cy.wait(100);
+    cy.get('input[name="last_name"]').clear();
+    cy.wait(100);
     cy.get('input[name="last_name"]').type("{selectAll}").type("Doe");
 
     cy.wait(50);
     cy.get("button").contains("Save Changes").click();
-    cy.get("button").contains("Confirm").click();
 
     cy.get("b").contains("John Doe");
     cy.get("span").contains("John Doe");
@@ -52,14 +55,17 @@ describe("Change first and last name", () => {
     cy.get("button").contains("I Agree").click();
 
     cy.get("span").contains("Settings").click();
-    cy.wait(200);
+    cy.wait(100);
+    cy.get('input[name="first_name"]').clear();
+    cy.wait(100);
     cy.get('input[name="first_name"]').type("{selectAll}").type("Bill");
-    cy.wait(200);
+    cy.wait(100);
+    cy.get('input[name="last_name"]').clear();
+    cy.wait(100);
     cy.get('input[name="last_name"]').type("{selectAll}").type("Smith");
-
     cy.wait(50);
     cy.get("button").contains("Save Changes").click();
-    cy.get("button").contains("Confirm").click();
+
     cy.get("b").contains("Bill Smith");
     cy.get("span").contains("Bill Smith");
   });
