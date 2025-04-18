@@ -112,7 +112,7 @@ describe("PurchaseHistory Component", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/no purchase history available/i)
+        screen.getByText(/no transaction history available/i)
       ).toBeInTheDocument();
     });
   });
