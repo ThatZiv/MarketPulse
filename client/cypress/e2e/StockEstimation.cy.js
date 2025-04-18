@@ -21,7 +21,7 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
 
     //Click on TSLA stock
     cy.get("span").contains("TSLA").click();
-
+    cy.wait(100);
     //
     cy.get("button").contains("Visit").click();
 
@@ -34,14 +34,21 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
     cy.get("p").contains(0);
     cy.get("div > p").contains("$");
 
+    cy.wait(100);
     // forecasts
     cy.get("tspan").contains("Stock Price ($)");
     cy.should("be.visible");
 
     // historical chart
     cy.get("#advanced").should("be.visible");
+    cy.wait(100);
+
     cy.get("#advanced").should("be.enabled");
+    cy.wait(100);
+
     cy.get("#advanced").click();
+    cy.wait(100);
+
     cy.get("#condensed").click();
 
     // check if accuracy and other metrics are visible
