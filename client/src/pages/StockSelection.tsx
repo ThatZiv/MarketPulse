@@ -113,10 +113,14 @@ export default function StockPage() {
   // Effect to populate form data when editing a stock
 
   useEffect(() => {
-    setFormData(defaultFormData);
+    const ticker = (searchParams.get("ticker") ?? "").toUpperCase();
+    setFormData((prev) => ({
+      ...prev,
+      ...defaultFormData,
+      ticker: ticker,
+    }));
     if (IsEditPage && stocks) {
       setPreviousPurchases([]);
-      const ticker = (searchParams.get("ticker") as string).toUpperCase();
       const stock = stocks.find((stock) => stock.stock_ticker === ticker);
       if (stock) {
         setFormData((prev) => {
