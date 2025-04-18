@@ -114,9 +114,8 @@ export default function StockPage() {
 
   useEffect(() => {
     setFormData(defaultFormData);
-    setPreviousPurchases([]);
-
     if (IsEditPage && stocks) {
+      setPreviousPurchases([]);
       const ticker = (searchParams.get("ticker") as string).toUpperCase();
       const stock = stocks.find((stock) => stock.stock_ticker === ticker);
       if (stock) {
