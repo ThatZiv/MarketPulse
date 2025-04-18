@@ -16,6 +16,7 @@ module.exports = defineConfig({
     env: {
       email: process.env.TEST_LOGIN_EMAIL,
       password: process.env.TEST_LOGIN_PASSWORD,
+      VITE_API_URL: process.env.VITE_API_URL,
     },
   },
 });
