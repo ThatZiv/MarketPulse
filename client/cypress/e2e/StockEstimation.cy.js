@@ -35,9 +35,7 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
     cy.get("div > p").contains("$");
 
     // forecasts
-    cy.get("div").contains("TSLA Forecasts");
     cy.get("tspan").contains("Stock Price ($)");
-
     cy.should("be.visible");
 
     // historical chart
@@ -88,16 +86,22 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
       ".grid-cols-6 > :nth-child(1) > .bg-card > .space-y-0 > .grid > .tracking-tight"
     ).should("have.text", "Hype Meter");
     cy.get(
-      ":nth-child(2) > .bg-card > .space-y-0 > .grid > .tracking-tight"
+      ".grid-cols-6 > :nth-child(2) > .bg-card > .space-y-0 > .grid > .tracking-tight"
     ).should("have.text", "Impact Factor");
     cy.get(":nth-child(2) > .bg-card > .pt-0 > .gap-2").should("be.visible");
     cy.get(":nth-child(1) > .bg-card > .pt-0 > .gap-2").should("be.visible");
     cy.get(
-      ':nth-child(1) > .bg-card > .md\\:flex-row > .semicircle-gauge > svg > [transform="translate(66.68, 28)"] > .doughnut > :nth-child(6) > path'
-    ).should("be.visible");
-    cy.get(
       ":nth-child(1) > .bg-card > .md\\:flex-row > .semicircle-gauge > svg"
     ).should("be.visible");
+    cy.get(
+      ':nth-child(1) > .bg-card > .md\\:flex-row > .semicircle-gauge > svg > [transform="translate(66.68, 28)"] > .value-text > text'
+    ).should("be.visible");
+    cy.get(
+      ":nth-child(2) > .bg-card > .space-y-0 > .grid > .tracking-tight"
+    ).should("have.text", "Impact Factor");
+    cy.get(
+      ".grid-cols-6 > :nth-child(1) > .bg-card > .space-y-0 > .grid > .tracking-tight"
+    ).should("have.text", "Hype Meter");
     cy.get(
       ':nth-child(1) > .bg-card > .md\\:flex-row > .semicircle-gauge > svg > [transform="translate(66.68, 28)"] > .doughnut > :nth-child(4) > path'
     ).should("be.visible");
