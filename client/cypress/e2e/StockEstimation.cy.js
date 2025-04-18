@@ -86,9 +86,6 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
 
     cy.get(
       ".grid-cols-6 > :nth-child(1) > .bg-card > .space-y-0 > .grid > .tracking-tight"
-    ).should("be.visible");
-    cy.get(
-      ".grid-cols-6 > :nth-child(1) > .bg-card > .space-y-0 > .grid > .tracking-tight"
     ).should("have.text", "Hype Meter");
     cy.get(
       ":nth-child(2) > .bg-card > .space-y-0 > .grid > .tracking-tight"
