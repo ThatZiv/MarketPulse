@@ -212,6 +212,25 @@ describe("Add Stock Form Component Testcase", () => {
     expect(input).toBeRequired();
     expect(handleSubmit).not.toHaveBeenCalled();
   });
+  test("UTC15 - Investment amount should be a float and greater than 0", async () => {
+    const teslaOptions = await screen.findByRole("option", { name: /tesla/i });
+    await userEvent.click(teslaOptions);
+    const submitBtn = await screen.findByRole("button", { name: /submit/i });
+    const investmentInput = document.getElementById("cashToInvest");
+    await userEvent.type(investmentInput!, "1515.75");
+    await userEvent.click(submitBtn);
+    expect(investmentInput).toHaveValue(1515.75);
+  });
+  test("UTC15 - Investment amount should be a float and greater than 0", async () => {
+    const teslaOption = await screen.findByRole("option", { name: /tesla/i });
+    const handleSubmit = jest.fn();
+    await userEvent.click(teslaOption);
+    const submitBtn = screen.getByRole("button", { name: /submit/i });
+    const investmentInput = document.getElementById("cashToInvest");
+    await userEvent.type(investmentInput!, "-100.45");
+    await userEvent.click(submitBtn);
+    expect(handleSubmit).not.toHaveBeenCalled();
+  });
   test("UTC17 - Stock ticker is not selected", async () => {
     const investmentInput = document.getElementById("cashToInvest")!;
     await userEvent.type(investmentInput, "500");
