@@ -15,7 +15,7 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
 
     cy.get("button").contains("Login").click();
 
-    cy.wait(3000);
+    cy.wait(5000);
     //Agree to disclaimer
     cy.get("button").contains("I Agree").click();
 
@@ -67,7 +67,7 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
 
     cy.get("button").contains("Login").click();
 
-    cy.wait(2000);
+    cy.wait(5000);
     //Agree to disclaimer
     cy.get("button").contains("I Agree").click();
 
@@ -78,7 +78,7 @@ describe("Stock Estimation page (FR 32 // STC 2)", () => {
     cy.get("button").contains("Visit").click();
 
     // Make sure the server has time to load the graphs
-    cy.wait(2000);
+    cy.wait(5000);
 
     // check if hype and sentiment meters are visible
 
