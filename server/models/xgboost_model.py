@@ -254,8 +254,9 @@ class XGBoostModel:
             drop_cols = ['Close','isFuture']
             future_values = future_values.drop(columns=drop_cols)
         predicted_prices = df_and_future.tail(num_days+1).iloc[:-1]['Close']
-        normalized_sentiment = sentiment_value / 6 
-        adjustment_factor = 1 + (normalized_sentiment * 0.02) # The adjustment factor is for social media (hype meter) sentiment.
+        normalized_sentiment = sentiment_value / 6
+        # The adjustment factor is for social media (hype meter) sentiment.
+        adjustment_factor = 1 + (normalized_sentiment * 0.02)
         predicted_prices *= adjustment_factor
         return predicted_prices
 
@@ -294,15 +295,15 @@ if __name__ == "__main__":
     model = XGBoostModel('TM')
     print(data)
     # Train/Test Evaluation
-    predictions, true = model.model_test_run(data)
-    for i in range(len(predictions)):
+    predictions, true = model.model_test_run(data) # pylint: disable=consider-using-enumerate
+    for i in range(len(predictions)): 
         print(predictions[i], true[i], end='\n')
-    eval = model.model_evaluation(predictions, true)
-    print(eval)
+    evaluation = model.model_evaluation(predictions, true)
+    print(evaluation)
 
     # Future Predictions
     optimal_model = model.model_actual_run(data)
     predictions = model.future_predictions(optimal_model, data, 7)
-    print("Predictions:\n")
+    print("Predictions:\n") # pylint: disable=consider-using-enumerate
     for i in range(len(predictions)):
         print(predictions[i], end='\n')
