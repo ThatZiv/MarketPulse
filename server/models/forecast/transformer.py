@@ -17,7 +17,7 @@ from models.forecast.forecast_types import DataForecastType, DatasetType
 from models.forecast.model import ForecastModel
 # import yfinance as yf
 from models.zav2 import Transformer
-from scipy.special import expit, logit
+from scipy.special import logit
 
 
 class ZavTransformer(ForecastModel):
