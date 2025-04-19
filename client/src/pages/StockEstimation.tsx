@@ -44,6 +44,12 @@ export default function Stocks() {
     enabled: !!ticker,
   });
 
+  const [stockTimestamp, setStockTimeStamp] = useState<number>();
+
+  useEffect(() => {
+  if (state.stocks[ticker!]?.timestamp != stockTimestamp)
+    setStockTimeStamp(state.stocks[ticker!]?.timestamp);
+  })
   const availableStocks =
     stocksFetch?.map((stock) => ({
       [stock.stock_ticker]: stock.stock_name,
@@ -184,6 +190,7 @@ export default function Stocks() {
       stock?.Stocks?.stock_name ===
       ticker_name?.[ticker as keyof typeof ticker_name]
   );
+
   return (
     <div className="md:w-10/12 w-full mx-auto">
       <h1 className="font-semibold text-3xl pb-6">
@@ -223,8 +230,7 @@ export default function Stocks() {
               ${state.stocks[ticker ?? ""]?.current_price?.toFixed(2) ?? "N/A"}
             </p>
             <p className="text-xs italic">
-              Last updated{" "}
-              {moment(state.stocks[ticker ?? ""]?.timestamp).fromNow()}
+              Last updated {moment(stockTimestamp).fromNow()}
             </p>
           </div>
         </div>
