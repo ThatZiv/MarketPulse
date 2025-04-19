@@ -29,6 +29,7 @@ class XGBoost(ForecastModel):
         predicted_list = predictions.tolist()
         return predicted_list
 
+# This is a test function to check if the database connection is working and to test the XGBoost model
 if __name__ == "__main__":
     load_dotenv()
     USER = os.getenv("user")

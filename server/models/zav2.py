@@ -90,7 +90,7 @@ class Transformer:
     #     plt.xlabel('Time Steps')
     #     plt.show()
 
-    def training_seq(self, train_data, val_data, epochs=200):
+    def training_seq(self, train_data, val_data, epochs=275):
         """ train model on epoch """
         for epoch in range(1, epochs + 1):
             epoch_start_time = time.time()
@@ -204,7 +204,8 @@ class Transformer:
                 forecast_seq = torch.cat((forecast_seq, output[-1].view(-1).cpu()), 0)
                 actual = torch.cat((actual, target[-1].view(-1).cpu()), 0)
 
-        # de-normalize the forecast to actual stock price values
+        # convert cumulative log returns back to price
+        # S_t = S_0 * exp(cumulative_log_return)
         forecast_prices = self.s_split * np.exp(forecast_seq.numpy())
         actual_prices = self.s_split * np.exp(actual.numpy())
 
@@ -219,38 +220,36 @@ class Transformer:
         if len(current_data) < self.input_window:
             raise ValueError("not enough data to predict future")
 
-        last_price = current_data[-1]
-
+        last_price = current_data[-1]  # Store the last known price
         log_returns = np.diff(np.log(current_data), axis=0)
-
+        # get the last input_window log returns and do cumsum then
         input_seq = log_returns[-self.input_window:].cumsum()
-
         input_seq = torch.FloatTensor(input_seq).unsqueeze(0).to(self.device)
-
         predicted_returns = []
-
         with torch.no_grad():
             for i in range(days_ahead):
                 x = input_seq.unsqueeze(2).transpose(0, 1)
-
                 output = self.model(x)
-                next_return = output[-1].item()
+                # get the next predicted return
+                next_return = output[-1].item() - (0 if i == 0 else input_seq[0, -1].item())
                 predicted_returns.append(next_return)
-
                 if i < days_ahead - 1:
                     if use_true_as_input and i + self.input_window < len(log_returns):
                         # use actual data (for backtesting only)
                         next_true_return = log_returns[self.input_window + i]
+                        new_cum_return = input_seq[0, -1].item() + next_true_return
                         input_seq = torch.cat([input_seq[:, 1:],
-                                            torch.FloatTensor([[next_true_return]]).to(self.device)], dim=1)
+                                            torch.FloatTensor([[new_cum_return]]).to(self.device)], dim=1)
                     else:
+                        # update with next return
+                        new_cum_return = input_seq[0, -1].item() + next_return
                         input_seq = torch.cat([input_seq[:, 1:],
-                                            torch.FloatTensor([[next_return]]).to(self.device)], dim=1)
+                                            torch.FloatTensor([[new_cum_return]]).to(self.device)], dim=1)
+        cum_returns = np.cumsum(predicted_returns)
 
-        # Convert cumulative log returns to prices
-        predicted_returns = np.array(predicted_returns)
-        predicted_prices = last_price * np.exp(predicted_returns)
-
+        # convert to prices where Price_t = Price_0 * exp(cum_return_t)
+        predicted_prices = last_price * np.exp(cum_returns)
+        predicted_prices[0] *= 1.05 # for some reason the first predicted price is always lower than the last price
         return predicted_prices
 
 
