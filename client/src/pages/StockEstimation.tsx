@@ -47,9 +47,9 @@ export default function Stocks() {
   const [stockTimestamp, setStockTimeStamp] = useState<number>();
 
   useEffect(() => {
-  if (state.stocks[ticker!]?.timestamp != stockTimestamp)
-    setStockTimeStamp(state.stocks[ticker!]?.timestamp);
-  })
+    if (state.stocks[ticker!]?.timestamp != stockTimestamp)
+      setStockTimeStamp(state.stocks[ticker!]?.timestamp);
+  });
   const availableStocks =
     stocksFetch?.map((stock) => ({
       [stock.stock_ticker]: stock.stock_name,
