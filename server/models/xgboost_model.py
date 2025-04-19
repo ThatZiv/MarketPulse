@@ -295,8 +295,8 @@ if __name__ == "__main__":
     model = XGBoostModel('TM')
     print(data)
     # Train/Test Evaluation
-    predictions, true = model.model_test_run(data) # pylint: disable=consider-using-enumerate
-    for i in range(len(predictions)): 
+    predictions, true = model.model_test_run(data)
+    for i in range(len(predictions)): # pylint: disable=consider-using-enumerate
         print(predictions[i], true[i], end='\n')
     evaluation = model.model_evaluation(predictions, true)
     print(evaluation)
@@ -304,6 +304,6 @@ if __name__ == "__main__":
     # Future Predictions
     optimal_model = model.model_actual_run(data)
     predictions = model.future_predictions(optimal_model, data, 7)
-    print("Predictions:\n") # pylint: disable=consider-using-enumerate
-    for i in range(len(predictions)):
+    print("Predictions:\n")
+    for i in range(len(predictions)): # pylint: disable=consider-using-enumerate
         print(predictions[i], end='\n')
