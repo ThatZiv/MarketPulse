@@ -23,25 +23,26 @@ class ZavTransformer(ForecastModel):
     """
     ZavTransformer implementation of ForecastModel abstract class
     """
+
     def __init__(self, my_model: Transformer, name: str, ticker: str = None):
         super().__init__(my_model.model, name, ticker)
         self.my_model = my_model
 
-
     def train(self, data_set: DatasetType):
-        tr_data, val_data = self.my_model.get_data(np.array(data_set['Close'].values), 0.6)
+        tr_data, val_data = self.my_model.get_data(
+            np.array(data_set['Close'].values), 0.8)
         self.my_model.training_seq(tr_data, val_data)
-        self.save() # save the model after training
+        self.save()  # save the model after training
 
     def run(self, input_data: DatasetType, num_forecast_days: int) -> DataForecastType:
         input_data = np.array(input_data['Close'].values)
-        _, _val_data = self.my_model.get_data(input_data, 0.6)
+        _, _val_data = self.my_model.get_data(input_data, 0.8)
         # result, _ = self.my_model.forecast_seq(val_data)
 
         # res = self.my_model.predict_future(input_data, num_forecast_days)
         mean_pred, _lower_bound, _upper_bound = self.my_model.predict_with_confidence(
             input_data, days_ahead=num_forecast_days, num_samples=100, confidence_level=0.95)
-        return np.array(mean_pred, dtype = float).tolist()
+        return np.array(mean_pred, dtype=float).tolist()
         # print(input_data[-1], res)
         # plt.plot(_, color='red', alpha=0.7)
         # plt.plot(range(len(_), len(_) + len(res)), res, color='blue', alpha=0.7)
@@ -52,6 +53,7 @@ class ZavTransformer(ForecastModel):
         # plt.legend(['Actual', 'Forecast', "og"])
         # plt.xlabel('Time Steps')
         # plt.show()
+
 
 if __name__ == "__main__":
     # this is just a test
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     except exc.TimeoutError as e:
         print(e)
 
-    stock_q= select(Stock_Info).where(Stock_Info.stock_id == 1)
+    stock_q = select(Stock_Info).where(Stock_Info.stock_id == 1)
     Session = sessionmaker(bind=engine)
     session = Session()
     data2 = session.connection().execute(stock_q).all()
@@ -84,13 +86,18 @@ if __name__ == "__main__":
     s_high = []
     s_low = []
     s_volume = []
+    s_sentiment = []
+    s_news = []
     for row in data2:
         s_open.append(row[3])
         s_close.append(row[1])
         s_high.append(row[4])
         s_low.append(row[5])
         s_volume.append(row[2])
-    data2 = {'Close': s_close, 'Open': s_open, 'High':s_high, 'Low':s_low, 'Volume':s_volume}
+        s_sentiment.append(row[6])
+        s_news.append(row[7])
+    data2 = {'Close': s_close, 'Open': s_open, 'High': s_high, 'Low': s_low,
+             'Volume': s_volume, 'Sentiment': s_sentiment, 'News': s_news}
     data2 = pd.DataFrame(data2)
     data_copy = copy.deepcopy(data2)
 
