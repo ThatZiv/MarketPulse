@@ -37,6 +37,7 @@ class XGBoostModel:
             df = self.stla_features(df)
         return df
 
+    # Each stock have their own features used for training and prediction.
     def tsla_features(self, frame):
         """
         This function adds TSLA features to the dataframe.
@@ -160,7 +161,8 @@ class XGBoostModel:
             'rf__min_impurity_decrease': Real(0.0, 0.1),
         }
         tscv = TimeSeriesSplit(n_splits=2)
-
+        # bayes_search is for finding the best hyperparameters for the model.
+        # It uses Bayesian optimization to search the hyperparameter space.
         bayes_search = BayesSearchCV(
             estimator=voting_model,
             search_spaces=search_space,
@@ -180,6 +182,7 @@ class XGBoostModel:
         """
         return tr_model.predict(X)
 
+# This function is only for testing the model. Not included in the model pipeline.
     def model_test_run(self, df):
         """
         This function trains the model for testing and evaluation.
@@ -191,12 +194,14 @@ class XGBoostModel:
         print("XGBoost Test Run Completed.")
         return model_predictions, y_test
 
+
     def model_actual_run(self, df):
         """
         This function trains the model for actual predictions.
         """
         df = df.copy()
         drop_cols = ['Open','High','Low','Volume','Sentiment_Data']
+        # Model training also uses the historical news (impact factor) sentiment data.
         df = df.drop(columns=drop_cols)
         df = self.add_features(df)
         print(f"Added {self.ticker} features.")
@@ -249,11 +254,12 @@ class XGBoostModel:
             drop_cols = ['Close','isFuture']
             future_values = future_values.drop(columns=drop_cols)
         predicted_prices = df_and_future.tail(num_days+1).iloc[:-1]['Close']
-        normalized_sentiment = sentiment_value / 6
-        adjustment_factor = 1 + (normalized_sentiment * 0.02) #may need to adjust this factor later
+        normalized_sentiment = sentiment_value / 6 
+        adjustment_factor = 1 + (normalized_sentiment * 0.02) # The adjustment factor is for social media (hype meter) sentiment.
         predicted_prices *= adjustment_factor
         return predicted_prices
 
+# It is mostly used during the test phase of the model.
     def model_evaluation(self, y_pred, y_test):
         """
         This function evaluates the model's performance using the predictions and true values.
@@ -280,6 +286,7 @@ class XGBoostModel:
         plt.show()
         return metrics
 
+# This can be used to test the model and see the predictions.
 if __name__ == "__main__":
     today = date.today()
     data = yf.download('TM', start='2020-01-01', end=today.strftime('%Y-%m-%d'))
@@ -287,15 +294,15 @@ if __name__ == "__main__":
     model = XGBoostModel('TM')
     print(data)
     # Train/Test Evaluation
-    # predictions, true = model.model_test_run(data)
-    # for i in range(len(predictions)):
-    #     print(predictions[i], true[i], end='\n')
-    # eval = model.model_evaluation(predictions, true)
-    # print(eval)
+    predictions, true = model.model_test_run(data)
+    for i in range(len(predictions)):
+        print(predictions[i], true[i], end='\n')
+    eval = model.model_evaluation(predictions, true)
+    print(eval)
 
     # Future Predictions
-    # optimal_model = model.model_actual_run(data)
-    # predictions = model.future_predictions(optimal_model, data, 7)
-    # print("Predictions:\n")
-    # for i in range(len(predictions)):
-    #     print(predictions[i], end='\n')
+    optimal_model = model.model_actual_run(data)
+    predictions = model.future_predictions(optimal_model, data, 7)
+    print("Predictions:\n")
+    for i in range(len(predictions)):
+        print(predictions[i], end='\n')
