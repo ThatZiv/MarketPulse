@@ -17,10 +17,12 @@ from models.forecast.forecast_types import DataForecastType, DatasetType
 from models.forecast.model import ForecastModel
 
 
+# Normalize sentiment to [0,1] range
 def normalize_sentiment(sentiment_series):
     return (sentiment_series - sentiment_series.min()) / (sentiment_series.max() - sentiment_series.min())
 
 
+# Compute a small adjustment based on the latest sentiment relative to average
 def get_sentiment_adjustment(sentiment_series):
     average = sentiment_series.mean()
     latest = sentiment_series.iloc[-1]
@@ -46,6 +48,7 @@ class AzArima(ForecastModel):
         raw_preds = self.model.forecast(steps=num_forecast_days).tolist()
         if self.sentiment is not None:
             adjustment = get_sentiment_adjustment(self.sentiment)
+            # Apply sentiment-based multiplicative adjustment
             adjusted_preds = [pred * (adjustment ** (i + 1)) for i, pred in enumerate(raw_preds)]
             return adjusted_preds
         return raw_preds
@@ -70,6 +73,7 @@ class AzSarima(ForecastModel):
         raw_preds = self.model.get_forecast(steps=num_forecast_days).predicted_mean.tolist()
         if self.sentiment is not None:
             adjustment = get_sentiment_adjustment(self.sentiment)
+            # Apply sentiment-based multiplicative adjustment
             adjusted_preds = [pred * (adjustment ** (i + 1)) for i, pred in enumerate(raw_preds)]
             return adjusted_preds
         return raw_preds
