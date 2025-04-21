@@ -1,6 +1,6 @@
 # MarketPulse
 
-<img src="https://i.imgur.com/fYOR4Uz.png" height=200 weight=200>
+<img src="https://i.imgur.com/YecH1DP.png" height=200 weight=200>
 
 # Introduction
 
